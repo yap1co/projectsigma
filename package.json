@@ -1,0 +1,21 @@
+{
+  "name": "university-course-recommender",
+  "version": "1.0.0",
+  "description": "AI-powered university course recommendation system for UK students",
+  "main": "server/app.py",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && python app.py",
+    "client:dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && python app.py",
+    "install:all": "cd server && pip install -r requirements.txt && cd ../client && npm install",
+    "test": "cd server && python -m pytest && cd ../client && npm test"
+  },
+  "keywords": ["university", "recommendation", "education", "uk", "students", "courses"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
