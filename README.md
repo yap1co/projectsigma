@@ -100,7 +100,7 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Backend API**: http://localhost:5000
 - **MongoDB Express**: http://localhost:8081 (admin/admin123)
 
-## 📊 Recommendation Algorithm
+## Recommendation Algorithm
 
 The system uses a sophisticated weighted scoring algorithm that considers:
 
@@ -120,7 +120,7 @@ The system uses a sophisticated weighted scoring algorithm that considers:
 - **Career Alignment**: Subject-specific career pathway matching
 - **Flexible Requirements**: Handles various entry requirement formats
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Students Collection
 ```javascript
@@ -174,7 +174,7 @@ The system uses a sophisticated weighted scoring algorithm that considers:
 }
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new student
