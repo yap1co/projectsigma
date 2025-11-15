@@ -120,6 +120,17 @@ The system uses a sophisticated weighted scoring algorithm that considers:
 - **Career Alignment**: Subject-specific career pathway matching
 - **Flexible Requirements**: Handles various entry requirement formats
 
+## 🖥️ Platform Support
+
+This project works on **Windows**, **macOS**, and **Linux**!
+
+- **Windows:** See `SETUP_INSTRUCTIONS.md`
+- **macOS:** See `SETUP_INSTRUCTIONS_MAC.md` 
+- **Linux:** Similar to macOS (use `SETUP_INSTRUCTIONS_MAC.md`)
+- **Cross-platform guide:** See `PLATFORM_COMPATIBILITY.md`
+
+**Key difference:** Windows uses `python`, macOS/Linux use `python3` - everything else is identical!
+
 ## 🗄️ Database Schema
 
 ### Students Collection

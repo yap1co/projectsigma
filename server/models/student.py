@@ -48,6 +48,7 @@ class Student:
         }
     
     @classmethod
+    
     def from_dict(cls, data: Dict) -> 'Student':
         """Create student from dictionary"""
         return cls(

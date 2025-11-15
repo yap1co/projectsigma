@@ -1,0 +1,9 @@
+@startuml ProjectSigmaWireframes
+title Wireframes moved
+note as N
+All SALT wireframes are now split into individual diagrams inside `designs/wireframes.md`.
+Render those blocks with PlantUML (`plantuml -tsvg path/to/block.puml` or by piping the fenced code).
+N
+@enduml
+@enduml
+
