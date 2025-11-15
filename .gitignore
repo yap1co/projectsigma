@@ -56,5 +56,7 @@ build/
 
 # Data files (large CSVs - uncomment if you don't want to track them)
 # data/*.csv
-# data/*.xml
+# Large XML files (exceed GitHub 100MB limit)
+data/*.xml
+data/kis20251111121552.xml
 
