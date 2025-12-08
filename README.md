@@ -2,7 +2,7 @@
 
 An AI-powered university course recommendation system designed specifically for UK Year 11-13 students. This system helps students discover the perfect university courses based on their A-level subjects, predicted grades, and personal preferences.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project addresses the challenge faced by UK students when choosing university courses. With over 50,000 courses available across 150+ universities, students often struggle to find courses that match their academic profile and career aspirations.
 
@@ -15,7 +15,7 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Export Functionality**: Download recommendations as CSV or PDF
 - **Secure Authentication**: JWT-based user authentication with profile management
 
-## 🛠️ Technical Stack
+## Technical Stack
 
 ### Backend (Python/Flask)
 - **Flask**: Lightweight web framework for API development
@@ -40,7 +40,7 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Docker Compose**: Multi-container orchestration
 - **MongoDB Express**: Database administration interface
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -100,7 +100,7 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Backend API**: http://localhost:5000
 - **MongoDB Express**: http://localhost:8081 (admin/admin123)
 
-## 📊 Recommendation Algorithm
+## Recommendation Algorithm
 
 The system uses a sophisticated weighted scoring algorithm that considers:
 
@@ -120,7 +120,7 @@ The system uses a sophisticated weighted scoring algorithm that considers:
 - **Career Alignment**: Subject-specific career pathway matching
 - **Flexible Requirements**: Handles various entry requirement formats
 
-## 🖥️ Platform Support
+## Platform Support
 
 This project works on **Windows**, **macOS**, and **Linux**!
 
@@ -185,7 +185,7 @@ This project works on **Windows**, **macOS**, and **Linux**!
 }
 ```
 
-## 🔧 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new student
@@ -207,7 +207,7 @@ This project works on **Windows**, **macOS**, and **Linux**!
 - `PUT /api/admin/courses/{id}` - Update course
 - `DELETE /api/admin/courses/{id}` - Delete course
 
-## 🧪 Testing
+## Testing
 
 ### Backend Tests
 ```bash
@@ -233,7 +233,7 @@ curl -X POST http://localhost:5000/api/recommendations \
   -d '{"preferredRegion": "London", "maxBudget": 9250}'
 ```
 
-## 📈 Performance Optimization
+## Performance Optimization
 
 ### Database Indexing
 - Email and username indexes for fast user lookups
@@ -250,7 +250,7 @@ curl -X POST http://localhost:5000/api/recommendations \
 - Database sharding for large datasets
 - CDN integration for static assets
 
-## 🔒 Security Features
+## Security Features
 
 - **JWT Authentication**: Secure token-based authentication
 - **Password Hashing**: bcrypt with configurable rounds
@@ -259,7 +259,7 @@ curl -X POST http://localhost:5000/api/recommendations \
 - **Rate Limiting**: API request throttling
 - **Data Encryption**: Sensitive data protection
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Deployment
 
@@ -293,7 +293,7 @@ curl -X POST http://localhost:5000/api/recommendations \
 - **Metrics**: Performance monitoring
 - **Error Tracking**: Comprehensive error handling
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -301,11 +301,11 @@ curl -X POST http://localhost:5000/api/recommendations \
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🎓 Educational Value
+## Educational Value
 
 This project demonstrates advanced computer science concepts:
 
@@ -317,7 +317,7 @@ This project demonstrates advanced computer science concepts:
 - **DevOps**: Docker containerization and deployment
 - **Testing**: Unit, integration, and end-to-end testing
 
-## 📞 Support
+## Support
 
 For support and questions:
 
@@ -326,7 +326,7 @@ For support and questions:
 3. Open an [issue](https://github.com/your-repo/issues)
 4. Contact: your-email@example.com
 
-## 🗺️ Roadmap
+## Roadmap
 
 - [ ] Real-time notifications
 - [ ] Advanced analytics dashboard
