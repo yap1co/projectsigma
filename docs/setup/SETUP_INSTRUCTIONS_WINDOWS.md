@@ -1,6 +1,6 @@
 # Infrastructure Setup Instructions
 
-**Platform:** Windows | **For macOS, see:** `SETUP_INSTRUCTIONS_MAC.md`
+**Platform:** Windows | **For macOS, see:** [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md)
 
 ## Prerequisites
 

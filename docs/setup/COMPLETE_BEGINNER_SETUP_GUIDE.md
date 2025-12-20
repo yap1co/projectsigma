@@ -639,8 +639,8 @@ npm install
 
 1. **Check Documentation:**
    - `README.md` - Project overview
-   - `SETUP_INSTRUCTIONS.md` - Setup details
-   - `server/database/LOCAL_POSTGRES_SETUP.md` - Database setup
+   - [SETUP_INSTRUCTIONS_WINDOWS.md](./SETUP_INSTRUCTIONS_WINDOWS.md) - Setup details
+   - [../database/LOCAL_POSTGRES_SETUP.md](../database/LOCAL_POSTGRES_SETUP.md) - Database setup
 
 2. **Check Error Messages:**
    - Read the full error message

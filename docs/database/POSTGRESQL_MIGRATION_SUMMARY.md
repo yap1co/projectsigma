@@ -6,7 +6,7 @@ This document summarizes the migration from MongoDB to PostgreSQL and the additi
 
 ## Changes Made
 
-### 1. High-Level Design Document Updates (`High_Level_Design_Draft.md`)
+### 1. High-Level Design Document Updates ([HIGH_LEVEL_DESIGN.md](../design/HIGH_LEVEL_DESIGN.md))
 
 #### Section 4.1 - Database Schema (Updated)
 - **Updated schema to match ER diagrams**:
@@ -140,7 +140,9 @@ Complete documentation for:
 
 ```
 projectsigma/
-├── High_Level_Design_Draft.md          # Updated with new sections
+├── docs/
+│   ├── design/
+│   │   └── HIGH_LEVEL_DESIGN.md       # Updated with new sections
 ├── POSTGRESQL_MIGRATION_SUMMARY.md     # This file
 ├── docker-compose.yml                  # Updated for PostgreSQL
 └── server/

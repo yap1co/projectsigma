@@ -33,20 +33,20 @@ This project is designed to work on **Windows**, **macOS**, and **Linux**. The c
 ## 📋 Platform-Specific Setup
 
 ### Windows
-See: `SETUP_INSTRUCTIONS.md`
+See: [SETUP_INSTRUCTIONS_WINDOWS.md](./SETUP_INSTRUCTIONS_WINDOWS.md)
 - Uses `python` command
 - PowerShell or CMD
 - Docker Desktop for Windows
 
 ### macOS
-See: `SETUP_INSTRUCTIONS_MAC.md`
+See: [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md)
 - Uses `python3` command
 - Terminal.app or iTerm2
 - Docker Desktop for Mac
 - Apple Silicon (M1/M2/M3) fully supported
 
 ### Linux
-See: `SETUP_INSTRUCTIONS_LINUX.md` (similar to macOS)
+See: [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md) (similar to macOS)
 - Uses `python3` command
 - Native Docker (not Docker Desktop)
 - Package manager: apt/yum/dnf
@@ -197,17 +197,17 @@ python3 import_csv.py --help # macOS/Linux
 
 ## 📚 Documentation Files
 
-- **Windows:** `SETUP_INSTRUCTIONS.md`
-- **macOS:** `SETUP_INSTRUCTIONS_MAC.md`
-- **Linux:** Similar to macOS (use `SETUP_INSTRUCTIONS_MAC.md`)
+- **Windows:** [SETUP_INSTRUCTIONS_WINDOWS.md](./SETUP_INSTRUCTIONS_WINDOWS.md)
+- **macOS:** [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md)
+- **Linux:** Similar to macOS (use [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md))
 
 ## 🎯 Recommendation
 
-**For macOS users:** Follow `SETUP_INSTRUCTIONS_MAC.md` - it has macOS-specific notes and uses `python3` commands.
+**For macOS users:** Follow [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md) - it has macOS-specific notes and uses `python3` commands.
 
-**For Windows users:** Follow `SETUP_INSTRUCTIONS.md` - uses `python` commands.
+**For Windows users:** Follow [SETUP_INSTRUCTIONS_WINDOWS.md](./SETUP_INSTRUCTIONS_WINDOWS.md) - uses `python` commands.
 
-**For Linux users:** Follow `SETUP_INSTRUCTIONS_MAC.md` and replace macOS-specific notes with Linux equivalents.
+**For Linux users:** Follow [SETUP_INSTRUCTIONS_MAC.md](./SETUP_INSTRUCTIONS_MAC.md) and replace macOS-specific notes with Linux equivalents.
 
 ## 💡 Pro Tips
 

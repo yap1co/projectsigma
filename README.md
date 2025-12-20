@@ -19,8 +19,9 @@ This project addresses the challenge faced by UK students when choosing universi
 
 ### Backend (Python/Flask)
 - **Flask**: Lightweight web framework for API development
-- **MongoDB**: NoSQL database for flexible course data storage
-- **PyMongo**: MongoDB driver for Python
+- **PostgreSQL**: Relational database for course data storage
+- **SQLAlchemy**: Python SQL toolkit and ORM
+- **psycopg2**: PostgreSQL adapter for Python
 - **JWT**: Secure authentication with JSON Web Tokens
 - **bcrypt**: Password hashing for security
 - **Pandas/NumPy**: Data processing for recommendation algorithms
@@ -46,7 +47,7 @@ This project addresses the challenge faced by UK students when choosing universi
 
 - **Python 3.11+**
 - **Node.js 18+**
-- **MongoDB** (or Docker)
+- **PostgreSQL 12+** (or Docker)
 - **Git**
 
 ### Installation
@@ -64,14 +65,19 @@ This project addresses the challenge faced by UK students when choosing universi
 
 3. **Set up environment variables**
    ```bash
-   # Copy environment file
-   cp server/.env.example server/.env
-   
-   # Edit the environment file
-   nano server/.env
+   # Create .env file in server directory
+   # See docs/database/ for database setup instructions
    ```
 
-4. **Start with Docker (Recommended)**
+4. **Set up PostgreSQL Database**
+   ```bash
+   # See docs/database/QUICK_START_STEPS.md for detailed instructions
+   # Quick start:
+   cd server/database
+   python init_db.py
+   ```
+
+5. **Start with Docker (Recommended)**
    ```bash
    # Start all services
    docker-compose up -d
@@ -80,10 +86,10 @@ This project addresses the challenge faced by UK students when choosing universi
    docker-compose logs -f
    ```
 
-5. **Or start locally**
+6. **Or start locally**
    ```bash
-   # Start MongoDB
-   docker-compose up -d mongodb
+   # Start PostgreSQL
+   docker-compose up -d postgres
    
    # Start backend (Terminal 1)
    cd server
@@ -98,7 +104,7 @@ This project addresses the challenge faced by UK students when choosing universi
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
-- **MongoDB Express**: http://localhost:8081 (admin/admin123)
+- **pgAdmin**: http://localhost:8081 (admin@admin.com/admin123) - PostgreSQL administration
 
 ## 📊 Recommendation Algorithm
 
@@ -124,66 +130,42 @@ The system uses a sophisticated weighted scoring algorithm that considers:
 
 This project works on **Windows**, **macOS**, and **Linux**!
 
-- **Windows:** See `SETUP_INSTRUCTIONS.md`
-- **macOS:** See `SETUP_INSTRUCTIONS_MAC.md` 
-- **Linux:** Similar to macOS (use `SETUP_INSTRUCTIONS_MAC.md`)
-- **Cross-platform guide:** See `PLATFORM_COMPATIBILITY.md`
+- **Windows:** See [docs/setup/SETUP_INSTRUCTIONS_WINDOWS.md](docs/setup/SETUP_INSTRUCTIONS_WINDOWS.md)
+- **macOS:** See [docs/setup/SETUP_INSTRUCTIONS_MAC.md](docs/setup/SETUP_INSTRUCTIONS_MAC.md) 
+- **Linux:** Similar to macOS (use [docs/setup/SETUP_INSTRUCTIONS_MAC.md](docs/setup/SETUP_INSTRUCTIONS_MAC.md))
+- **Cross-platform guide:** See [docs/setup/PLATFORM_COMPATIBILITY.md](docs/setup/PLATFORM_COMPATIBILITY.md)
+- **Complete beginner guide:** See [docs/setup/COMPLETE_BEGINNER_SETUP_GUIDE.md](docs/setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)
 
 **Key difference:** Windows uses `python`, macOS/Linux use `python3` - everything else is identical!
 
+## 📚 Documentation
+
+All project documentation is organized in the [`docs/`](docs/) directory:
+
+- **[Setup Guides](docs/setup/)** - Platform-specific setup instructions
+- **[Database Documentation](docs/database/)** - PostgreSQL setup and migration guides
+- **[Design Documentation](docs/design/)** - System architecture and wireframes
+- **[Requirements](docs/requirements/)** - Project requirements and specifications
+
+See [docs/README.md](docs/README.md) for a complete documentation index.
+
 ## 🗄️ Database Schema
 
-### Students Collection
-```javascript
-{
-  email: String (unique, required)
-  password: String (hashed, required)
-  firstName: String (required)
-  lastName: String (required)
-  yearGroup: String (Year 11/12/13)
-  aLevelSubjects: [String]
-  predictedGrades: {subject: grade}
-  preferences: {
-    preferredRegion: String
-    maxBudget: Number
-    preferredUniSize: String
-    careerInterests: [String]
-  }
-  createdAt: Date
-  lastLogin: Date
-}
-```
+The project uses **PostgreSQL** as the relational database. The schema includes:
 
-### Courses Collection
-```javascript
-{
-  name: String (required)
-  university: {
-    name: String
-    location: String
-    ranking: {overall: Number, subject: Number}
-  }
-  subjects: [String]
-  entryRequirements: {
-    subjects: [String]
-    grades: {subject: grade}
-    additionalRequirements: String
-    interviewRequired: Boolean
-    entranceExam: String
-  }
-  fees: {
-    uk: Number
-    international: Number
-  }
-  employability: {
-    employmentRate: Number
-    averageSalary: Number
-    topEmployers: [String]
-  }
-  duration: Number (years)
-  description: String
-}
-```
+- **student** - Student user accounts
+- **university** - University information
+- **course** - Course information with entry requirements
+- **subject** - A-Level subjects catalog
+- **student_grade** - Student predicted grades
+- **course_requirement** - Course entry requirements
+- **recommendation_run** - Recommendation run metadata
+- **recommendation_result** - Recommendation results (JSONB)
+
+For detailed database schema documentation, see:
+- [docs/database/](docs/database/) - Database setup and migration guides
+- [docs/design/HIGH_LEVEL_DESIGN.md](docs/design/HIGH_LEVEL_DESIGN.md) - Complete schema design
+- [server/database/migrations/](server/database/migrations/) - SQL migration files
 
 ## 🔧 API Endpoints
 
@@ -267,7 +249,10 @@ curl -X POST http://localhost:5000/api/recommendations \
    ```bash
    # Set production environment variables
    export FLASK_ENV=production
-   export MONGODB_URI=mongodb://user:pass@host:port/db
+   export DATABASE_URL=postgresql://user:pass@host:port/db
+   export POSTGRES_DB=university_recommender
+   export POSTGRES_USER=postgres
+   export POSTGRES_PASSWORD=your-secure-password
    export JWT_SECRET_KEY=your-secure-secret-key
    ```
 
@@ -311,7 +296,8 @@ This project demonstrates advanced computer science concepts:
 
 - **Object-Oriented Programming**: Python classes and inheritance
 - **Algorithm Design**: Recommendation engine with weighted scoring
-- **Database Design**: NoSQL schema optimization
+- **Database Design**: Relational database schema with PostgreSQL
+- **SQL Queries**: Complex joins, indexes, and query optimization
 - **API Development**: RESTful API with Flask
 - **Frontend Architecture**: React with modern patterns
 - **DevOps**: Docker containerization and deployment
@@ -321,10 +307,10 @@ This project demonstrates advanced computer science concepts:
 
 For support and questions:
 
-1. Check the [documentation](docs/)
-2. Review [troubleshooting guide](docs/troubleshooting.md)
-3. Open an [issue](https://github.com/your-repo/issues)
-4. Contact: your-email@example.com
+1. Check the [documentation](docs/README.md)
+2. Review setup guides in [docs/setup/](docs/setup/)
+3. Check database guides in [docs/database/](docs/database/)
+4. Open an [issue](https://github.com/your-repo/issues)
 
 ## 🗺️ Roadmap
 
