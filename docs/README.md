@@ -1,75 +1,133 @@
-# ProjectSigma Documentation
+# Project Documentation
 
-This directory contains all project documentation organized by category.
+Welcome to the University Course Recommender documentation. This directory contains comprehensive documentation for all aspects of the project.
 
 ## 📚 Documentation Structure
 
+### [Modules](./modules/)
+Detailed documentation for core system modules:
+
+- **[RecommendationEngine](./modules/recommendation_engine.md)** - Core recommendation algorithm and matching logic
+- **[Flask API (app.py)](./modules/app.md)** - Backend API endpoints and authentication
+- **[Data Models](./modules/models.md)** - Student, Course, and University models
+
 ### [Setup Guides](./setup/)
-Complete setup instructions for different platforms and use cases.
+Step-by-step setup instructions for different platforms:
 
-- **[QUICK_START_BEGINNER.md](./setup/QUICK_START_BEGINNER.md)** - Fast track setup for complete beginners
-- **[COMPLETE_BEGINNER_SETUP_GUIDE.md](./setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)** - Comprehensive beginner guide
-- **[SETUP_INSTRUCTIONS_WINDOWS.md](./setup/SETUP_INSTRUCTIONS_WINDOWS.md)** - Windows-specific setup instructions
-- **[SETUP_INSTRUCTIONS_MAC.md](./setup/SETUP_INSTRUCTIONS_MAC.md)** - macOS-specific setup instructions
-- **[WSL2_SETUP.md](./setup/WSL2_SETUP.md)** - Windows Subsystem for Linux setup
-- **[PLATFORM_COMPATIBILITY.md](./setup/PLATFORM_COMPATIBILITY.md)** - Cross-platform compatibility guide
+- **[Complete Beginner Setup](./setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)** - Full setup guide for beginners
+- **[Windows Setup](./setup/SETUP_INSTRUCTIONS_WINDOWS.md)** - Windows-specific instructions
+- **[Mac Setup](./setup/SETUP_INSTRUCTIONS_MAC.md)** - macOS-specific instructions
+- **[WSL2 Setup](./setup/WSL2_SETUP.md)** - Windows Subsystem for Linux setup
+- **[Frontend Setup](./setup/frontend_setup.md)** - Next.js frontend setup
+- **[External Access](./setup/external_access.md)** - Configuring external access
 
-### [Database Documentation](./database/)
-PostgreSQL database setup, migration, and usage guides.
+### [Database Guides](./database/)
+Database setup, migrations, and data import:
 
-**Quick Start:**
-- **[QUICK_START_LOCAL.md](./database/QUICK_START_LOCAL.md)** - ⭐ **Start here** - Local PostgreSQL setup with service start instructions
+- **[Quick Start (Local)](./database/QUICK_START_LOCAL.md)** - Local PostgreSQL setup
+- **[Quick Start (Discover Uni)](./database/QUICK_START_DISCOVER_UNI.md)** - Discover Uni data import
+- **[Migrations Guide](./database/MIGRATIONS_STEP_BY_STEP.md)** - Database migration process
+- **[HESA Data Import](./database/POSTGRESQL_MIGRATION_SUMMARY.md)** - HESA data integration
+- **[Run Feedback Migration](./database/run_feedback_migration.md)** - Feedback system migration
 
-**Detailed Guides:**
-- **[LOCAL_POSTGRES_SETUP.md](./database/LOCAL_POSTGRES_SETUP.md)** - Detailed local PostgreSQL setup
-- **[QUICK_START_STEPS.md](./database/QUICK_START_STEPS.md)** - Quick PostgreSQL setup steps
-- **[DISCOVER_UNI_IMPORT_GUIDE.md](./database/DISCOVER_UNI_IMPORT_GUIDE.md)** - Complete Discover Uni import guide
-- **[QUICK_START_DISCOVER_UNI.md](./database/QUICK_START_DISCOVER_UNI.md)** - Discover Uni data import quick start
-- **[TRADITIONAL_DDL_GUIDE.md](./database/TRADITIONAL_DDL_GUIDE.md)** - Traditional DDL setup guide
-- **[USING_PSQL.md](./database/USING_PSQL.md)** - PostgreSQL command-line usage
+### [User Guides](./guides/)
+How-to guides for using and managing the system:
 
-**Migration Documentation:**
-- **[POSTGRESQL_MIGRATION_SUMMARY.md](./database/POSTGRESQL_MIGRATION_SUMMARY.md)** - Migration from MongoDB to PostgreSQL
-- **[MIGRATIONS_QUICK_START.md](./database/MIGRATIONS_QUICK_START.md)** - Database migrations quick start
-- **[MIGRATIONS_STEP_BY_STEP.md](./database/MIGRATIONS_STEP_BY_STEP.md)** - Step-by-step migration guide
-- **[MIGRATIONS_README_DISCOVER_UNI.md](./database/MIGRATIONS_README_DISCOVER_UNI.md)** - Discover Uni migration documentation
+- **[Career Interests Management](./guides/career_interests.md)** - Managing career interests in the database
+- **[Feedback System](./guides/feedback_system.md)** - How the feedback system works
+- **[HESA Data](./guides/hesa_data.md)** - Understanding and importing HESA data
+- **[Profile Management](./guides/profile_management.md)** - Managing student profiles
 
-### [Design Documentation](./design/)
-System design, architecture, and wireframes.
+### [Troubleshooting](./troubleshooting/)
+Solutions to common problems:
 
-- **[HIGH_LEVEL_DESIGN.md](./design/HIGH_LEVEL_DESIGN.md)** - Complete high-level system design
-- **[HIGH_LEVEL_DESIGN.jpeg](./design/HIGH_LEVEL_DESIGN.jpeg)** - High-level design diagram
-- **[wireframes.md](./design/wireframes.md)** - UI wireframe documentation
-- **[figma-wireframe.md](./design/figma-wireframe.md)** - Figma wireframe specifications
-- **[dashboard-wireframe.puml](./design/dashboard-wireframe.puml)** - PlantUML wireframe source
+- **[Login Errors](./troubleshooting/login_errors.md)** - Fixing login and authentication issues
+- **[Quick Fix Login](./troubleshooting/quick_fix_login.md)** - Quick login troubleshooting
+- **[Password Setup](./troubleshooting/password_setup.md)** - Password configuration issues
+- **[Update Password](./troubleshooting/update_password.md)** - Changing passwords
+- **[Python Compatibility](./troubleshooting/python_compatibility.md)** - Python version issues
+- **[Frontend Errors](./troubleshooting/frontend_errors.md)** - Frontend build and runtime errors
+
+### [Design](./design/)
+System design and architecture:
+
+- **[High-Level Design](./design/HIGH_LEVEL_DESIGN.md)** - System architecture overview
+- **[Wireframes](./design/wireframes.md)** - UI/UX wireframes
 
 ### [Requirements](./requirements/)
-Project requirements and specifications.
+Project requirements and specifications:
 
-- **[REQUIREMENTS.md](./requirements/REQUIREMENTS.md)** - Project requirements specification
-- **[NEA_PROJECT_CONCEPT_PROPOSAL.docx](./requirements/NEA_PROJECT_CONCEPT_PROPOSAL.docx)** - NEA project concept proposal
+- **[Requirements](./requirements/REQUIREMENTS.md)** - Functional and non-functional requirements
+- **[Marking Scheme Summary](./requirements/markingschemeSummary.md)** - Assessment criteria
 
 ## 🚀 Quick Links
 
-### For New Users
-1. Start with **[QUICK_START_BEGINNER.md](./setup/QUICK_START_BEGINNER.md)** for a fast setup
-2. Or read **[COMPLETE_BEGINNER_SETUP_GUIDE.md](./setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)** for detailed instructions
+### Getting Started
+1. [Complete Beginner Setup Guide](./setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)
+2. [Local Database Setup](./database/QUICK_START_LOCAL.md)
+3. [Frontend Setup](./setup/frontend_setup.md)
 
-### For Database Setup
-1. **[QUICK_START_LOCAL.md](./database/QUICK_START_LOCAL.md)** - ⭐ **Start here** - Quick PostgreSQL setup with service start instructions
-2. **[LOCAL_POSTGRES_SETUP.md](./database/LOCAL_POSTGRES_SETUP.md)** - Detailed local setup
-3. **[DISCOVER_UNI_IMPORT_GUIDE.md](./database/DISCOVER_UNI_IMPORT_GUIDE.md)** - Import Discover Uni data
+### Core Components
+1. [RecommendationEngine Module](./modules/recommendation_engine.md)
+2. [Flask API Documentation](./modules/app.md)
+3. [Data Models](./modules/models.md)
 
-### For Developers
-1. **[HIGH_LEVEL_DESIGN.md](./design/HIGH_LEVEL_DESIGN.md)** - System architecture
-2. **[REQUIREMENTS.md](./requirements/REQUIREMENTS.md)** - Project requirements
-3. **[POSTGRESQL_MIGRATION_SUMMARY.md](./database/POSTGRESQL_MIGRATION_SUMMARY.md)** - Database migration details
+### Common Tasks
+1. [Managing Career Interests](./guides/career_interests.md)
+2. [Importing HESA Data](./guides/hesa_data.md)
+3. [Profile Management](./guides/profile_management.md)
 
-### [Project Status & History](./)
-- **[PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current implementation status and summary
-- **[2_DAY_SPRINT_PLAN.md](./2_DAY_SPRINT_PLAN.md)** - Historical sprint plan (completed)
-- **[PROJECT_ASSESSMENT_AND_RECOMMENDATIONS.md](./PROJECT_ASSESSMENT_AND_RECOMMENDATIONS.md)** - Initial project assessment
+### Troubleshooting
+1. [Login Issues](./troubleshooting/login_errors.md)
+2. [Frontend Errors](./troubleshooting/frontend_errors.md)
+3. [Python Compatibility](./troubleshooting/python_compatibility.md)
 
-## 📖 Main Project README
+## 📖 Documentation Standards
 
-For project overview, features, and API documentation, see the main [README.md](../README.md) in the project root.
+### Module Documentation
+Each module documentation includes:
+- **Overview**: Purpose and location
+- **Architecture**: Design patterns and structure
+- **Key Components**: Main classes, methods, and functions
+- **API Reference**: Method signatures and parameters
+- **Usage Examples**: Code examples
+- **Related Modules**: Cross-references
+
+### Guide Documentation
+Each guide includes:
+- **Prerequisites**: What you need before starting
+- **Step-by-step Instructions**: Detailed walkthrough
+- **Troubleshooting**: Common issues and solutions
+- **Next Steps**: What to do after completion
+
+## 🔍 Finding Documentation
+
+### By Topic
+- **Setup**: See [setup/](./setup/)
+- **Database**: See [database/](./database/)
+- **API**: See [modules/app.md](./modules/app.md)
+- **Algorithms**: See [modules/recommendation_engine.md](./modules/recommendation_engine.md)
+- **Errors**: See [troubleshooting/](./troubleshooting/)
+
+### By Component
+- **Backend**: [modules/app.md](./modules/app.md), [modules/models.md](./modules/models.md)
+- **Frontend**: [setup/frontend_setup.md](./setup/frontend_setup.md)
+- **Database**: [database/](./database/)
+- **Recommendation Engine**: [modules/recommendation_engine.md](./modules/recommendation_engine.md)
+
+## 📝 Contributing to Documentation
+
+When adding new documentation:
+1. Place in the appropriate directory
+2. Follow existing documentation structure
+3. Include code examples where relevant
+4. Cross-reference related documentation
+5. Update this README if adding new sections
+
+## 🔗 External Resources
+
+- [Project README](../README.md) - Main project overview
+- [GitHub Repository](https://github.com/yap1co/projectsigma) - Source code
+- [Flask Documentation](https://flask.palletsprojects.com/) - Flask framework docs
+- [Next.js Documentation](https://nextjs.org/docs) - Next.js framework docs
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/) - PostgreSQL database docs

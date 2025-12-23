@@ -41,6 +41,22 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Docker Compose**: Multi-container orchestration
 - **MongoDB Express**: Database administration interface
 
+## 📚 Documentation
+
+**Comprehensive documentation is available in the [`docs/`](./docs/) directory.**
+
+### Quick Links
+- **[Documentation Index](./docs/README.md)** - Complete documentation structure
+- **[Module Documentation](./docs/modules/)** - Core system components (RecommendationEngine, API, Models)
+- **[Setup Guides](./docs/setup/)** - Installation and setup instructions
+- **[User Guides](./docs/guides/)** - How-to guides for system features
+- **[Troubleshooting](./docs/troubleshooting/)** - Solutions to common problems
+
+### Key Module Documentation
+- **[RecommendationEngine](./docs/modules/recommendation_engine.md)** - Core recommendation algorithm
+- **[Flask API](./docs/modules/app.md)** - Backend API endpoints and authentication
+- **[Data Models](./docs/modules/models.md)** - Student, Course, and University models
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -140,14 +156,25 @@ This project works on **Windows**, **macOS**, and **Linux**!
 
 ## 📚 Documentation
 
-All project documentation is organized in the [`docs/`](docs/) directory:
+**Comprehensive documentation is available in the [`docs/`](docs/) directory.**
 
-- **[Setup Guides](docs/setup/)** - Platform-specific setup instructions
+### Quick Links
+- **[Documentation Index](docs/README.md)** - Complete documentation structure
+- **[Module Documentation](docs/modules/)** - Core system components (RecommendationEngine, API, Models)
+- **[Setup Guides](docs/setup/)** - Installation and setup instructions
+- **[User Guides](docs/guides/)** - How-to guides for system features
+- **[Troubleshooting](docs/troubleshooting/)** - Solutions to common problems
+- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Quick reference guide
+
+### Key Module Documentation
+- **[RecommendationEngine](docs/modules/recommendation_engine.md)** - Core recommendation algorithm
+- **[Flask API](docs/modules/app.md)** - Backend API endpoints and authentication
+- **[Data Models](docs/modules/models.md)** - Student, Course, and University models
+
+### Additional Documentation
 - **[Database Documentation](docs/database/)** - PostgreSQL setup and migration guides
 - **[Design Documentation](docs/design/)** - System architecture and wireframes
 - **[Requirements](docs/requirements/)** - Project requirements and specifications
-
-See [docs/README.md](docs/README.md) for a complete documentation index.
 
 ## 🗄️ Database Schema
 
@@ -307,10 +334,11 @@ This project demonstrates advanced computer science concepts:
 
 For support and questions:
 
-1. Check the [documentation](docs/README.md)
-2. Review setup guides in [docs/setup/](docs/setup/)
-3. Check database guides in [docs/database/](docs/database/)
-4. Open an [issue](https://github.com/your-repo/issues)
+1. **[Check Documentation](docs/README.md)** - Complete documentation index
+2. **[Troubleshooting Guide](docs/troubleshooting/)** - Common issues and solutions
+3. **[Quick Reference](docs/QUICK_REFERENCE.md)** - Quick command and API reference
+4. **[Module Documentation](docs/modules/)** - Detailed component documentation
+5. Open an [issue](https://github.com/your-repo/issues) on GitHub
 
 ## 🗺️ Roadmap
 
