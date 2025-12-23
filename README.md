@@ -71,7 +71,7 @@ This project addresses the challenge faced by UK students when choosing universi
 
 4. **Set up PostgreSQL Database**
    ```bash
-   # See docs/database/QUICK_START_STEPS.md for detailed instructions
+   # See docs/database/QUICK_START_LOCAL.md for detailed instructions
    # Quick start:
    cd server/database
    python init_db.py

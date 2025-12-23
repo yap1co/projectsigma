@@ -17,13 +17,18 @@ Complete setup instructions for different platforms and use cases.
 ### [Database Documentation](./database/)
 PostgreSQL database setup, migration, and usage guides.
 
-- **[QUICK_START_STEPS.md](./database/QUICK_START_STEPS.md)** - Quick PostgreSQL setup steps
-- **[QUICK_START_LOCAL.md](./database/QUICK_START_LOCAL.md)** - Local PostgreSQL quick start
-- **[QUICK_START_DISCOVER_UNI.md](./database/QUICK_START_DISCOVER_UNI.md)** - Discover Uni data import quick start
+**Quick Start:**
+- **[QUICK_START_LOCAL.md](./database/QUICK_START_LOCAL.md)** - ⭐ **Start here** - Local PostgreSQL setup with service start instructions
+
+**Detailed Guides:**
 - **[LOCAL_POSTGRES_SETUP.md](./database/LOCAL_POSTGRES_SETUP.md)** - Detailed local PostgreSQL setup
+- **[QUICK_START_STEPS.md](./database/QUICK_START_STEPS.md)** - Quick PostgreSQL setup steps
 - **[DISCOVER_UNI_IMPORT_GUIDE.md](./database/DISCOVER_UNI_IMPORT_GUIDE.md)** - Complete Discover Uni import guide
+- **[QUICK_START_DISCOVER_UNI.md](./database/QUICK_START_DISCOVER_UNI.md)** - Discover Uni data import quick start
 - **[TRADITIONAL_DDL_GUIDE.md](./database/TRADITIONAL_DDL_GUIDE.md)** - Traditional DDL setup guide
 - **[USING_PSQL.md](./database/USING_PSQL.md)** - PostgreSQL command-line usage
+
+**Migration Documentation:**
 - **[POSTGRESQL_MIGRATION_SUMMARY.md](./database/POSTGRESQL_MIGRATION_SUMMARY.md)** - Migration from MongoDB to PostgreSQL
 - **[MIGRATIONS_QUICK_START.md](./database/MIGRATIONS_QUICK_START.md)** - Database migrations quick start
 - **[MIGRATIONS_STEP_BY_STEP.md](./database/MIGRATIONS_STEP_BY_STEP.md)** - Step-by-step migration guide
@@ -51,7 +56,7 @@ Project requirements and specifications.
 2. Or read **[COMPLETE_BEGINNER_SETUP_GUIDE.md](./setup/COMPLETE_BEGINNER_SETUP_GUIDE.md)** for detailed instructions
 
 ### For Database Setup
-1. **[QUICK_START_STEPS.md](./database/QUICK_START_STEPS.md)** - Quick PostgreSQL setup
+1. **[QUICK_START_LOCAL.md](./database/QUICK_START_LOCAL.md)** - ⭐ **Start here** - Quick PostgreSQL setup with service start instructions
 2. **[LOCAL_POSTGRES_SETUP.md](./database/LOCAL_POSTGRES_SETUP.md)** - Detailed local setup
 3. **[DISCOVER_UNI_IMPORT_GUIDE.md](./database/DISCOVER_UNI_IMPORT_GUIDE.md)** - Import Discover Uni data
 
@@ -59,6 +64,11 @@ Project requirements and specifications.
 1. **[HIGH_LEVEL_DESIGN.md](./design/HIGH_LEVEL_DESIGN.md)** - System architecture
 2. **[REQUIREMENTS.md](./requirements/REQUIREMENTS.md)** - Project requirements
 3. **[POSTGRESQL_MIGRATION_SUMMARY.md](./database/POSTGRESQL_MIGRATION_SUMMARY.md)** - Database migration details
+
+### [Project Status & History](./)
+- **[PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current implementation status and summary
+- **[2_DAY_SPRINT_PLAN.md](./2_DAY_SPRINT_PLAN.md)** - Historical sprint plan (completed)
+- **[PROJECT_ASSESSMENT_AND_RECOMMENDATIONS.md](./PROJECT_ASSESSMENT_AND_RECOMMENDATIONS.md)** - Initial project assessment
 
 ## 📖 Main Project README
 

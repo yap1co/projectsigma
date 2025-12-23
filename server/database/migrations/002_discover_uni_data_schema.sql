@@ -396,7 +396,7 @@ CREATE TABLE employment (
     study INTEGER,  -- Studying count
     unemp INTEGER,  -- Unemployed count
     prevworkstud INTEGER,  -- Previously working/studying count
-    both INTEGER,  -- Both working and studying count
+    "both" INTEGER,  -- Both working and studying count
     noavail INTEGER,  -- Not available count
     work INTEGER,  -- Working count
     PRIMARY KEY (pubukprn, kiscourseid, kismode)

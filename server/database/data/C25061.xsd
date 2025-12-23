@@ -1,0 +1,174 @@
+﻿<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="C25061DataTypes.xsd" />
+  <xs:element name="ACCDEPEND" type="ACCDEPENDCodeType" />
+  <xs:element name="ACCDEPENDURL" type="URLType" />
+  <xs:element name="ACCDEPENDURLW" type="URLType" />
+  <xs:element name="ACCOMURL" type="URLType" />
+  <xs:element name="ACCOMURLW" type="URLType" />
+  <xs:element name="ACCTYPE" type="ACCBODYType" />
+  <xs:element name="ASSURL" type="URLType" />
+  <xs:element name="ASSURLW" type="URLType" />
+  <xs:element name="CRSECSTURL" type="URLType" />
+  <xs:element name="CRSECSTURLW" type="URLType" />
+  <xs:element name="CRSEURL" type="URLType" />
+  <xs:element name="CRSEURLW" type="URLType" />
+  <xs:element name="DISTANCE" type="DISTANCECodeType" />
+  <xs:element name="EMPLOYURL" type="URLType" />
+  <xs:element name="EMPLOYURLW" type="URLType" />
+  <xs:element name="FOUNDATION" type="FOUNDATIONCodeType" />
+  <xs:element name="HECOS" type="HECOSCodeType" />
+  <xs:element name="HESACOURSEID" type="HESACOURSEIDType" />
+  <xs:element name="HESAYEAR" type="HESAYEARCodeType" />
+  <xs:element name="HONOURS" type="HONOURSCodeType" />
+  <xs:element name="ILRAIMID" type="ILRAIMIDType" />
+  <xs:element name="ILRYEAR" type="ILRYEARCodeType" />
+  <xs:element name="KISAIM" type="KISAIMType" />
+  <xs:element name="KISCOURSEID" type="KISCOURSEIDType" />
+  <xs:element name="KISMODE" type="KISMODECodeType" />
+  <xs:element name="LATITUDE" type="LOCType" />
+  <xs:element name="LOCCHNGE" type="LOCCHNGECodeType" />
+  <xs:element name="LOCID" type="LOCIDType" />
+  <xs:element name="LOCNAME" type="LOCNAMEType" />
+  <xs:element name="LOCNAMEW" type="LOCNAMEType" />
+  <xs:element name="LOCUKPRN" type="UKPRNType" />
+  <xs:element name="LONGITUDE" type="LOCType" />
+  <xs:element name="LTURL" type="URLType" />
+  <xs:element name="LTURLW" type="URLType" />
+  <xs:element name="NHS" type="NHSCodeType" />
+  <xs:element name="NUMSTAGE" type="NUMSTAGECodeType" />
+  <xs:element name="OTHERINST" type="UKPRNType" />
+  <xs:element name="RECID" type="RECIDCodeType" />
+  <xs:element name="REGUKPRN" type="UKPRNType" />
+  <xs:element name="SANDWICH" type="SANDWICHCodeType" />
+  <xs:element name="SUPPORTURL" type="URLType" />
+  <xs:element name="SUPPORTURLW" type="URLType" />
+  <xs:element name="SUURL" type="URLType" />
+  <xs:element name="SUURLW" type="URLType" />
+  <xs:element name="TEACHUKPRN" type="UKPRNType" />
+  <xs:element name="TITLE" type="TITLEType" />
+  <xs:element name="TITLEW" type="TITLEType" />
+  <xs:element name="TTCID" type="TTCIDCodeType" />
+  <xs:element name="UCASCOURSEID" type="UCASCOURSEIDType" />
+  <xs:element name="UCASPROGID" type="UCASPROGIDType" />
+  <xs:element name="UKPRN" type="UKPRNType" />
+  <xs:element name="UKPRNAPPLY" type="UKPRNType" />
+  <xs:element name="YEARABROAD" type="YEARABROADCodeType" />
+  <xs:element name="KISRecord">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Institution" minOccurs="1" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Institution">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="UKPRN" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="OTHERINST" minOccurs="0" maxOccurs="100" />
+        <xs:element ref="RECID" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="SUURL" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="SUURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="KISCourse" minOccurs="1" maxOccurs="unbounded" />
+        <xs:element ref="Location" minOccurs="0" maxOccurs="100" />
+      </xs:sequence>
+    </xs:complexType>
+    <xs:unique name="uniqueKISCourse_KISCOURSEID">
+      <xs:selector xpath="KISCourse" />
+      <xs:field xpath="KISCOURSEID" />
+    </xs:unique>
+  </xs:element>
+  <xs:element name="KISCourse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="KISCOURSEID" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ASSURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ASSURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="CRSECSTURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="CRSECSTURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="CRSEURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="CRSEURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="DISTANCE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="EMPLOYURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="EMPLOYURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="FOUNDATION" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="HECOS" minOccurs="0" maxOccurs="5" />
+        <xs:element ref="HONOURS" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="KISAIM" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="KISMODE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="LOCCHNGE" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="LTURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="LTURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="NHS" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="NUMSTAGE" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="SANDWICH" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="SUPPORTURL" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="SUPPORTURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="TEACHUKPRN" minOccurs="0" maxOccurs="50" />
+        <xs:element ref="TITLE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="TITLEW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="TTCID" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="UCASPROGID" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="UKPRNAPPLY" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="YEARABROAD" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="Accreditation" minOccurs="0" maxOccurs="10" />
+        <xs:element ref="CourseLocation" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="HESACourse" minOccurs="0" maxOccurs="500" />
+        <xs:element ref="ILRAims" minOccurs="0" maxOccurs="25" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Accreditation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ACCTYPE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ACCDEPEND" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ACCDEPENDURL" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="ACCDEPENDURLW" minOccurs="0" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CourseLocation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="LOCID" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="UCASCOURSEID" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="HESACourse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="HESACOURSEID" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="HESAYEAR" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="REGUKPRN" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="TEACHUKPRN" minOccurs="0" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ILRAims">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ILRAIMID" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ILRYEAR" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="REGUKPRN" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="TEACHUKPRN" minOccurs="0" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Location">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="LOCID" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="ACCOMURL" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="ACCOMURLW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="LATITUDE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="LOCNAME" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="LOCNAMEW" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="LOCUKPRN" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="LONGITUDE" minOccurs="1" maxOccurs="1" />
+        <xs:element ref="SUURL" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="SUURLW" minOccurs="0" maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

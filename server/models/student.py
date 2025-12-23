@@ -1,13 +1,15 @@
 """
 Student model for the university recommendation system
+Demonstrates OOP inheritance from BaseModel
 """
 
 from datetime import datetime
 from typing import Dict, List, Optional
 from dataclasses import dataclass
+from .base_model import BaseModel
 
 @dataclass
-class Student:
+class Student(BaseModel):
     """
     Student model representing a user of the recommendation system
     """
@@ -23,6 +25,9 @@ class Student:
     lastLogin: Optional[datetime] = None
     
     def __post_init__(self):
+        # Initialize base class
+        super().__init__(self.createdAt)
+        
         if self.aLevelSubjects is None:
             self.aLevelSubjects = []
         if self.predictedGrades is None:
@@ -31,6 +36,7 @@ class Student:
             self.preferences = {}
         if self.createdAt is None:
             self.createdAt = datetime.now()
+            self.created_at = self.createdAt
     
     def to_dict(self) -> Dict:
         """Convert student to dictionary for database storage"""

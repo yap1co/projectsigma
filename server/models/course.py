@@ -1,10 +1,12 @@
 """
 Course model for the university recommendation system
+Demonstrates OOP inheritance from BaseModel
 """
 
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from .base_model import BaseModel
 
 @dataclass
 class EntryRequirements:
@@ -39,7 +41,7 @@ class Employability:
     further_study_rate: Optional[float] = None
 
 @dataclass
-class Course:
+class Course(BaseModel):
     """
     Course model representing a university course
     """
@@ -58,8 +60,12 @@ class Course:
     updatedAt: datetime = None
     
     def __post_init__(self):
+        # Initialize base class
+        super().__init__(self.createdAt)
+        
         if self.createdAt is None:
             self.createdAt = datetime.now()
+            self.created_at = self.createdAt
         if self.updatedAt is None:
             self.updatedAt = datetime.now()
     

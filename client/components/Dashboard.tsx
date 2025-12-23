@@ -31,6 +31,12 @@ export default function Dashboard() {
     }
   }
 
+  const handleNavigateToProfile = () => {
+    setCurrentStep('profile')
+    // Scroll to top of profile section
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const isProfileComplete = user && 
     user.aLevelSubjects.length > 0 && 
     Object.keys(user.predictedGrades).length > 0 && 
@@ -38,7 +44,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onNavigateToProfile={handleNavigateToProfile} />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
@@ -48,7 +54,7 @@ export default function Dashboard() {
           </h1>
           <p className="mt-2 text-gray-600">
             {isProfileComplete 
-              ? "Your profile is complete. Ready to find your perfect course?"
+              ? "Your profile is complete. You can edit your A-level subjects, predicted grades, and preferences below, or get new recommendations."
               : "Let's set up your profile to get personalized recommendations."
             }
           </p>

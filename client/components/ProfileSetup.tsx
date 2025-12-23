@@ -55,7 +55,7 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormData>({
     defaultValues: {
       aLevelSubjects: user?.aLevelSubjects || [],
       predictedGrades: user?.predictedGrades || {},
@@ -68,6 +68,23 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
       }
     }
   })
+
+  // Update form when user data changes
+  useEffect(() => {
+    if (user) {
+      reset({
+        aLevelSubjects: user.aLevelSubjects || [],
+        predictedGrades: user.predictedGrades || {},
+        preferences: user.preferences || {
+          preferredRegion: '',
+          maxBudget: 9250,
+          preferredUniSize: '',
+          preferredCourseLength: '3 years',
+          careerInterests: []
+        }
+      })
+    }
+  }, [user, reset])
 
   const watchedSubjects = watch('aLevelSubjects')
   const watchedGrades = watch('predictedGrades')
@@ -90,8 +107,11 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
 
       toast.success('Profile updated successfully!')
       
-      // Generate recommendations
-      onComplete(data.preferences)
+      // Only auto-generate recommendations if this is the first time setup
+      // Otherwise, let user click "Get Recommendations" button
+      if (!isComplete) {
+        onComplete(data.preferences)
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to update profile')
     } finally {
@@ -116,37 +136,80 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
     })
   }
 
-  if (isComplete) {
-    return (
-      <div className="card">
-        <div className="card-body text-center">
-          <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Profile Complete!</h3>
-          <p className="text-gray-600 mb-4">Your profile is set up and ready for recommendations.</p>
-          <button
-            onClick={() => onComplete(user?.preferences || {})}
-            className="btn-primary"
-          >
-            Get My Recommendations
-          </button>
-        </div>
-      </div>
-    )
+  // Autosave function - saves current form data when navigating between steps
+  const autosaveProfile = async () => {
+    try {
+      const formData = watch()
+      // Only save if there's actual data
+      if (formData.aLevelSubjects && formData.aLevelSubjects.length > 0) {
+        await api.put('/student/profile', {
+          aLevelSubjects: formData.aLevelSubjects,
+          predictedGrades: formData.predictedGrades || {},
+          preferences: formData.preferences || {
+            preferredRegion: '',
+            maxBudget: 9250,
+            preferredUniSize: '',
+            preferredCourseLength: '3 years',
+            careerInterests: []
+          }
+        })
+
+        updateUser({
+          aLevelSubjects: formData.aLevelSubjects,
+          predictedGrades: formData.predictedGrades || {},
+          preferences: formData.preferences || {
+            preferredRegion: '',
+            maxBudget: 9250,
+            preferredUniSize: '',
+            preferredCourseLength: '3 years',
+            careerInterests: []
+          }
+        })
+      }
+    } catch (error) {
+      // Silently fail autosave - don't interrupt user flow
+      console.error('Autosave failed:', error)
+    }
   }
+
+  // Handle step navigation with autosave
+  const handleNextStep = async () => {
+    await autosaveProfile()
+    setStep(step + 1)
+  }
+
+  const handlePreviousStep = async () => {
+    await autosaveProfile()
+    setStep(step - 1)
+  }
+
+  // Always show the editable form, but add a note if profile is complete
+  const showCompleteMessage = isComplete && step === 3
 
   return (
     <div className="card">
       <div className="card-header">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Set Up Your Profile ({step}/3)
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Help us understand your academic profile and preferences to provide better recommendations.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isComplete ? 'Edit Your Profile' : 'Set Up Your Profile'} ({step}/3)
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              {isComplete 
+                ? 'Update your A-level subjects, predicted grades, and preferences.'
+                : 'Help us understand your academic profile and preferences to provide better recommendations.'
+              }
+            </p>
+          </div>
+          {isComplete && (
+            <div className="flex items-center text-success-600">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm font-medium">Profile Complete</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="card-body">
@@ -305,7 +368,7 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
           {step > 1 ? (
             <button
               type="button"
-              onClick={() => setStep(step - 1)}
+              onClick={handlePreviousStep}
               className="btn-secondary"
             >
               Previous
@@ -317,19 +380,30 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
           {step < 3 ? (
             <button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={handleNextStep}
               className="btn-primary"
             >
               Next
             </button>
           ) : (
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary"
-            >
-              {loading ? 'Saving...' : 'Complete Setup'}
-            </button>
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+              >
+                {loading ? 'Saving...' : isComplete ? 'Update Profile' : 'Complete Setup'}
+              </button>
+              {isComplete && (
+                <button
+                  type="button"
+                  onClick={() => onComplete(user?.preferences || {})}
+                  className="btn-secondary"
+                >
+                  Get Recommendations
+                </button>
+              )}
+            </div>
           )}
         </div>
       </form>

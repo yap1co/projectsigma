@@ -3,9 +3,23 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
+import { useRouter } from 'next/navigation'
 
-export default function Header() {
+interface HeaderProps {
+  onNavigateToProfile?: () => void
+}
+
+export default function Header({ onNavigateToProfile }: HeaderProps) {
   const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleProfileClick = () => {
+    if (onNavigateToProfile) {
+      onNavigateToProfile()
+    } else {
+      router.push('/')
+    }
+  }
 
   return (
     <header className="bg-white shadow">
@@ -49,26 +63,26 @@ export default function Header() {
                 <Menu.Items className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <Menu.Item>
                     {({ active }) => (
-                      <a
-                        href="#"
+                      <button
+                        onClick={handleProfileClick}
                         className={`${
                           active ? 'bg-gray-100' : ''
-                        } block px-4 py-2 text-sm text-gray-700`}
+                        } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                       >
                         Your Profile
-                      </a>
+                      </button>
                     )}
                   </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
-                      <a
-                        href="#"
+                      <button
+                        onClick={() => router.push('/settings')}
                         className={`${
                           active ? 'bg-gray-100' : ''
-                        } block px-4 py-2 text-sm text-gray-700`}
+                        } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                       >
                         Settings
-                      </a>
+                      </button>
                     )}
                   </Menu.Item>
                   <Menu.Item>

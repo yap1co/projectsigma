@@ -13,6 +13,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import logging
 
+# Add parent directory to path to import database_helper
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from database_helper import get_db_connection as get_db_connection_helper
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -20,23 +25,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Database configuration
-DB_NAME = os.getenv('POSTGRES_DB', 'university_recommender')
-DB_USER = os.getenv('POSTGRES_USER', 'postgres')
-DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'postgres')
-DB_HOST = os.getenv('POSTGRES_HOST', 'localhost')
-DB_PORT = os.getenv('POSTGRES_PORT', '5432')
-
-
+# Use database_helper for connection (loads from .env)
 def get_db_connection():
-    """Create database connection"""
-    return psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
+    """Create database connection using database_helper"""
+    return get_db_connection_helper()
 
 
 def normalize_value(value: str) -> Optional[str]:
@@ -148,24 +140,27 @@ def import_lookup_tables(cursor, data_dir: Path):
     logger.info("\n[3/3] Importing LOCATION.csv...")
     rows = read_csv_file(data_dir / 'LOCATION.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('LOCID')),
-                normalize_value(row.get('LOCNAME')),
-                normalize_value(row.get('LOCNAMEW')),
-                normalize_numeric(row.get('LATITUDE')),
-                normalize_numeric(row.get('LONGITUDE')),
-                normalize_value(row.get('ACCOMURL')),
-                normalize_value(row.get('ACCOMURLW')),
-                normalize_value(row.get('LOCUKPRN')),
-                normalize_value(row.get('LOCCOUNTRY')),
-                normalize_value(row.get('SUURL')),
-                normalize_value(row.get('SUURLW'))
-            )
-            for row in rows
-            if normalize_value(row.get('UKPRN')) and normalize_value(row.get('LOCID'))
-        ]
+        data = []
+        for row in rows:
+            ukprn = normalize_value(row.get('UKPRN'))
+            locid = normalize_value(row.get('LOCID'))
+            if ukprn and locid:
+                # Truncate LOCID to 20 characters to match schema
+                locid = locid[:20] if len(locid) > 20 else locid
+                data.append((
+                    ukprn,
+                    locid,
+                    normalize_value(row.get('LOCNAME')),
+                    normalize_value(row.get('LOCNAMEW')),
+                    normalize_numeric(row.get('LATITUDE')),
+                    normalize_numeric(row.get('LONGITUDE')),
+                    normalize_value(row.get('ACCOMURL')),
+                    normalize_value(row.get('ACCOMURLW')),
+                    normalize_value(row.get('LOCUKPRN')),
+                    normalize_value(row.get('LOCCOUNTRY')),
+                    normalize_value(row.get('SUURL')),
+                    normalize_value(row.get('SUURLW'))
+                ))
         if data:
             execute_values(
                 cursor,
@@ -200,26 +195,29 @@ def import_core_entities(cursor, data_dir: Path):
     logger.info("\n[1/2] Importing INSTITUTION.csv...")
     rows = read_csv_file(data_dir / 'INSTITUTION.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('LEGAL_NAME')),
-                normalize_value(row.get('FIRST_TRADING_NAME')),
-                normalize_value(row.get('OTHER_NAMES')),
-                normalize_value(row.get('PROVADDRESS')),
-                normalize_value(row.get('PROVTEL')),
-                normalize_value(row.get('PROVURL')),
-                normalize_value(row.get('COUNTRY')),
-                normalize_value(row.get('PUBUKPRNCOUNTRY')),
-                normalize_value(row.get('QAA_Report_Type')),
-                normalize_value(row.get('QAA_URL')),
-                normalize_value(row.get('SUURL')),
-                normalize_value(row.get('SUURLW'))
-            )
-            for row in rows
-            if normalize_value(row.get('PUBUKPRN'))
-        ]
+        # Deduplicate by PUBUKPRN (keep first occurrence)
+        seen_pubukprn = set()
+        data = []
+        for row in rows:
+            pubukprn = normalize_value(row.get('PUBUKPRN'))
+            if pubukprn and pubukprn not in seen_pubukprn:
+                seen_pubukprn.add(pubukprn)
+                data.append((
+                    pubukprn,
+                    normalize_value(row.get('UKPRN')),
+                    normalize_value(row.get('LEGAL_NAME')),
+                    normalize_value(row.get('FIRST_TRADING_NAME')),
+                    normalize_value(row.get('OTHER_NAMES')),
+                    normalize_value(row.get('PROVADDRESS')),
+                    normalize_value(row.get('PROVTEL')),
+                    normalize_value(row.get('PROVURL')),
+                    normalize_value(row.get('COUNTRY')),
+                    normalize_value(row.get('PUBUKPRNCOUNTRY')),
+                    normalize_value(row.get('QAA_Report_Type')),
+                    normalize_value(row.get('QAA_URL')),
+                    normalize_value(row.get('SUURL')),
+                    normalize_value(row.get('SUURLW'))
+                ))
         if data:
             execute_values(
                 cursor,
@@ -409,6 +407,9 @@ def import_course_related_entities(cursor, data_dir: Path):
             locid = normalize_value(row.get('LOCID'))
             
             if pubukprn and kiscourseid and kismode:
+                # Truncate LOCID to 20 characters to match schema
+                if locid and len(locid) > 20:
+                    locid = locid[:20]
                 data.append((
                     pubukprn,
                     normalize_value(row.get('UKPRN')),
@@ -434,20 +435,25 @@ def import_course_related_entities(cursor, data_dir: Path):
     logger.info("\n[3/4] Importing UCASCOURSEID.csv...")
     rows = read_csv_file(data_dir / 'UCASCOURSEID.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('LOCID')),
-                normalize_value(row.get('UCASCOURSEID'))
-            )
-            for row in rows
-            if (normalize_value(row.get('PUBUKPRN')) and 
-                normalize_value(row.get('KISCOURSEID')) and 
-                normalize_value(row.get('KISMODE')))
-        ]
+        data = []
+        for row in rows:
+            pubukprn = normalize_value(row.get('PUBUKPRN'))
+            kiscourseid = normalize_value(row.get('KISCOURSEID'))
+            kismode = normalize_value(row.get('KISMODE'))
+            locid = normalize_value(row.get('LOCID'))
+            
+            if pubukprn and kiscourseid and kismode:
+                # Truncate LOCID to 20 characters to match schema
+                if locid and len(locid) > 20:
+                    locid = locid[:20]
+                data.append((
+                    pubukprn,
+                    normalize_value(row.get('UKPRN')),
+                    kiscourseid,
+                    kismode,
+                    locid,
+                    normalize_value(row.get('UCASCOURSEID'))
+                ))
         if data:
             execute_batch(
                 cursor,
@@ -510,14 +516,23 @@ def import_student_outcomes_entities(cursor, data_dir: Path):
             kismode = normalize_value(row.get('KISMODE'))
             
             if pubukprn and kiscourseid and kismode:
+                # Truncate VARCHAR(1) fields to 1 character
+                entunavailreason = normalize_value(row.get('ENTUNAVAILREASON'))
+                if entunavailreason and len(entunavailreason) > 1:
+                    entunavailreason = entunavailreason[:1]
+                
+                entagg = normalize_value(row.get('ENTAGG'))
+                if entagg and len(entagg) > 1:
+                    entagg = entagg[:1]
+                
                 data.append((
                     pubukprn,
                     normalize_value(row.get('UKPRN')),
                     kiscourseid,
                     kismode,
-                    normalize_value(row.get('ENTUNAVAILREASON')),
+                    entunavailreason,
                     normalize_int(row.get('ENTPOP')),
-                    normalize_value(row.get('ENTAGG')),
+                    entagg,
                     normalize_value(row.get('ENTAGGYEAR')),
                     normalize_value(row.get('ENTYEAR1')),
                     normalize_value(row.get('ENTYEAR2')),
@@ -574,14 +589,23 @@ def import_student_outcomes_entities(cursor, data_dir: Path):
             kismode = normalize_value(row.get('KISMODE'))
             
             if pubukprn and kiscourseid and kismode:
+                # Truncate VARCHAR(1) fields to 1 character
+                tarunavailreason = normalize_value(row.get('TARUNAVAILREASON'))
+                if tarunavailreason and len(tarunavailreason) > 1:
+                    tarunavailreason = tarunavailreason[:1]
+                
+                taragg = normalize_value(row.get('TARAGG'))
+                if taragg and len(taragg) > 1:
+                    taragg = taragg[:1]
+                
                 data.append((
                     pubukprn,
                     normalize_value(row.get('UKPRN')),
                     kiscourseid,
                     kismode,
-                    normalize_value(row.get('TARUNAVAILREASON')),
+                    tarunavailreason,
                     normalize_int(row.get('TARPOP')),
-                    normalize_value(row.get('TARAGG')),
+                    taragg,
                     normalize_value(row.get('TARAGGYEAR')),
                     normalize_value(row.get('TARYEAR1')),
                     normalize_value(row.get('TARYEAR2')),
@@ -611,7 +635,7 @@ def import_student_outcomes_entities(cursor, data_dir: Path):
                                   t001, t048, t064, t080, t096, t112, t128, t144, t160,
                                   t176, t192, t208, t224, t240)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                       %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                       %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                 SET ukprn = EXCLUDED.ukprn,
                     tarunavailreason = EXCLUDED.tarunavailreason,
@@ -659,21 +683,26 @@ def import_employment_entities(cursor, data_dir: Path):
             kismode = normalize_value(row.get('KISMODE'))
             
             if pubukprn and kiscourseid and kismode:
+                # Truncate VARCHAR(1) fields
+                empunavailreason = normalize_value(row.get('EMPUNAVAILREASON'))
+                if empunavailreason and len(empunavailreason) > 1:
+                    empunavailreason = empunavailreason[:1]
+                
+                empagg = normalize_value(row.get('EMPAGG'))
+                if empagg and len(empagg) > 1:
+                    empagg = empagg[:1]
+                
                 data.append((
                     pubukprn,
                     normalize_value(row.get('UKPRN')),
                     kiscourseid,
                     kismode,
-                    normalize_value(row.get('EMPUNAVAILREASON')),
+                    empunavailreason,
                     normalize_int(row.get('EMPPOP')),
-                    normalize_value(row.get('EMPAGG')),
-                    normalize_value(row.get('EMPAGGYEAR')),
-                    normalize_value(row.get('EMPYEAR1')),
-                    normalize_value(row.get('EMPYEAR2')),
                     normalize_int(row.get('EMPRESPONSE')),
                     normalize_int(row.get('EMPSAMPLE')),
                     normalize_int(row.get('EMPRESP_RATE')),
-                    normalize_value(row.get('EMPAGG')),
+                    empagg,
                     normalize_value(row.get('EMPAGGYEAR')),
                     normalize_value(row.get('EMPYEAR1')),
                     normalize_value(row.get('EMPYEAR2')),
@@ -694,7 +723,7 @@ def import_employment_entities(cursor, data_dir: Path):
                 INSERT INTO employment (pubukprn, ukprn, kiscourseid, kismode, empunavailreason,
                                       emppop, empresponse, empsample, empresp_rate, empagg,
                                       empaggyear, empyear1, empyear2, empsbj,
-                                      workstudy, study, unemp, prevworkstud, both, noavail, work)
+                                      workstudy, study, unemp, prevworkstud, "both", noavail, work)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                 SET ukprn = EXCLUDED.ukprn,
@@ -712,7 +741,7 @@ def import_employment_entities(cursor, data_dir: Path):
                     study = EXCLUDED.study,
                     unemp = EXCLUDED.unemp,
                     prevworkstud = EXCLUDED.prevworkstud,
-                    both = EXCLUDED.both,
+                    "both" = EXCLUDED."both",
                     noavail = EXCLUDED.noavail,
                     work = EXCLUDED.work
                 """,
@@ -1099,7 +1128,7 @@ def main():
     logger.info("DISCOVER UNI CSV DATA IMPORT")
     logger.info("="*70)
     logger.info(f"Data directory: {data_dir.absolute()}")
-    logger.info(f"Database: {DB_NAME} @ {DB_HOST}:{DB_PORT}")
+    # Database info will be logged by connection
     
     try:
         conn = get_db_connection()

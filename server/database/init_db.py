@@ -8,12 +8,23 @@ import sys
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Fix Windows console encoding issues
 if sys.platform == 'win32':
     import codecs
     sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
     sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
+# Load environment variables from .env file in current directory
+env_path = Path(__file__).parent / '.env'
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    # Also try loading from parent directory (server/.env)
+    parent_env = Path(__file__).parent.parent / '.env'
+    if parent_env.exists():
+        load_dotenv(parent_env)
 
 # Database configuration
 DB_NAME = os.getenv('POSTGRES_DB', 'university_recommender')

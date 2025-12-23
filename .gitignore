@@ -57,6 +57,11 @@ build/
 # Data files (large CSVs - uncomment if you don't want to track them)
 # data/*.csv
 # Large XML files (exceed GitHub 100MB limit)
-data/*.xml
-data/kis20251111121552.xml
+**/data/*.xml
+server/database/data/kis20251111121552.xml
+**/*.xml
+
+# Next.js build output
+client/.next/
+client/out/
 
