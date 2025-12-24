@@ -55,6 +55,42 @@ This script will:
 2. Run all migration files in order
 3. Track applied migrations in `schema_migrations` table
 
+## Data Import
+
+**⚠️ IMPORTANT:** After running `init_db.py`, you must import data in the correct order.
+
+### Quick Reference
+
+See **[IMPORT_ORDER.md](./IMPORT_ORDER.md)** for a quick step-by-step guide.
+
+### Detailed Guide
+
+See **[data/README.md](./data/README.md)** for comprehensive import instructions.
+
+### Import Sequence
+
+1. **Initialize schema** (already done):
+   ```bash
+   python init_db.py
+   ```
+
+2. **Import HESA CSV data**:
+   ```bash
+   python import_discover_uni_csv.py
+   ```
+
+3. **Map HESA data to main tables** (REQUIRED):
+   ```bash
+   python map_hesa_to_main_tables.py
+   ```
+
+4. **(Optional) Import custom CSV files**:
+   ```bash
+   python import_csv.py
+   ```
+
+**Note:** Step 3 is **critical** - without it, the recommendation engine will have no data to work with!
+
 ### Option 2: Manual Setup
 
 1. Create database:
