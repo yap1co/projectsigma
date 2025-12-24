@@ -1,155 +1,128 @@
-# Complete Beginner Setup Guide - Project Sigma
+# Complete Beginner Setup Guide - From Scratch
 
-**Welcome!** This guide will walk you through setting up Project Sigma from scratch, even if you've never used GitHub before. Follow each step carefully.
+**Welcome!** This guide will walk you through setting up the University Course Recommender project from scratch, even if you've never used these tools before. Follow each step carefully.
 
 ## 📋 Table of Contents
 
-1. [What You'll Need](#what-youll-need)
-2. [Understanding GitHub Basics](#understanding-github-basics)
-3. [Step 1: Install Prerequisites](#step-1-install-prerequisites)
-4. [Step 2: Get the Project from GitHub](#step-2-get-the-project-from-github)
-5. [Step 3: Set Up Python Environment](#step-3-set-up-python-environment)
-6. [Step 4: Set Up Node.js and Frontend](#step-4-set-up-nodejs-and-frontend)
-7. [Step 5: Set Up PostgreSQL Database](#step-5-set-up-postgresql-database)
-8. [Step 6: Configure Environment Variables](#step-6-configure-environment-variables)
-9. [Step 7: Initialize Database Schema](#step-7-initialize-database-schema)
-10. [Step 8: Run the Application](#step-8-run-the-application)
-11. [Troubleshooting](#troubleshooting)
-12. [Next Steps](#next-steps)
+1. [Prerequisites](#prerequisites)
+2. [Step 1: Install Required Software](#step-1-install-required-software)
+3. [Step 2: Clone the Project](#step-2-clone-the-project)
+4. [Step 3: Set Up Python Backend](#step-3-set-up-python-backend)
+5. [Step 4: Set Up Node.js Frontend](#step-4-set-up-nodejs-frontend)
+6. [Step 5: Set Up PostgreSQL Database](#step-5-set-up-postgresql-database)
+7. [Step 6: Configure Environment Variables](#step-6-configure-environment-variables)
+8. [Step 7: Initialize Database Schema](#step-7-initialize-database-schema)
+9. [Step 8: Run Database Migrations](#step-8-run-database-migrations)
+10. [Step 9: Start the Application](#step-9-start-the-application)
+11. [Step 10: Verify Everything Works](#step-10-verify-everything-works)
+12. [Troubleshooting](#troubleshooting)
+13. [Next Steps](#next-steps)
 
 ---
 
-## What You'll Need
+## Prerequisites
 
-Before starting, make sure you have:
+Before starting, ensure you have:
 
-- ✅ A computer running **Windows 10/11** (this guide is for Windows)
-- ✅ Administrator access (for installing software)
-- ✅ Internet connection
-- ✅ About 2-3 hours for initial setup
-- ✅ Basic computer skills (opening files, typing commands)
-
----
-
-## Understanding GitHub Basics
-
-### What is GitHub?
-
-**GitHub** is a website where developers store their code. Think of it like Google Drive, but specifically for code projects.
-
-- **Repository (Repo)**: A project folder stored on GitHub
-- **Clone**: Downloading a repository to your computer
-- **Commit**: Saving changes to the code
-- **Push**: Uploading your changes to GitHub
-- **Pull**: Downloading the latest changes from GitHub
-
-### Why We Use GitHub
-
-- ✅ Keep track of code changes
-- ✅ Work with others on the same project
-- ✅ Access your code from any computer
-- ✅ Backup your work
-
-**Don't worry!** For this setup, you only need to **download** the code. You don't need to upload anything yet.
+- ✅ **Windows 10/11** (or macOS/Linux - see platform-specific guides)
+- ✅ **Administrator access** (for installing software)
+- ✅ **Internet connection**
+- ✅ **2-3 hours** for initial setup
+- ✅ **Basic computer skills** (opening files, typing commands)
 
 ---
 
-## Step 1: Install Prerequisites
+## Step 1: Install Required Software
 
-You need to install several tools. Install them in this order:
+Install these tools in order:
 
-### 1.1 Install Git (Version Control)
+### 1.1 Install Git
 
 **What it does:** Git lets you download code from GitHub.
 
 1. **Download Git:**
    - Go to: https://git-scm.com/download/win
    - Click "Download for Windows"
-   - File will be named something like: `Git-2.xx.x-64-bit.exe`
+   - File: `Git-2.xx.x-64-bit.exe`
 
 2. **Install Git:**
    - Double-click the downloaded file
-   - Click "Next" through all screens (default options are fine)
+   - Click "Next" through all screens
    - **Important:** Choose "Git from the command line and also from 3rd-party software"
    - Click "Install"
-   - Wait for installation to complete
+   - Wait for completion
 
 3. **Verify Installation:**
-   - Open **PowerShell** (Press `Win + X`, then click "Windows PowerShell" or "Terminal")
-   - Type: `git --version`
-   - You should see: `git version 2.xx.x`
-   - ✅ If you see a version number, Git is installed!
+   ```powershell
+   git --version
+   ```
+   Expected: `git version 2.xx.x`
 
 **Troubleshooting:**
-- If you see "command not found", restart your computer and try again
+- If "command not found": Restart computer and try again
 - Make sure you selected "Git from the command line" during installation
 
-### 1.2 Install Python
+### 1.2 Install Python 3.11+
 
 **What it does:** Python runs the backend server code.
 
 1. **Download Python:**
    - Go to: https://www.python.org/downloads/
-   - Click the big yellow "Download Python 3.xx" button
-   - File will be named something like: `python-3.11.x-amd64.exe`
+   - Click "Download Python 3.11.x" (or latest 3.11+)
+   - File: `python-3.11.x-amd64.exe`
 
 2. **Install Python:**
    - Double-click the downloaded file
-   - ⚠️ **IMPORTANT:** Check the box "Add Python to PATH" at the bottom!
+   - ⚠️ **CRITICAL:** Check "Add Python to PATH" at the bottom!
    - Click "Install Now"
-   - Wait for installation to complete
+   - Wait for completion
    - Click "Close"
 
 3. **Verify Installation:**
-   - Open a **new** PowerShell window (close and reopen)
-   - Type: `python --version`
-   - You should see: `Python 3.11.x` (or similar)
-   - ✅ If you see a version number, Python is installed!
+   ```powershell
+   python --version
+   ```
+   Expected: `Python 3.11.x`
 
 **Troubleshooting:**
-- If you see "command not found", you didn't check "Add Python to PATH"
-  - Solution: Reinstall Python and make sure to check that box
+- If "command not found": You didn't check "Add Python to PATH"
+  - Solution: Reinstall Python and check that box
 - Or manually add Python to PATH (advanced)
 
-### 1.3 Install Node.js
+### 1.3 Install Node.js 18+
 
 **What it does:** Node.js runs the frontend (website) code.
 
 1. **Download Node.js:**
    - Go to: https://nodejs.org/
-   - Click the green "LTS" button (Long Term Support version)
-   - File will be named something like: `node-v20.x.x-x64.msi`
+   - Click the green "LTS" button (Long Term Support)
+   - File: `node-v20.x.x-x64.msi`
 
 2. **Install Node.js:**
    - Double-click the downloaded file
-   - Click "Next" through all screens (default options are fine)
+   - Click "Next" through all screens (defaults are fine)
    - Click "Install"
-   - Wait for installation to complete
+   - Wait for completion
    - Click "Finish"
 
 3. **Verify Installation:**
-   - Open a **new** PowerShell window
-   - Type: `node --version`
-   - You should see: `v20.x.x` (or similar)
-   - Type: `npm --version`
-   - You should see: `10.x.x` (or similar)
-   - ✅ If you see version numbers, Node.js is installed!
+   ```powershell
+   node --version
+   npm --version
+   ```
+   Expected: `v20.x.x` and `10.x.x`
 
 **Troubleshooting:**
-- If commands don't work, restart your computer
+- If commands don't work: Restart your computer
 
-### 1.4 Install PostgreSQL
+### 1.4 Install PostgreSQL 15+
 
 **What it does:** PostgreSQL stores all the data (courses, students, etc.).
-
-📚 **Detailed instructions:** See `server/database/LOCAL_POSTGRES_SETUP.md`
-
-**Quick Steps:**
 
 1. **Download PostgreSQL:**
    - Go to: https://www.postgresql.org/download/windows/
    - Click "Download the installer"
-   - Download PostgreSQL 15.x
+   - Download PostgreSQL 15.x (or latest)
 
 2. **Install PostgreSQL:**
    - Run the installer
@@ -159,18 +132,30 @@ You need to install several tools. Install them in this order:
    - Complete the installation
 
 3. **Verify Installation:**
-   - Open PowerShell
-   - Type: `psql --version`
-   - You should see: `psql (PostgreSQL) 15.x`
-   - ✅ If you see a version, PostgreSQL is installed!
+   ```powershell
+   psql --version
+   ```
+   Expected: `psql (PostgreSQL) 15.x`
 
-**Note:** If `psql` command doesn't work, add PostgreSQL to PATH:
+**Note:** If `psql` command doesn't work:
 - Add `C:\Program Files\PostgreSQL\15\bin` to System PATH
 - Restart PowerShell
 
-### 1.5 Install a Code Editor (Optional but Recommended)
+4. **Start PostgreSQL Service:**
+   ```powershell
+   # Check if running
+   Get-Service postgresql*
+   
+   # If stopped, start it (replace 15 with your version)
+   Start-Service postgresql-x64-15
+   
+   # Set to start automatically
+   Set-Service postgresql-x64-15 -StartupType Automatic
+   ```
 
-**Visual Studio Code** is free and beginner-friendly:
+### 1.5 Install Visual Studio Code (Optional but Recommended)
+
+**What it does:** Code editor for viewing and editing code.
 
 1. **Download VS Code:**
    - Go to: https://code.visualstudio.com/
@@ -179,7 +164,7 @@ You need to install several tools. Install them in this order:
 
 2. **Install Useful Extensions:**
    - Open VS Code
-   - Click the Extensions icon (left sidebar)
+   - Click Extensions icon (left sidebar)
    - Search and install:
      - **Python** (by Microsoft)
      - **GitLens** (Git history viewer)
@@ -187,21 +172,21 @@ You need to install several tools. Install them in this order:
 
 ---
 
-## Step 2: Get the Project from GitHub
+## Step 2: Clone the Project
 
-Now let's download the project code to your computer.
+Download the project code to your computer.
 
 ### 2.1 Find the Project Repository
 
 1. **Go to GitHub:**
    - Open your web browser
    - Go to: https://github.com/yap1co/projectsigma
-   - (Or wherever your project is hosted)
+   - (Or your project repository URL)
 
 2. **Copy the Repository URL:**
    - Click the green "Code" button
    - Click the copy icon next to the HTTPS URL
-   - URL looks like: `https://github.com/yap1co/projectsigma.git`
+   - URL: `https://github.com/yap1co/projectsigma.git`
 
 ### 2.2 Clone (Download) the Project
 
@@ -226,7 +211,7 @@ Now let's download the project code to your computer.
    ```
    
    **What happens:**
-   - Git downloads all the project files
+   - Git downloads all project files
    - Creates a folder called `projectsigma`
    - This may take a few minutes
 
@@ -240,10 +225,10 @@ Now let's download the project code to your computer.
    ls
    ```
    
-   You should see folders like:
+   You should see:
    - `server/` - Backend code
    - `client/` - Frontend code
-   - `data/` - Data files
+   - `docs/` - Documentation
    - `README.md` - Project documentation
 
 **Troubleshooting:**
@@ -253,7 +238,7 @@ Now let's download the project code to your computer.
 
 ---
 
-## Step 3: Set Up Python Environment
+## Step 3: Set Up Python Backend
 
 Python projects use "virtual environments" to keep dependencies separate.
 
@@ -263,6 +248,7 @@ Python projects use "virtual environments" to keep dependencies separate.
    ```powershell
    cd D:\Downloads\Programming\projectSigma\projectsigma
    ```
+   (Replace with your actual path)
 
 2. **Create Virtual Environment:**
    ```powershell
@@ -309,6 +295,7 @@ Python projects use "virtual environments" to keep dependencies separate.
    - `flask`
    - `psycopg2-binary`
    - `pandas`
+   - `flask-jwt-extended`
    - etc.
 
 **Troubleshooting:**
@@ -318,7 +305,7 @@ Python projects use "virtual environments" to keep dependencies separate.
 
 ---
 
-## Step 4: Set Up Node.js and Frontend
+## Step 4: Set Up Node.js Frontend
 
 Now let's set up the website frontend.
 
@@ -369,32 +356,22 @@ The database stores all your data. Let's set it up.
    ```
    (Adjust version number if different)
 
-### 5.2 Configure Environment Variables
-
-1. **Navigate to Database Folder:**
+2. **Verify Connection:**
    ```powershell
-   cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
-   ```
-
-2. **Edit Setup Script:**
-   - Open `setup_local_env.ps1` in a text editor (Notepad or VS Code)
-   - Find this line: `$env:POSTGRES_PASSWORD = "postgres123"`
-   - Change `postgres123` to **your actual PostgreSQL password**
-   - Save the file
-
-3. **Run Setup Script:**
-   ```powershell
-   . .\setup_local_env.ps1
+   psql -U postgres -c "SELECT version();"
    ```
    
-   **What you'll see:** Environment variables are set and connection is tested
+   Enter your PostgreSQL password when prompted.
 
-### 5.3 Create Database
+### 5.2 Create Database
 
 **Option A: Using the Script (Recommended)**
 
 ```powershell
-# Make sure you're in server/database folder
+# Navigate to database folder
+cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
+
+# Run initialization script
 python init_db.py
 ```
 
@@ -418,10 +395,10 @@ CREATE DATABASE university_recommender;
 
 **Troubleshooting:**
 - **"Connection refused"**: PostgreSQL service isn't running
-- **"Password authentication failed"**: Wrong password in setup script
+- **"Password authentication failed"**: Wrong password
 - **"Database already exists"**: That's fine, script will skip creation
 
-📚 **For detailed PostgreSQL setup:** See `server/database/LOCAL_POSTGRES_SETUP.md`
+📚 **For detailed PostgreSQL setup:** See [docs/database/QUICK_START_LOCAL.md](../database/QUICK_START_LOCAL.md)
 
 ---
 
@@ -456,6 +433,22 @@ The application needs to know how to connect to the database.
 
 **Note:** The `.env` file is in `.gitignore`, so it won't be uploaded to GitHub (this is good for security).
 
+### 6.2 Create Frontend Environment File
+
+1. **Navigate to Client Folder:**
+   ```powershell
+   cd D:\Downloads\Programming\projectSigma\projectsigma\client
+   ```
+
+2. **Create `.env.local` File:**
+   - Create a new file named `.env.local`
+   - Add this line:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:5000
+   ```
+
+3. **Save the File**
+
 ---
 
 ## Step 7: Initialize Database Schema
@@ -467,7 +460,7 @@ Now let's create all the database tables.
 1. **Make Sure Environment is Set:**
    ```powershell
    # From server/database folder
-   . .\setup_local_env.ps1
+   cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
    ```
 
 2. **Run Initialization:**
@@ -485,6 +478,12 @@ PostgreSQL Database Initialization
   ✓ Migration 001_initial_schema applied successfully
   → Running migration: 002_discover_uni_data_schema.sql
   ✓ Migration 002_discover_uni_data_schema applied successfully
+  → Running migration: 003_add_hesa_links.sql
+  ✓ Migration 003_add_hesa_links applied successfully
+  → Running migration: 004_recommendation_feedback.sql
+  ✓ Migration 004_recommendation_feedback applied successfully
+  → Running migration: 005_career_interests.sql
+  ✓ Migration 005_career_interests applied successfully
 ✓ All migrations completed successfully
 ```
 
@@ -498,10 +497,15 @@ psql -U postgres -d university_recommender
 \dt
 
 # You should see tables like:
-# - institution
-# - kiscourse
 # - student
-# - etc.
+# - university
+# - course
+# - subject
+# - course_requirement
+# - career_interest
+# - career_interest_keyword
+# - recommendation_feedback
+# etc.
 
 # Exit
 \q
@@ -511,15 +515,45 @@ psql -U postgres -d university_recommender
 - **"Migration already applied"**: That's fine, means it's already done
 - **"Table already exists"**: Tables are already created, that's okay
 
-📚 **For detailed database setup:** See `server/database/migrations/STEP_BY_STEP_GUIDE.md`
+📚 **For detailed database setup:** See [docs/database/MIGRATIONS_STEP_BY_STEP.md](../database/MIGRATIONS_STEP_BY_STEP.md)
 
 ---
 
-## Step 8: Run the Application
+## Step 8: Run Database Migrations
+
+Additional migrations may be needed for specific features.
+
+### 8.1 Run Career Interests Migration
+
+```powershell
+# From server/database folder
+cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
+python run_career_interests_migration.py
+```
+
+**What this does:**
+- Creates `career_interest`, `career_interest_keyword`, `career_interest_conflict` tables
+- Populates with default career interests data
+
+### 8.2 Run Feedback Migration
+
+```powershell
+python run_feedback_migration.py
+```
+
+**What this does:**
+- Creates `recommendation_feedback` and `recommendation_settings` tables
+- Sets up feedback system
+
+**Note:** These migrations are usually run automatically by `init_db.py`, but you can run them manually if needed.
+
+---
+
+## Step 9: Start the Application
 
 Now let's start the application!
 
-### 8.1 Start the Backend Server
+### 9.1 Start the Backend Server
 
 1. **Open First PowerShell Window:**
    ```powershell
@@ -544,7 +578,7 @@ Now let's start the application!
 
 3. **Keep This Window Open!** The server needs to keep running.
 
-### 8.2 Start the Frontend Server
+### 9.2 Start the Frontend Server
 
 1. **Open Second PowerShell Window:**
    ```powershell
@@ -567,7 +601,7 @@ Now let's start the application!
 
 3. **Keep This Window Open Too!**
 
-### 8.3 Access the Application
+### 9.3 Access the Application
 
 1. **Open Your Web Browser**
 2. **Go to:** http://localhost:3000
@@ -577,12 +611,67 @@ Now let's start the application!
 - **Backend:** http://localhost:5000 (API server)
 - **Frontend:** http://localhost:3000 (Website)
 
-### 8.4 Stop the Application
+### 9.4 Stop the Application
 
 When you're done:
 1. Go to each PowerShell window
 2. Press `Ctrl + C` to stop each server
 3. Close the windows
+
+---
+
+## Step 10: Verify Everything Works
+
+Let's test that everything is working correctly.
+
+### 10.1 Test Backend API
+
+1. **Open a new PowerShell window:**
+   ```powershell
+   # Test health endpoint
+   curl http://localhost:5000/api/health
+   ```
+
+   Expected response:
+   ```json
+   {
+     "status": "OK",
+     "timestamp": "2024-01-01T00:00:00",
+     "environment": "development"
+   }
+   ```
+
+2. **Test root endpoint:**
+   ```powershell
+   curl http://localhost:5000/
+   ```
+
+### 10.2 Test Frontend
+
+1. **Open browser:** http://localhost:3000
+2. **You should see the application homepage**
+3. **Try creating an account:**
+   - Click "Register" or "Sign Up"
+   - Fill in the form
+   - Submit
+
+### 10.3 Test Database Connection
+
+```powershell
+# Connect to database
+psql -U postgres -d university_recommender
+
+# Check career interests are loaded
+SELECT COUNT(*) FROM career_interest;
+SELECT COUNT(*) FROM career_interest_keyword;
+
+# Check feedback tables
+SELECT COUNT(*) FROM recommendation_feedback;
+SELECT COUNT(*) FROM recommendation_settings;
+
+# Exit
+\q
+```
 
 ---
 
@@ -609,7 +698,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 **Solutions:**
 1. Check service is running: `Get-Service postgresql*`
 2. Verify password in `.env` file
-3. Check PostgreSQL is listening on port 5432
+3. Check PostgreSQL is listening on port 5432: `netstat -an | findstr :5432`
 
 #### Issue: Port already in use
 
@@ -623,8 +712,8 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 **Solution:**
 ```powershell
 # Delete and reinstall
-rm -r node_modules
-rm package-lock.json
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
 npm install
 ```
 
@@ -635,17 +724,23 @@ npm install
 - Verify password is correct
 - Check database exists: `psql -U postgres -l`
 
+#### Issue: Module not found errors
+
+**Solution:**
+- Make sure virtual environment is activated
+- Reinstall dependencies: `pip install -r requirements.txt`
+
 ### Getting Help
 
 1. **Check Documentation:**
-   - `README.md` - Project overview
-   - [SETUP_INSTRUCTIONS_WINDOWS.md](./SETUP_INSTRUCTIONS_WINDOWS.md) - Setup details
-   - [../database/LOCAL_POSTGRES_SETUP.md](../database/LOCAL_POSTGRES_SETUP.md) - Database setup
+   - [docs/README.md](../README.md) - Complete documentation index
+   - [docs/troubleshooting/](../troubleshooting/) - Troubleshooting guides
+   - [docs/modules/](../modules/) - Module documentation
 
 2. **Check Error Messages:**
    - Read the full error message
    - Google the error message
-   - Check GitHub Issues (if project has them)
+   - Check GitHub Issues
 
 3. **Ask for Help:**
    - Include the full error message
@@ -662,15 +757,17 @@ Once everything is running:
 - Try creating an account
 - Browse courses
 - Test the recommendation system
+- Give feedback on recommendations
 
 ### 2. Import Data (Optional)
-- See `server/database/import_csv.py` for importing CSV data
+- See [docs/guides/hesa_data.md](../guides/hesa_data.md) for importing HESA data
 - Or use pgAdmin to import data manually
 
 ### 3. Learn More
 - Read the code in `server/` and `client/` folders
 - Check out the API endpoints
 - Explore the database schema
+- Read module documentation: [docs/modules/](../modules/)
 
 ### 4. Development Workflow
 - Make changes to code
@@ -736,23 +833,28 @@ Use this to track your progress:
 - [ ] Python installed and verified
 - [ ] Node.js installed and verified
 - [ ] PostgreSQL installed and verified
+- [ ] PostgreSQL service running
 - [ ] Project cloned from GitHub
 - [ ] Python virtual environment created and activated
 - [ ] Python dependencies installed
 - [ ] Node.js dependencies installed
-- [ ] PostgreSQL service running
 - [ ] Database created
-- [ ] Environment variables configured
+- [ ] Environment variables configured (`.env` file)
 - [ ] Database schema initialized
+- [ ] Career interests migration run
+- [ ] Feedback migration run
 - [ ] Backend server running
 - [ ] Frontend server running
 - [ ] Application accessible in browser
+- [ ] Health check endpoint working
+- [ ] Can create account and login
 
 ---
 
 ## Congratulations! 🎉
 
-You've successfully set up Project Sigma! You now have:
+You've successfully set up the University Course Recommender! You now have:
+
 - ✅ A working development environment
 - ✅ Database set up and running
 - ✅ Backend API server
@@ -765,5 +867,9 @@ You've successfully set up Project Sigma! You now have:
 - Always activate virtual environment before running Python code
 - Check `.env` file if connection issues occur
 
-**Happy coding!** 🚀
+**Next:**
+- Read [Module Documentation](../modules/) to understand the code
+- Explore [User Guides](../guides/) for system features
+- Check [Troubleshooting](../troubleshooting/) if you encounter issues
 
+**Happy coding!** 🚀
