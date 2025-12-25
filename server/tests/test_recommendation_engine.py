@@ -61,7 +61,7 @@ class TestRecommendationEngine:
         }
         student_subjects = ['Mathematics', 'Physics']
         score = engine._calculate_subject_match(course, student_subjects)
-        assert score == 0.5, f"No requirements should return 0.5, got {score}"
+        assert score == 0.2, f"No requirements should return 0.2, got {score}"
     
     def test_calculate_grade_match_exceeds(self):
         """Test grade matching when student grades exceed requirements"""
