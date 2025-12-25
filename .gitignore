@@ -49,6 +49,15 @@ build/
 *.bak
 *.swp
 
+# Documents (exclude from version control)
+*.pdf
+*.docx
+*.doc
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
 # Database
 *.db
 *.sqlite

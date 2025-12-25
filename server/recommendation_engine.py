@@ -726,7 +726,7 @@ class RecommendationEngine:
                             SELECT e.pubukprn, e.kiscourseid, e.kismode,
                                    e.work, e.study, e.unemp, e.workstudy,
                                    e.emppop, e.empresponse, e.empresp_rate, e.empsample
-                            FROM employment e
+                            FROM hesa_employment e
                             INNER JOIN temp_hesa_lookup t ON 
                                 e.pubukprn = t.pubukprn AND 
                                 e.kiscourseid = t.kiscourseid AND 
@@ -740,7 +740,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT g.pubukprn, g.kiscourseid, g.kismode,
                                    g.goinstmed, g.goinstlq, g.goinstuq
-                            FROM gosalary g
+                            FROM hesa_gosalary g
                             INNER JOIN temp_hesa_lookup t ON 
                                 g.pubukprn = t.pubukprn AND 
                                 g.kiscourseid = t.kiscourseid AND 
@@ -754,7 +754,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT l.pubukprn, l.kiscourseid, l.kismode,
                                    l.leo3instmed, l.leo3instlq, l.leo3instuq
-                            FROM leo3 l
+                            FROM hesa_leo3 l
                             INNER JOIN temp_hesa_lookup t ON 
                                 l.pubukprn = t.pubukprn AND 
                                 l.kiscourseid = t.kiscourseid AND 
@@ -768,7 +768,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT j.pubukprn, j.kiscourseid, j.kismode,
                                    j.job, j.perc, j."order"
-                            FROM joblist j
+                            FROM hesa_joblist j
                             INNER JOIN temp_hesa_lookup t ON 
                                 j.pubukprn = t.pubukprn AND 
                                 j.kiscourseid = t.kiscourseid AND 
@@ -785,7 +785,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT en.pubukprn, en.kiscourseid, en.kismode,
                                    en.alevel, en.access, en.degree, en.foundtn, en.noquals, en.other, en.entpop
-                            FROM entry en
+                            FROM hesa_entry en
                             INNER JOIN temp_hesa_lookup t ON 
                                 en.pubukprn = t.pubukprn AND 
                                 en.kiscourseid = t.kiscourseid AND 
@@ -916,8 +916,8 @@ class RecommendationEngine:
                             university_name = course.get('university', {}).get('name', '')
                             cur.execute("""
                                 SELECT kc.pubukprn, kc.kiscourseid, kc.kismode
-                                FROM kiscourse kc
-                                JOIN institution i ON kc.pubukprn = i.pubukprn
+                                FROM hesa_kiscourse kc
+                                JOIN hesa_institution i ON kc.pubukprn = i.pubukprn
                                 WHERE kc.title ILIKE %s 
                                   AND i.first_trading_name ILIKE %s
                                   AND kc.kismode = '01'
@@ -938,7 +938,7 @@ class RecommendationEngine:
                             SELECT 
                                 work, study, unemp, workstudy,
                                 emppop, empresponse, empresp_rate
-                            FROM employment
+                            FROM hesa_employment
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -948,7 +948,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT 
                                 goinstmed, goinstlq, goinstuq
-                            FROM gosalary
+                            FROM hesa_gosalary
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -958,7 +958,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT 
                                 leo3instmed, leo3instlq, leo3instuq
-                            FROM leo3
+                            FROM hesa_leo3
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -967,7 +967,7 @@ class RecommendationEngine:
                         # Get common job types
                         cur.execute("""
                             SELECT job, perc, "order"
-                            FROM joblist
+                            FROM hesa_joblist
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             ORDER BY "order" ASC
                             LIMIT 5
@@ -979,7 +979,7 @@ class RecommendationEngine:
                             SELECT 
                                 alevel, access, degree, foundtn, noquals, other,
                                 entpop
-                            FROM entry
+                            FROM hesa_entry
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))

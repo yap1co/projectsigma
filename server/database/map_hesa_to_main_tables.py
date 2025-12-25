@@ -1,6 +1,6 @@
 """
 Map HESA Discover Uni data to main university and course tables
-This script reads from the HESA tables (institution, kiscourse) and 
+This script reads from the HESA tables (hesa_institution, hesa_kiscourse) and 
 populates the main tables (university, course) used by the recommendation engine
 """
 
@@ -41,8 +41,8 @@ def map_hesa_to_main_tables():
                 END as region,
                 NULL::INTEGER as rank_overall,
                 75 as employability_score,  -- Default, can be updated from other HESA tables
-                i.provurl as website_url  -- Include PROVURL from institution table
-            FROM institution i
+                i.provurl as website_url  -- Include PROVURL from hesa_institution table
+            FROM hesa_institution i
             WHERE i.pubukprn IS NOT NULL
         """)
         
@@ -86,7 +86,7 @@ def map_hesa_to_main_tables():
                 kc.hecos,
                 kc.numstage,
                 uc.ucascourseid
-            FROM kiscourse kc
+            FROM hesa_kiscourse kc
             LEFT JOIN ucascourseid uc ON 
                 kc.pubukprn = uc.pubukprn AND
                 kc.kiscourseid = uc.kiscourseid AND
@@ -111,11 +111,11 @@ def map_hesa_to_main_tables():
             course_name = kc['title']
             ucas_code = kc.get('ucascourseid') or kc.get('ucasprogid')
             
-            # Get employability score from employment data if available
+            # Get employability score from hesa_employment data if available
             # Calculate based on work/(work+study+unemp) ratio, scaled to 0-100
             cur.execute("""
                 SELECT work, study, unemp
-                FROM employment
+                FROM hesa_employment
                 WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                 LIMIT 1
             """, (pubukprn, kc['kiscourseid'], kc['kismode']))
@@ -163,11 +163,11 @@ def map_hesa_to_main_tables():
                 kc['kismode']
             ))
             
-            # Step 3: Add entry requirements from ENTRY and SBJ tables
+            # Step 3: Add entry requirements from hesa_entry and SBJ tables
             # Get entry qualifications (A-level requirements)
             cur.execute("""
                 SELECT entsbj, alevel
-                FROM entry
+                FROM hesa_entry
                 WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                 LIMIT 1
             """, (pubukprn, kc['kiscourseid'], kc['kismode']))
@@ -208,7 +208,9 @@ def map_hesa_to_main_tables():
                     
                     # Add requirement with default grade (can be refined later)
                     # If entry data shows A-levels, use A; otherwise use B
-                    default_grade = 'A' if (entry_data and entry_data.get('alevel', 0) > 0) else 'B'
+                    alevel_value = entry_data.get('alevel', 0) if entry_data else 0
+                    alevel_value = alevel_value if alevel_value is not None else 0
+                    default_grade = 'A' if alevel_value > 0 else 'B'
                     
                     req_id = generate_id('REQ_')
                     cur.execute("""
