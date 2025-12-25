@@ -15,27 +15,142 @@
 
 ### 1.2 Project Structure
 
+The project follows a modular, three-tier architecture with clear separation of concerns:
+
 ```
 projectsigma/
-├── client/               # Frontend (React/Next.js)
-│   ├── app/             # Next.js pages
-│   ├── components/      # React components
-│   ├── contexts/        # React contexts (Auth, Query)
-│   ├── lib/            # API client
-│   └── package.json
-├── server/              # Backend (Python/Flask)
-│   ├── routes/         # API endpoints
-│   ├── database/       # Database scripts and migrations
-│   ├── recommendation_engine.py
-│   ├── scoring_components.py
-│   └── requirements.txt
-├── data/               # HESA CSV files
-│   ├── INSTITUTION.csv
-│   ├── KISCOURSE.csv
-│   └── [5 more CSV files]
-└── docs/              # Documentation
-    └── nea/           # NEA documentation
+├── data/                   # 📊 HESA Source Data
+│   └── [7 CSV files: 478 universities, 30,835 courses]
+│
+├── server/                 # 🐍 Backend (Python/Flask)
+│   ├── app.py              # Main Flask API (12 REST endpoints)
+│   ├── recommendation_engine.py    # Core algorithm (top-K heap, O(N log K))
+│   ├── scoring_components.py       # OOP scoring (composition pattern)
+│   ├── database_helper.py          # PostgreSQL connection utilities
+│   ├── validators.py               # Input validation & sanitization
+│   │
+│   ├── models/             # 🎯 OOP Data Models
+│   │   ├── base_model.py   # Abstract base class (ABC, polymorphism)
+│   │   ├── student.py      # Student model (inheritance from BaseModel)
+│   │   └── course.py       # Course model (inheritance from BaseModel)
+│   │
+│   ├── database/           # 🗄️ Database Layer
+│   │   ├── setup_database.py       # ⭐ Automated setup (single command)
+│   │   ├── import_discover_uni_csv.py  # HESA CSV import (7 files)
+│   │   ├── map_hesa_to_main_tables.py  # HESA → application mapping
+│   │   ├── init_db.py              # Legacy initialization
+│   │   ├── add_sample_data.py      # Test data generator
+│   │   └── migrations/             # Schema version control
+│   │       ├── 001_initial_schema.sql          # 15 application tables
+│   │       └── 002_discover_uni_data_schema.sql # 7 HESA tables
+│   │
+│   └── tests/              # 🧪 Test Suite (43 tests, 100% passing)
+│       ├── test_recommendation_engine.py  # Algorithm tests (8 tests)
+│       ├── test_api.py                    # API endpoint tests (12 tests)
+│       ├── test_models.py                 # Model validation (8 tests)
+│       ├── test_oop_features.py           # OOP pattern tests (15 tests)
+│       ├── conftest.py                    # pytest fixtures
+│       └── features/                      # BDD test specifications
+│
+├── client/                 # ⚛️ Frontend (React/Next.js/TypeScript)
+│   ├── app/                # Next.js 14 App Router
+│   │   ├── page.tsx        # Landing page
+│   │   ├── layout.tsx      # Root layout with providers
+│   │   ├── globals.css     # Global styles (Tailwind)
+│   │   ├── auth/           # Authentication pages
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   └── settings/       # User settings page
+│   │
+│   ├── components/         # React Components (17 total)
+│   │   ├── Dashboard.tsx              # Student dashboard (main UI)
+│   │   ├── RecommendationResults.tsx  # Course recommendations display
+│   │   ├── ProfileSetup.tsx           # User profile creation
+│   │   ├── CourseDetailsModal.tsx     # Course detail popup
+│   │   ├── ProjectCard.tsx            # Course card component
+│   │   ├── Header.tsx                 # Navigation header
+│   │   ├── LandingPage.tsx            # Public landing page
+│   │   └── auth/                      # Auth components
+│   │       ├── LoginForm.tsx
+│   │       └── RegisterForm.tsx
+│   │
+│   ├── contexts/           # React Context (State Management)
+│   │   ├── AuthContext.tsx    # JWT authentication state
+│   │   └── QueryContext.tsx   # React Query configuration
+│   │
+│   ├── lib/
+│   │   └── api.ts          # API client (12 functions for endpoints)
+│   │
+│   ├── next.config.js      # Next.js configuration
+│   ├── tailwind.config.js  # Tailwind CSS configuration
+│   ├── tsconfig.json       # TypeScript configuration
+│   └── package.json        # Frontend dependencies (React, Next.js, etc.)
+│
+└── docs/                   # 📚 Documentation (20+ files)
+    ├── README.md           # Documentation index
+    ├── PROJECT_STATUS.md   # Implementation summary
+    ├── QUICK_REFERENCE.md  # Developer quick reference
+    │
+    ├── nea/                # 🎓 NEA Submission Documents
+    │   ├── README.md
+    │   ├── 00_PROJECT_OVERVIEW.md  # Project introduction
+    │   ├── 01_ANALYSIS.md          # Problem analysis & requirements
+    │   ├── 02_DESIGN.md            # System design & algorithms
+    │   ├── 03_DEVELOPMENT.md       # Implementation evidence
+    │   ├── 04_TESTING.md           # Test strategy & results
+    │   └── 05_EVALUATION.md        # Evaluation & reflection
+    │
+    ├── modules/            # Code Documentation
+    │   ├── recommendation_engine.md
+    │   ├── app.md
+    │   └── models.md
+    │
+    ├── database/           # Database Documentation
+    │   ├── SETUP_GUIDE.md
+    │   ├── README.md
+    │   └── [8 more guides]
+    │
+    ├── guides/             # Feature Guides
+    │   ├── career_interests.md
+    │   ├── feedback_system.md
+    │   └── [4 more]
+    │
+    └── troubleshooting/    # Troubleshooting Guides
+        └── [4 guides]
 ```
+
+**Key Design Decisions:**
+
+1. **Backend Organization (`server/`)**
+   - **Flat structure for main files:** Flask best practice for small-medium apps
+   - **`models/` subfolder:** Groups OOP classes, demonstrates inheritance
+   - **`database/` subfolder:** Isolates all database operations and migrations
+   - **`tests/` co-located:** Tests live with code they test (pytest convention)
+
+2. **Frontend Organization (`client/`)**
+   - **App Router (`app/`):** Next.js 14 file-based routing
+   - **Component library (`components/`):** Reusable React components
+   - **Context API (`contexts/`):** Centralized state management
+   - **Type safety:** TypeScript throughout for compile-time checking
+
+3. **Database Organization (`server/database/`)**
+   - **`setup_database.py`:** Single entry point for new developers
+   - **`migrations/`:** Version-controlled schema changes
+   - **Separation:** Import scripts separate from mapping scripts
+
+4. **Documentation Organization (`docs/`)**
+   - **`nea/` subfolder:** All NEA submission documents together
+   - **Topical folders:** `modules/`, `database/`, `guides/`, `troubleshooting/`
+   - **Markdown format:** Easy to version control and read
+
+**Benefits of This Structure:**
+
+- ✅ **Modularity:** Each folder has single responsibility
+- ✅ **Testability:** Tests organized by component (`test_*.py`)
+- ✅ **Scalability:** Easy to add new models, components, endpoints
+- ✅ **Maintainability:** Clear where to find specific functionality
+- ✅ **Professional:** Follows industry conventions (Flask + Next.js)
+- ✅ **NEA Evidence:** Shows planning and system design understanding
 
 ### 1.3 Setup Process
 

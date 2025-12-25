@@ -42,6 +42,42 @@ The system integrates official HESA (Higher Education Statistics Agency) Discove
 
 ---
 
+## Project Structure (Physical Organization)
+
+### Root Level Structure
+
+```
+projectsigma/
+├── .git/                   # Git version control
+├── .gitignore              # Git ignore rules
+├── README.md               # Project overview & quick start
+├── package.json            # Root npm scripts
+│
+├── venv/                   # Python virtual environment
+│
+├── data/                   # 📊 HESA CSV Data (7 files)
+├── server/                 # 🐍 Backend (Python/Flask)
+├── client/                 # ⚛️ Frontend (React/Next.js)
+└── docs/                   # 📚 All Documentation
+```
+
+**Rationale for Structure:**
+- **Clear Separation of Concerns:** Backend, frontend, and documentation are completely isolated
+- **Modularity:** Each component can be developed, tested, and deployed independently
+- **Professional Standards:** Follows industry conventions for Flask + Next.js projects
+- **Maintainability:** Easy for new developers to understand and navigate
+
+### Key Components
+
+| Folder | Purpose | Technologies |
+|--------|---------|-------------|
+| `data/` | Raw HESA CSV files (478 universities, 30,835 courses) | CSV data files |
+| `server/` | REST API, recommendation engine, business logic | Python, Flask, PostgreSQL |
+| `client/` | User interface, dashboard, forms | React, Next.js, TypeScript |
+| `docs/` | NEA documentation, technical guides | Markdown |
+
+---
+
 ## Key Features
 
 1. **Personalized Recommendations:** Weighted scoring algorithm considering multiple factors

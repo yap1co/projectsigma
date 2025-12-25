@@ -49,7 +49,126 @@
 - **Client-side rendering:** Fast, interactive UI with Next.js
 - **Relational database:** Appropriate for structured HESA data with complex relationships
 
-### 1.2 Data Flow Diagram
+### 1.2 Physical System Architecture (Folder Structure)
+
+The system is organized into a clear, modular structure following industry best practices:
+
+```
+projectsigma/
+├── .git/                   # Git version control
+├── venv/                   # Python virtual environment
+│
+├── data/                   # 📊 HESA Source Data (7 CSV files)
+│   ├── INSTITUTION.csv     # 478 UK universities
+│   ├── KISCOURSE.csv       # 30,835 university courses
+│   ├── EMPLOYMENT.csv      # Graduate employment statistics
+│   ├── ENTRY.csv           # Course entry requirements
+│   ├── GOSALARY.csv        # Graduate salary data
+│   ├── JOBLIST.csv         # Job destinations for graduates
+│   └── LEO3.csv            # Longitudinal Education Outcomes
+│
+├── server/                 # 🐍 Backend Application (Python/Flask)
+│   ├── app.py              # Main Flask API (12 endpoints)
+│   ├── recommendation_engine.py    # Core recommendation algorithm
+│   ├── scoring_components.py       # OOP scoring system (composition)
+│   ├── database_helper.py          # PostgreSQL utilities
+│   ├── validators.py               # Input validation
+│   │
+│   ├── models/             # OOP Data Models (Inheritance & Polymorphism)
+│   │   ├── base_model.py   # Abstract base class (ABC pattern)
+│   │   ├── student.py      # Student model (inherits BaseModel)
+│   │   └── course.py       # Course model (inherits BaseModel)
+│   │
+│   ├── database/           # Database Setup & Migrations
+│   │   ├── setup_database.py       # Single-command automated setup
+│   │   ├── import_discover_uni_csv.py  # HESA data import
+│   │   ├── map_hesa_to_main_tables.py  # Data mapping
+│   │   └── migrations/     # SQL schema files
+│   │       ├── 001_initial_schema.sql
+│   │       └── 002_discover_uni_data_schema.sql
+│   │
+│   └── tests/              # Comprehensive Test Suite (43 tests)
+│       ├── test_recommendation_engine.py  # Algorithm unit tests
+│       ├── test_api.py                    # API integration tests
+│       ├── test_models.py                 # Model validation tests
+│       └── test_oop_features.py           # OOP pattern tests
+│
+├── client/                 # ⚛️ Frontend Application (React/Next.js)
+│   ├── app/                # Next.js 14 App Router
+│   │   ├── page.tsx        # Landing page
+│   │   ├── layout.tsx      # Root layout
+│   │   └── auth/           # Authentication pages
+│   │
+│   ├── components/         # React Components (17 total)
+│   │   ├── Dashboard.tsx
+│   │   ├── RecommendationResults.tsx
+│   │   ├── ProfileSetup.tsx
+│   │   └── auth/           # Auth components
+│   │
+│   ├── contexts/           # React Context (State Management)
+│   │   ├── AuthContext.tsx
+│   │   └── QueryContext.tsx
+│   │
+│   └── lib/
+│       └── api.ts          # API client functions
+│
+└── docs/                   # 📚 Project Documentation
+    ├── nea/                # NEA Submission Documents
+    │   ├── 00_PROJECT_OVERVIEW.md
+    │   ├── 01_ANALYSIS.md
+    │   ├── 02_DESIGN.md
+    │   ├── 03_DEVELOPMENT.md
+    │   ├── 04_TESTING.md
+    │   └── 05_EVALUATION.md
+    │
+    ├── modules/            # Code Documentation
+    │   ├── recommendation_engine.md
+    │   ├── app.md
+    │   └── models.md
+    │
+    └── database/           # Database Documentation
+        ├── SETUP_GUIDE.md
+        └── README.md
+```
+
+**Design Rationale for Physical Structure:**
+
+1. **Separation of Concerns**
+   - `data/` contains raw source data (read-only)
+   - `server/` handles all backend logic and API
+   - `client/` manages presentation layer
+   - `docs/` keeps documentation separate from code
+
+2. **Modularity & Maintainability**
+   - `server/models/` groups OOP classes together
+   - `server/database/` isolates database operations
+   - `server/tests/` co-locates tests with backend code
+   - `client/components/` organizes reusable UI elements
+
+3. **Professional Standards**
+   - Follows Flask best practices (flat structure for small-medium apps)
+   - Follows Next.js 14 App Router conventions
+   - Uses standard naming (`tests/`, `migrations/`, `components/`)
+
+4. **Scalability**
+   - Easy to add new API endpoints in `app.py`
+   - New models added to `models/` folder
+   - New React components in `components/` folder
+   - Database changes tracked via `migrations/`
+
+5. **Evidence of Advanced Programming**
+   - `models/` folder demonstrates OOP (inheritance, abstraction)
+   - `tests/` folder shows test-driven development
+   - `scoring_components.py` demonstrates composition pattern
+   - `migrations/` shows iterative database design
+
+This structure ensures that each component can be:
+- **Developed independently** (e.g., frontend team works in `client/`)
+- **Tested in isolation** (e.g., unit tests in `tests/`)
+- **Deployed separately** (e.g., API and frontend on different servers)
+- **Maintained easily** (e.g., clear responsibility boundaries)
+
+### 1.3 Data Flow Diagram
 
 [Create a DFD showing:
 - User inputs (grades, interests, preferences)
