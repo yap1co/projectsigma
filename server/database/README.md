@@ -1,83 +1,59 @@
 # Database Setup Guide
 
-This directory contains PostgreSQL database migration files and initialization scripts.
+## 🚀 Quick Start (Recommended for New Developers)
 
-## Structure
-
-```
-database/
-├── migrations/
-│   └── 001_initial_schema.sql    # Initial database schema
-├── init_db.py                     # Database initialization script
-└── README.md                      # This file
-```
-
-## Prerequisites
-
-1. PostgreSQL 12+ installed and running
-2. Python 3.11+ with `psycopg2` installed:
-   ```bash
-   pip install psycopg2-binary
-   ```
-
-## Environment Variables
-
-Set these environment variables before running initialization:
-
-```bash
-export POSTGRES_DB=university_recommender
-export POSTGRES_USER=postgres
-export POSTGRES_PASSWORD=postgres
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
-```
-
-Or create a `.env` file:
-```
-POSTGRES_DB=university_recommender
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-```
-
-## Initialization
-
-### Option 1: Using Python Script
+**Single command to set up everything:**
 
 ```bash
 cd server/database
-python init_db.py
+python setup_database.py
 ```
 
-This script will:
-1. Create the database if it doesn't exist
-2. Run all migration files in order
-3. Track applied migrations in `schema_migrations` table
+This automated script will:
+1. ✅ Drop existing database (if exists)
+2. ✅ Create fresh `university_recommender` database
+3. ✅ Create all tables (application + HESA)
+4. ✅ Import all 7 HESA CSV files
+5. ✅ Map HESA data to application tables
 
-## Data Import
+**📖 Detailed Guide:** See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
 
-**⚠️ IMPORTANT:** After running `init_db.py`, you must import data in the correct order.
+---
 
-### Quick Reference
+## Prerequisites
 
-See **[IMPORT_ORDER.md](./IMPORT_ORDER.md)** for a quick step-by-step guide.
-
-### Detailed Guide
-
-See **[data/README.md](./data/README.md)** for comprehensive import instructions.
-
-### Import Sequence
-
-1. **Initialize schema** (already done):
+1. **PostgreSQL 15+** installed and running
+2. **Python 3.11+** with dependencies:
    ```bash
-   python init_db.py
+   pip install -r ../requirements.txt
    ```
+3. **7 HESA CSV files** in `../../data/` directory
 
-2. **Import HESA CSV data**:
-   ```bash
-   python import_discover_uni_csv.py
-   ```
+## Database Configuration
+
+Default settings (edit in `setup_database.py` if needed):
+- Host: `localhost`
+- Port: `5432`
+- User: `postgres`
+- Password: `postgres123`
+- Database: `university_recommender`
+
+## Required CSV Files
+
+Place these in `data/` directory:
+1. `INSTITUTION.csv` - University information
+2. `KISCOURSE.csv` - Course catalog
+3. `EMPLOYMENT.csv` - Graduate employment
+4. `ENTRY.csv` - Entry requirements
+5. `GOSALARY.csv` - Graduate salaries
+6. `JOBLIST.csv` - Job destinations
+7. `LEO3.csv` - Earnings data
+
+---
+
+## Manual Setup (Advanced)
+
+If you need more control:
 
 3. **Map HESA data to main tables** (REQUIRED):
    ```bash
@@ -101,52 +77,139 @@ See **[data/README.md](./data/README.md)** for comprehensive import instructions
 2. Run migrations:
    ```bash
    psql -d university_recommender -f migrations/001_initial_schema.sql
-   ```
+### Step 1: Create Database
+```bash
+psql -U postgres -c "CREATE DATABASE university_recommender"
+```
 
-## Migration Files
+### Step 2: Run Schema
+```bash
+cd migrations
+psql -U postgres -d university_recommender -f 001_initial_schema.sql
+psql -U postgres -d university_recommender -f 002_discover_uni_data_schema.sql
+```
 
-Migration files are numbered sequentially (001_, 002_, etc.) and should be run in order.
+### Step 3: Import Data
+```bash
+cd ..
+python import_discover_uni_csv.py
+```
 
-Each migration file contains:
-- CREATE TABLE statements
-- ALTER TABLE statements for constraints
-- CREATE INDEX statements
-- Any data transformations
+### Step 4: Map HESA Data
+```bash
+python map_hesa_to_main_tables.py
+```
 
-## Schema Overview
+---
 
-The database schema includes:
+## Database Schema
 
-### Core Tables
-- `student` - Student user accounts
-- `subject` - A-Level subjects catalog
-- `student_grade` - Student predicted grades per subject
-- `university` - University information
-- `course` - Course information
-- `course_requirement` - Course entry requirements
-- `entrance_exam` - Entrance exam catalog
-- `course_required_exam` - Course-exam junction table
-- `recommendation_run` - Recommendation run metadata
-- `recommendation_result` - Recommendation results (JSONB)
+### Application Tables (7 tables)
+- **user** - User accounts
+- **university** - Universities (mapped from HESA)
+- **course** - Courses (mapped from HESA)
+- **course_requirement** - Entry requirements per course
+- **user_preference** - User preferences and grades
+- **user_feedback** - Course ratings and feedback
+- **career_interest** - Career interests lookup
 
-### Constraints
-- Primary keys (including composite PKs)
-- Foreign keys with ON DELETE rules
-- Check constraints for data validation
-- Unique constraints
+### HESA Tables (7 tables)
+- **hesa_institution** - Raw HESA institution data
+- **hesa_kiscourse** - Raw HESA course data
+- **hesa_employment** - Employment outcomes
+- **hesa_entry** - Entry qualifications
+- **hesa_gosalary** - Graduate salaries
+- **hesa_joblist** - Job destinations
+- **hesa_leo3** - Longitudinal earnings (3 years)
 
-### Indexes
-- BTREE indexes for JOINs and filters
-- GIN indexes for arrays and JSONB
-- Functional indexes for case-insensitive searches
-- Partial indexes for common query patterns
+### Relationships
+- `course.university_id` → `university.university_id`
+- `course.(pubukprn, kiscourseid, kismode)` → HESA tables
+- `course_requirement.course_id` → `course.course_id`
+- `user_preference.user_id` → `user.user_id`
+- `user_feedback.course_id` → `course.course_id`
+
+---
+
+## Resetting Database
+
+To start completely fresh:
+```bash
+python setup_database.py
+```
+
+The script safely drops existing database before recreating.
+
+---
 
 ## Verification
 
-After initialization, verify the schema:
+After setup, verify the database:
 
 ```bash
-psql -d university_recommender -c "\dt"  # List tables
+# Connect to database
+psql -U postgres -d university_recommender
+
+# Check tables
+\dt
+
+# Check data counts
+SELECT 'HESA Institutions' as table_name, COUNT(*) FROM hesa_institution
+UNION ALL
+SELECT 'HESA Courses', COUNT(*) FROM hesa_kiscourse
+UNION ALL
+SELECT 'Universities', COUNT(*) FROM university
+UNION ALL
+SELECT 'Courses', COUNT(*) FROM course;
+
+# Exit
+\q
+```
+
+Expected counts:
+- HESA Institutions: ~478
+- HESA Courses: ~30,835
+- Universities: ~956
+- Courses: ~5,400
+
+---
+
+## Troubleshooting
+
+### "Database connection failed"
+- Check PostgreSQL is running: `psql -U postgres`
+- Verify credentials in `setup_database.py`
+
+### "CSV file not found"
+- Ensure all 7 CSV files are in `../../data/` directory
+- Check file names match exactly
+
+### "Permission denied"
+- Ensure postgres user has CREATE DATABASE privilege
+- Run: `psql -U postgres -c "ALTER USER postgres CREATEDB;"`
+
+---
+
+## Scripts Reference
+
+| Script | Purpose |
+|--------|---------|
+| `setup_database.py` | **Automated setup** - Drops and recreates everything |
+| `import_discover_uni_csv.py` | Import 7 HESA CSV files |
+| `map_hesa_to_main_tables.py` | Map HESA → application tables |
+| `init_db.py` | Legacy: Create DB and run migrations |
+| `add_sample_data.py` | Add test data for development |
+
+**For new developers:** Use `setup_database.py` only.
+
+---
+
+## Support
+
+- **Setup Issues:** See [SETUP_GUIDE.md](./SETUP_GUIDE.md)
+- **Project Status:** See [../../docs/PROJECT_STATUS.md](../../docs/PROJECT_STATUS.md)
+- **Troubleshooting:** See [../../docs/troubleshooting/](../../docs/troubleshooting/)
+
 psql -d university_recommender -c "\di"  # List indexes
 psql -d university_recommender -c "\d student"  # Describe table
 ```
