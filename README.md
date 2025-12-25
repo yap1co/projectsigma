@@ -37,9 +37,8 @@ This project addresses the challenge faced by UK students when choosing universi
 - **Framer Motion**: Smooth animations
 
 ### DevOps
-- **Docker**: Containerization for easy deployment
-- **Docker Compose**: Multi-container orchestration
-- **MongoDB Express**: Database administration interface
+- **Git**: Version control and collaboration
+- **pytest**: Comprehensive testing framework
 
 ## 📚 Documentation
 
@@ -63,7 +62,7 @@ This project addresses the challenge faced by UK students when choosing universi
 
 - **Python 3.11+**
 - **Node.js 18+**
-- **PostgreSQL 12+** (or Docker)
+- **PostgreSQL 12+**
 - **Git**
 
 ### Installation
@@ -87,26 +86,15 @@ This project addresses the challenge faced by UK students when choosing universi
 
 4. **Set up PostgreSQL Database**
    ```bash
-   # See docs/database/QUICK_START_LOCAL.md for detailed instructions
-   # Quick start:
+   # One-command setup (drops existing DB and creates fresh)
    cd server/database
-   python init_db.py
+   python setup_database.py
+   
+   # See server/database/SETUP_GUIDE.md for detailed instructions
    ```
 
-5. **Start with Docker (Recommended)**
+5. **Start the application**
    ```bash
-   # Start all services
-   docker-compose up -d
-   
-   # View logs
-   docker-compose logs -f
-   ```
-
-6. **Or start locally**
-   ```bash
-   # Start PostgreSQL
-   docker-compose up -d postgres
-   
    # Start backend (Terminal 1)
    cd server
    python app.py
@@ -255,9 +243,9 @@ curl -X POST http://localhost:5000/api/recommendations \
 - Recommendation result caching
 
 ### Scalability
-- Horizontal scaling with Docker containers
-- Database sharding for large datasets
-- CDN integration for static assets
+- Database indexing for fast queries
+- Query optimization with CTEs and JOINs
+- Efficient top-K heap algorithm (O(N log K))
 
 ## 🔒 Security Features
 
@@ -283,13 +271,11 @@ curl -X POST http://localhost:5000/api/recommendations \
    export JWT_SECRET_KEY=your-secure-secret-key
    ```
 
-2. **Docker Production**
+2. **Database Setup**
    ```bash
-   # Build production images
-   docker-compose -f docker-compose.prod.yml build
-   
-   # Start production services
-   docker-compose -f docker-compose.prod.yml up -d
+   # Set up production database
+   cd server/database
+   python setup_database.py
    ```
 
 3. **Database Migration**
