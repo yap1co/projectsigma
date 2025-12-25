@@ -76,37 +76,25 @@ def import_core_entities(cursor, data_dir: Path):
     if rows:
         data = [
             (
-                normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRNCOUNTRY')),
-                normalize_value(row.get('UKPRNNAME')),
-                normalize_value(row.get('UKPRNNAMEW')),
-                normalize_value(row.get('LOCID')),
-                normalize_value(row.get('SUURL')),
-                normalize_value(row.get('SUURLW')),
-                normalize_value(row.get('SUURLID')),
-                normalize_value(row.get('HEPURL')),
-                normalize_value(row.get('HEPURLW')),
-                normalize_value(row.get('HEPURLID')),
-                normalize_value(row.get('INSTACCOM')),
-                normalize_value(row.get('INSTACCOMW')),
-                normalize_value(row.get('REGION'))
+                normalize_value(row.get('FIRST_TRADING_NAME')),
+                normalize_value(row.get('LEGAL_NAME')),
+                normalize_value(row.get('COUNTRY')),
+                normalize_value(row.get('PROVURL'))
             )
             for row in rows
-            if normalize_value(row.get('UKPRN'))
+            if normalize_value(row.get('PUBUKPRN'))
         ]
         if data:
             execute_values(
                 cursor,
                 """
-                INSERT INTO institution (ukprn, pubukprn, ukprncountry, name, namew,
-                                       locid, suurl, suurlw, suurlid, hepurl,
-                                       hepurlw, hepurlid, instaccom, instaccomw, region)
+                INSERT INTO hesa_institution (pubukprn, first_trading_name, legal_name, country, provurl)
                 VALUES %s
-                ON CONFLICT (ukprn) DO UPDATE
-                SET pubukprn = EXCLUDED.pubukprn,
-                    name = EXCLUDED.name,
-                    region = EXCLUDED.region
+                ON CONFLICT (pubukprn) DO UPDATE
+                SET first_trading_name = EXCLUDED.first_trading_name,
+                    legal_name = EXCLUDED.legal_name,
+                    provurl = EXCLUDED.provurl
                 """,
                 data,
                 page_size=1000
@@ -175,7 +163,7 @@ def import_core_entities(cursor, data_dir: Path):
                 execute_batch(
                     cursor,
                     """
-                    INSERT INTO kiscourse (
+                    INSERT INTO hesa_kiscourse (
                         pubukprn, ukprn, kiscourseid, title, titlew, kismode, length,
                         levelcode, locid, distance, owncohort, avgcoursecost, avgcoursecostw,
                         avcostid, feeuk, feeeng, feeni, feesct, feewales, honours,
@@ -242,7 +230,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO entry (pubukprn, ukprn, kiscourseid, kismode, entrylevel,
+                INSERT INTO hesa_entry (pubukprn, kiscourseid, kismode, entagg, entsbj, alevel, access, degree, foundtn, noquals, "other", entpop
                                  entunavailreason, entpop, entagg, entaggyear, entyear1,
                                  entyear2, entsbj, alevel, access, aleveltce, bacc,
                                  degree, foundation, noquals, other, otherhe)
@@ -289,7 +277,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO employment (pubukprn, ukprn, kiscourseid, kismode,
+                INSERT INTO hesa_employment (pubukprn, kiscourseid, kismode, empagg, work, study, unemp, workstudy, emppop, empresponse, empresp_rate, empsample
                                       empunavailreason, emppop, empagg, empaggyear,
                                       empyear1, empyear2, empsbj, workstudy, work,
                                       study, unemp, other)
@@ -345,7 +333,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO joblist (pubukprn, ukprn, kiscourseid, kismode,
+                INSERT INTO hesa_joblist (pubukprn, kiscourseid, kismode,
                                     jobunavailreason, jobpop, jobresponse, jobsample,
                                     jobresp_rate, jobagg, jobaggyear, jobyear1,
                                     jobyear2, jobsbj, educ, health, carehome, healthsoc,
@@ -398,7 +386,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO gosalary (pubukprn, ukprn, kiscourseid, kismode,
+                INSERT INTO hesa_gosalary (pubukprn, kiscourseid, kismode,
                                     gosunavailreason, gospop, gosresponse, gossample,
                                     gosresp_rate, gosalagg, gosaggyear, gosyear1,
                                     gosyear2, gossbj, ldlwr, ldmed, ldupr, ldpop,
