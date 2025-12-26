@@ -1,6 +1,5 @@
 """
-Discover Uni CSV Import Script (CLEANED for NEA)
-Imports only the HESA CSV files used by the recommendation engine
+Imports  HESA CSV files used by the recommendation engine
 Based on HESA C25061 file structure
 """
 
@@ -59,7 +58,7 @@ def read_csv_file(file_path: Path) -> List[Dict]:
                 rows.append(row)
         logger.info(f"  → Read {len(rows)} rows from {file_path.name}")
     except Exception as e:
-        logger.error(f"  ✗ Error reading {file_path.name}: {e}")
+        logger.error(f"  Error reading {file_path.name}: {e}")
         return []
     
     return rows
@@ -68,10 +67,8 @@ def import_core_entities(cursor, data_dir: Path):
     """Import core HESA entities (institution and course)"""
     logger.info("\n" + "="*70)
     logger.info("IMPORTING CORE HESA TABLES")
-    logger.info("="*70)
     
-    # 1. INSTITUTION
-    logger.info("\n[1/2] Importing INSTITUTION.csv...")
+    logger.info("\nImporting INSTITUTION.csv...")
     rows = read_csv_file(data_dir / 'INSTITUTION.csv')
     if rows:
         raw_data = [
@@ -111,7 +108,7 @@ def import_core_entities(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Institution records (kept most recent of {duplicates} duplicate PUBUKPRNs)")
+            logger.info(f"  Imported {len(data)} Institution records (kept most recent of {duplicates} duplicate PUBUKPRNs)")
     
     # 2. KISCOURSE
     logger.info("\n[2/2] Importing KISCOURSE.csv...")
@@ -197,7 +194,7 @@ def import_core_entities(cursor, data_dir: Path):
                 )
                 logger.info(f"  → Processed batch {i//batch_size + 1}/{(len(data)-1)//batch_size + 1}")
             
-            logger.info(f"  ✓ Imported {len(data)} KIS Course records")
+            logger.info(f"  Imported {len(data)} KIS Course records")
 
     # 3. UCASCOURSEID
     logger.info("\n[3/4] Importing UCASCOURSEID.csv...")
@@ -227,7 +224,7 @@ def import_core_entities(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} UCAS Course ID records")
+            logger.info(f"  Imported {len(data)} UCAS Course ID records")
     
     # 4. SBJ (Subject codes)
     logger.info("\n[4/4] Importing SBJ.csv...")
@@ -256,7 +253,7 @@ def import_core_entities(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Subject records")
+            logger.info(f"  Imported {len(data)} Subject records")
 
 def import_outcome_tables(cursor, data_dir: Path):
     """Import employment and outcomes data"""
@@ -314,7 +311,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Entry records")
+            logger.info(f"  Imported {len(data)} Entry records")
     
     # 2. TARIFF (tariff point distributions)
     logger.info("\n[2/6] Importing TARIFF.csv...")
@@ -367,7 +364,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=500
             )
-            logger.info(f"  ✓ Imported {len(data)} Tariff records")
+            logger.info(f"  Imported {len(data)} Tariff records")
 
     # 3. EMPLOYMENT
     logger.info("\n[3/6] Importing EMPLOYMENT.csv...")
@@ -413,7 +410,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Employment records")
+            logger.info(f"  Imported {len(data)} Employment records")
     
     # 4. JOBLIST
     logger.info("\n[4/6] Importing JOBLIST.csv...")
@@ -470,7 +467,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Job List records")
+            logger.info(f"  Imported {len(data)} Job List records")
     
     # 5. GOSALARY
     logger.info("\n[5/6] Importing GOSALARY.csv...")
@@ -523,7 +520,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Graduate Salary records")
+            logger.info(f"  Imported {len(data)} Graduate Salary records")
     
     # 6. LEO3
     logger.info("\n[6/6] Importing LEO3.csv...")
@@ -574,7 +571,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} LEO3 records")
+            logger.info(f"  Imported {len(data)} LEO3 records")
 
 def main():
     """Main import function"""
@@ -582,9 +579,8 @@ def main():
     data_dir = Path(__file__).parent.parent.parent / 'data'
     
     logger.info("="*70)
-    logger.info("DISCOVER UNI CSV DATA IMPORT (CLEANED)")
-    logger.info("="*70)
-    logger.info(f"Data directory: {data_dir}\n")
+    logger.info(f" HESA CSV DATA IMPORT from : {data_dir}\n )")
+
     
     try:
         conn = get_db_connection()
@@ -598,11 +594,11 @@ def main():
         conn.commit()
         
         logger.info("\n" + "="*70)
-        logger.info("✓ Import completed successfully!")
+        logger.info("Import completed successfully!")
         logger.info("="*70)
         
     except Exception as e:
-        logger.error(f"\n✗ Error during import: {e}")
+        logger.error(f"\nError during import: {e}")
         if 'conn' in locals():
             conn.rollback()
         import traceback

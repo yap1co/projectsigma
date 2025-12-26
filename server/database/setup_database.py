@@ -1,24 +1,21 @@
 """
-Fresh Database Setup Script
-===========================
-This script drops and recreates the university_recommender database from scratch.
+Database schema creation and HESA data import and transformation script. 
 
-Steps:
 1. Drop existing database (if exists)
-2. Create new database
-3. Create all tables (application + HESA)
-4. Import HESA CSV data
-5. Map HESA data to application tables
+2. Create new relational POSTGRES database
+3. Create all tables (HESA +application) normalised to 3NF with PK, KF and referential integrity
+4. uses junction tables for many-to-many relationships
+5. Add index for performance and triggers for updated_at timestamps
+6.    checks constraints for data validity (grades as A*-U, non-null fields, unique fields, etc)
+7. Import HESA CSV data
+8. Map HESA data to application tables
+9. Enhance subject-to-course mappings for better search
 
-Usage:
-    python setup_database.py
-
-Requirements:
-    - PostgreSQL running on localhost:5432
-    - postgres user with password set in environment variables
-    - CSV files in ../../data/ directory
+Requires
+    1. CSV files in ../../data/ directory
+    2. PostgreSQL running on localhost:5432
+    3. .env file with database password    - 
 """
-
 import sys
 import os
 from pathlib import Path
@@ -27,8 +24,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+TARGET_DB = 'university_recommender'
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,15 +32,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Database configuration from environment
-# Password must be set explicitly (fail fast if misconfigured)
+# Load environment variables from .env file for Database configuration
+load_dotenv()
 db_password = os.getenv('POSTGRES_PASSWORD')
 if not db_password:
     raise RuntimeError(
-        "POSTGRES_PASSWORD environment variable is not set. "
-        "Please create server/.env file with database credentials."
+        "POSTGRES_PASSWORD must be added in server/.env file. "
     )
-
 DB_CONFIG = {
     'dbname': 'postgres',  # Connect to postgres DB first
     'user': os.getenv('POSTGRES_USER', 'postgres'),
@@ -53,12 +47,11 @@ DB_CONFIG = {
     'port': os.getenv('POSTGRES_PORT', '5432')
 }
 
-TARGET_DB = 'university_recommender'
 
 def drop_and_create_database():
     """Drop existing database and create fresh one"""
     logger.info("="*70)
-    logger.info("STEP 1: DROP AND CREATE DATABASE")
+    logger.info("Running function: DROP AND CREATE DATABASE")
     logger.info("="*70)
     
     conn = psycopg2.connect(**DB_CONFIG)
@@ -573,8 +566,7 @@ def import_hesa_data():
     """Import HESA CSV data"""
     logger.info("="*70)
     logger.info("STEP 3: IMPORT HESA CSV DATA")
-    logger.info("="*70)
-    
+   
     # Import using existing script
     import import_discover_uni_csv
     import_discover_uni_csv.main()
@@ -626,31 +618,18 @@ def main():
     try:
         logger.info("\n" + "="*70)
         logger.info("FRESH DATABASE SETUP - Project Sigma")
-        logger.info("="*70 + "\n")
         
-        # Step 1: Drop and create database
         drop_and_create_database()
-        
-        # Step 2: Create schema
         create_schema()
-        
-        # Step 3: Import HESA data
         import_hesa_data()
-        
-        # Step 4: Map to application tables
         map_hesa_to_application()
-        
-        # Step 5: Create career interest mappings
         create_career_mappings()
-        
-        # Step 6: Enhance subject-to-course mappings
         enhance_subject_mappings()
         
         # Summary
         logger.info("\n" + "="*70)
         logger.info("DATABASE SETUP COMPLETE!")
-        logger.info("="*70)
-        
+     
         conn = get_target_db_connection()
         cur = conn.cursor()
         
