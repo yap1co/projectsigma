@@ -77,7 +77,10 @@ def import_core_entities(cursor, data_dir: Path):
                 normalize_value(row.get('FIRST_TRADING_NAME')),
                 normalize_value(row.get('LEGAL_NAME')),
                 normalize_value(row.get('COUNTRY')),
-                normalize_value(row.get('PROVURL'))
+                normalize_value(row.get('PROVURL')),
+                normalize_value(row.get('PROVADDRESS')),
+                normalize_value(row.get('PROVTEL')),
+                normalize_value(row.get('PUBUKPRNCOUNTRY'))
             )
             for row in rows
             if normalize_value(row.get('PUBUKPRN'))
@@ -98,12 +101,15 @@ def import_core_entities(cursor, data_dir: Path):
             execute_values(
                 cursor,
                 """
-                INSERT INTO hesa_institution (pubukprn, first_trading_name, legal_name, country, provurl)
+                INSERT INTO hesa_institution (pubukprn, first_trading_name, legal_name, country, provurl, provaddress, provtel, pubukprncountry)
                 VALUES %s
                 ON CONFLICT (pubukprn) DO UPDATE
                 SET first_trading_name = EXCLUDED.first_trading_name,
                     legal_name = EXCLUDED.legal_name,
-                    provurl = EXCLUDED.provurl
+                    provurl = EXCLUDED.provurl,
+                    provaddress = EXCLUDED.provaddress,
+                    provtel = EXCLUDED.provtel,
+                    pubukprncountry = EXCLUDED.pubukprncountry
                 """,
                 data,
                 page_size=1000

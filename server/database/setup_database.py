@@ -262,7 +262,10 @@ def create_schema():
                 first_trading_name VARCHAR(255),
                 legal_name VARCHAR(255),
                 country VARCHAR(10),
-                provurl TEXT
+                provurl TEXT,
+                provaddress TEXT,
+                provtel VARCHAR(50),
+                pubukprncountry VARCHAR(10)
             )
         """)
         
