@@ -130,7 +130,8 @@ def create_schema():
         cur.execute("""
             CREATE TABLE subject (
                 subject_id VARCHAR(50) PRIMARY KEY,
-                subject_name VARCHAR(255) NOT NULL
+                subject_name VARCHAR(255) NOT NULL,
+                cah_code VARCHAR(50)
             )
         """)
         
@@ -180,13 +181,16 @@ def create_schema():
             )
         """)
         
-        # Course requirements table
+        # Course subject requirements table (maps courses to required CAH codes with grades)
         cur.execute("""
-            CREATE TABLE course_requirement (
+            CREATE TABLE course_subject_requirement (
                 req_id VARCHAR(50) PRIMARY KEY,
                 course_id VARCHAR(255) REFERENCES course(course_id) ON DELETE CASCADE,
-                subject_id VARCHAR(50) REFERENCES subject(subject_id) ON DELETE RESTRICT,
-                grade_req VARCHAR(5) NOT NULL CHECK (grade_req IN ('A*', 'A', 'B', 'C', 'D', 'E'))
+                cah_code VARCHAR(50) NOT NULL,
+                tariff_points INTEGER,
+                grade_req VARCHAR(5) NOT NULL CHECK (grade_req IN ('A*', 'A', 'B', 'C', 'D', 'E')),
+                requirement_source VARCHAR(20) DEFAULT 'HESA_SBJ',
+                UNIQUE (course_id, cah_code)
             )
         """)
         
@@ -279,40 +283,21 @@ def create_schema():
                 title TEXT,
                 titlew TEXT,
                 kismode VARCHAR(2),
-                length VARCHAR(50),
-                levelcode VARCHAR(10),
-                locid VARCHAR(50),
+                length VARCHAR(50),          -- Maps to NUMSTAGE
+                levelcode VARCHAR(10),       -- Maps to KISLEVEL
+                locid VARCHAR(50),           -- Maps to KISAIMCODE
                 distance VARCHAR(1),
-                owncohort VARCHAR(1),
-                avgcoursecost VARCHAR(50),
-                avgcoursecostw VARCHAR(50),
-                avcostid VARCHAR(10),
-                feeuk INTEGER,
-                feeeng INTEGER,
-                feeni INTEGER,
-                feesct INTEGER,
-                feewales INTEGER,
                 honours VARCHAR(1),
                 sandwich VARCHAR(1),
                 yearabroad VARCHAR(1),
-                foundationyear VARCHAR(1),
-                jacs3code VARCHAR(10),
-                subjectcodename VARCHAR(255),
-                subjectcodenamew VARCHAR(255),
-                courselocation VARCHAR(255),
-                courselocationw VARCHAR(255),
-                coursepageurl TEXT,
-                coursepageurlw TEXT,
-                coursepageurlid VARCHAR(10),
+                foundationyear VARCHAR(1),   -- Maps to FOUNDATION
+                hecos VARCHAR(10),           -- Maps to HECOS
+                coursepageurl TEXT,          -- Maps to CRSEURL
+                coursepageurlw TEXT,         -- Maps to CRSEURLW
                 supporturl TEXT,
                 supporturlw TEXT,
-                supporturlid VARCHAR(10),
-                employabilityurl TEXT,
-                employabilityurlw TEXT,
-                employabilityurlid VARCHAR(10),
-                financialurl TEXT,
-                financialurlw TEXT,
-                financialurlid VARCHAR(10),
+                employabilityurl TEXT,       -- Maps to EMPLOYURL
+                employabilityurlw TEXT,      -- Maps to EMPLOYURLW
                 PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
@@ -518,7 +503,7 @@ def create_schema():
         # Create indexes for performance
         logger.info("Creating indexes...")
         cur.execute("CREATE INDEX idx_course_university ON course(university_id)")
-        cur.execute("CREATE INDEX idx_requirement_course ON course_requirement(course_id)")
+        cur.execute("CREATE INDEX idx_requirement_course ON course_subject_requirement(course_id)")
         # Note: Removed redundant indexes where PK/UNIQUE constraints already create indexes:
         # - idx_course_hesa: course has UNIQUE(pubukprn, kiscourseid, kismode)
         # - idx_sbj_course: hesa_sbj PK covers (pubukprn, kiscourseid, kismode, sbj)
@@ -651,7 +636,7 @@ def main():
         cur.execute("SELECT COUNT(*) FROM course")
         logger.info(f"  - Courses: {cur.fetchone()[0]}")
         
-        cur.execute("SELECT COUNT(*) FROM course_requirement")
+        cur.execute("SELECT COUNT(*) FROM course_subject_requirement")
         logger.info(f"  - Course Requirements: {cur.fetchone()[0]}")
         
         logger.info("\nDatabase ready for use!\n")

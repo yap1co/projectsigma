@@ -146,6 +146,26 @@ def import_core_entities(cursor, data_dir: Path):
             kismode = normalize_value(row.get('KISMODE'))
             
             if pubukprn and kiscourseid and kismode:
+                # HECOS can be in multiple columns, find the first non-empty one
+                hecos_value = None
+                hecos_columns = ['HECOS', 'HECOS.1', 'HECOS.2', 'HECOS.3', 'HECOS.4']  # pandas creates .1, .2 etc for duplicate names
+                for hecos_col in hecos_columns:
+                    if hecos_col in row:
+                        hecos_val = normalize_value(row.get(hecos_col))
+                        if hecos_val:  # If not None and not empty string
+                            hecos_value = hecos_val
+                            break
+                
+                # If pandas didn't rename them, try accessing by index using the keys list
+                if not hecos_value:
+                    keys_list = list(row.keys())
+                    hecos_indices = [i for i, key in enumerate(keys_list) if key == 'HECOS']
+                    for idx in hecos_indices:
+                        hecos_val = normalize_value(row[keys_list[idx]])
+                        if hecos_val:
+                            hecos_value = hecos_val
+                            break
+                
                 data.append((
                     pubukprn,
                     normalize_value(row.get('UKPRN')),
@@ -153,40 +173,21 @@ def import_core_entities(cursor, data_dir: Path):
                     normalize_value(row.get('TITLE')),
                     normalize_value(row.get('TITLEW')),
                     kismode,
-                    normalize_value(row.get('LENGTH')),
-                    normalize_value(row.get('LEVELCODE')),
-                    normalize_value(row.get('LOCID')),
+                    normalize_value(row.get('NUMSTAGE')),     # length
+                    normalize_value(row.get('KISLEVEL')),     # levelcode
+                    normalize_value(row.get('KISAIMCODE')),   # locid
                     normalize_value(row.get('DISTANCE')),
-                    normalize_value(row.get('OWNCOHORT')),
-                    normalize_value(row.get('AVGCOURSECOST')),
-                    normalize_value(row.get('AVGCOURSECOSTW')),
-                    normalize_value(row.get('AVCOSTID')),
-                    normalize_int(row.get('FEEUK')),
-                    normalize_int(row.get('FEEENG')),
-                    normalize_int(row.get('FEENI')),
-                    normalize_int(row.get('FEESCT')),
-                    normalize_int(row.get('FEEWALES')),
                     normalize_value(row.get('HONOURS')),
                     normalize_value(row.get('SANDWICH')),
                     normalize_value(row.get('YEARABROAD')),
-                    normalize_value(row.get('FOUNDATIONYEAR')),
-                    normalize_value(row.get('JACS3')),
-                    normalize_value(row.get('SUBJECTCODENAME')),
-                    normalize_value(row.get('SUBJECTCODENAMEW')),
-                    normalize_value(row.get('COURSELOCATION')),
-                    normalize_value(row.get('COURSELOCATIONW')),
-                    normalize_value(row.get('COURSEPAGEURL')),
-                    normalize_value(row.get('COURSEPAGEURLW')),
-                    normalize_value(row.get('COURSEPAGEURLID')),
+                    normalize_value(row.get('FOUNDATION')),   # foundationyear
+                    hecos_value,                              # hecos (first non-empty from multiple columns)
+                    normalize_value(row.get('CRSEURL')),      # coursepageurl
+                    normalize_value(row.get('CRSEURLW')),     # coursepageurlw
                     normalize_value(row.get('SUPPORTURL')),
                     normalize_value(row.get('SUPPORTURLW')),
-                    normalize_value(row.get('SUPPORTURLID')),
-                    normalize_value(row.get('EMPLOYABILITYURL')),
-                    normalize_value(row.get('EMPLOYABILITYURLW')),
-                    normalize_value(row.get('EMPLOYABILITYURLID')),
-                    normalize_value(row.get('FINANCIALURL')),
-                    normalize_value(row.get('FINANCIALURLW')),
-                    normalize_value(row.get('FINANCIALURLID'))
+                    normalize_value(row.get('EMPLOYURL')),    # employabilityurl
+                    normalize_value(row.get('EMPLOYURLW'))    # employabilityurlw
                 ))
         
         if data:
@@ -204,20 +205,14 @@ def import_core_entities(cursor, data_dir: Path):
                         """
                         INSERT INTO hesa_kiscourse (
                             pubukprn, ukprn, kiscourseid, title, titlew, kismode, length,
-                            levelcode, locid, distance, owncohort, avgcoursecost, avgcoursecostw,
-                            avcostid, feeuk, feeeng, feeni, feesct, feewales, honours,
-                            sandwich, yearabroad, foundationyear, jacs3code, subjectcodename,
-                            subjectcodenamew, courselocation, courselocationw, coursepageurl,
-                            coursepageurlw, coursepageurlid, supporturl, supporturlw, supporturlid,
-                            employabilityurl, employabilityurlw, employabilityurlid,
-                            financialurl, financialurlw, financialurlid
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            levelcode, locid, distance, honours, sandwich, yearabroad, 
+                            foundationyear, hecos, coursepageurl, coursepageurlw,
+                            supporturl, supporturlw, employabilityurl, employabilityurlw
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                                 %s, %s, %s, %s, %s, %s)
                         ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                         SET title = EXCLUDED.title,
-                            jacs3code = EXCLUDED.jacs3code,
-                            feeuk = EXCLUDED.feeuk
+                            hecos = EXCLUDED.hecos
                         """,
                         batch,
                         page_size=100  # Reduced page size

@@ -448,10 +448,10 @@ class RecommendationEngine:
                         
                         # Get entry requirements for the best course
                         cur.execute("""
-                            SELECT s.subject_id, s.subject_name, cr.grade_req
-                            FROM course_requirement cr
-                            JOIN subject s ON cr.subject_id = s.subject_id
-                            WHERE cr.course_id = %s
+                            SELECT s.subject_id, s.subject_name, csr.grade_req
+                            FROM course_subject_requirement csr
+                            JOIN subject s ON csr.cah_code = s.cah_code
+                            WHERE csr.course_id = %s
                         """, (best_course['course_id'],))
                         
                         requirements = {}
@@ -1570,10 +1570,10 @@ class RecommendationEngine:
                         
                         # Get entry requirements
                         cur.execute("""
-                            SELECT s.subject_id, s.subject_name, cr.grade_req
-                            FROM course_requirement cr
-                            JOIN subject s ON cr.subject_id = s.subject_id
-                            WHERE cr.course_id = %s
+                            SELECT s.subject_id, s.subject_name, csr.grade_req
+                            FROM course_subject_requirement csr
+                            JOIN subject s ON csr.cah_code = s.cah_code
+                            WHERE csr.course_id = %s
                         """, (course_id,))
                         
                         requirements = {}

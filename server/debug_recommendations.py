@@ -167,9 +167,9 @@ def debug_database():
     
     # Check subject distribution
     cursor.execute("""
-        SELECT s.subject_name, COUNT(*) as course_count
-        FROM course_requirement cr
-        JOIN subject s ON cr.subject_id = s.subject_id
+        SELECT s.subject_name, COUNT(DISTINCT csr.course_id) as course_count
+        FROM course_subject_requirement csr
+        JOIN subject s ON csr.cah_code = s.cah_code
         WHERE s.subject_name IN ('Physics', 'Mathematics', 'Computer Science', 'Computing')
         GROUP BY s.subject_name
         ORDER BY course_count DESC

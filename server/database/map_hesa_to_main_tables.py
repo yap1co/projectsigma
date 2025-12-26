@@ -82,8 +82,8 @@ def map_hesa_to_main_tables():
                 kc.kismode,
                 kc.title,
                 NULL as ucasprogid,
-                NULL as hecos,
-                NULL as numstage,
+                kc.hecos,
+                kc.length as numstage,
                 uc.ucascourseid
             FROM hesa_kiscourse kc
             LEFT JOIN hesa_ucascourseid uc ON 
@@ -93,8 +93,7 @@ def map_hesa_to_main_tables():
             WHERE kc.pubukprn IS NOT NULL 
               AND kc.kiscourseid IS NOT NULL
               AND kc.title IS NOT NULL
-              AND kc.kismode = '01'  -- Full-time only for now
-            LIMIT 5000 -- Limit to avoid overwhelming the system
+              AND kc.kismode IN ('01', '02')  -- Full-time (01) and part-time (02)
         """)
         
         courses_data = cur.fetchall()
@@ -232,7 +231,7 @@ def map_hesa_to_main_tables():
         uni_count = cur.fetchone()['count']
         cur.execute("SELECT COUNT(*) as count FROM course")
         final_course_count = cur.fetchone()['count']
-        cur.execute("SELECT COUNT(*) as count FROM course_requirement")
+        cur.execute("SELECT COUNT(*) as count FROM course_subject_requirement")
         req_count = cur.fetchone()['count']
         
         logger.info("\n" + "="*70)

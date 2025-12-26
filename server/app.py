@@ -565,12 +565,12 @@ def get_advanced_recommendations():
                         c.course_id,
                         c.name as course_name,
                         COUNT(DISTINCT CASE 
-                            WHEN cr.subject_id IN (SELECT subject_id FROM student_profile) 
-                            THEN cr.subject_id 
+                            WHEN s.cah_code IN (SELECT cah_code FROM course_subject_requirement WHERE course_id = c.course_id) 
+                            THEN s.cah_code 
                         END) as matched_subjects_count,
-                        COUNT(DISTINCT cr.subject_id) as total_required_subjects
+                        COUNT(DISTINCT csr.cah_code) as total_required_subjects
                     FROM course c
-                    LEFT JOIN course_requirement cr ON c.course_id = cr.course_id
+                    LEFT JOIN course_subject_requirement csr ON c.course_id = csr.course_id
                     GROUP BY c.course_id, c.name
                 ),
                 course_grade_matches AS (
@@ -578,13 +578,14 @@ def get_advanced_recommendations():
                     SELECT 
                         c.course_id,
                         AVG(CASE 
-                            WHEN sg.predicted_grade >= cr.grade_req THEN 1.0 
+                            WHEN sg.predicted_grade >= csr.grade_req THEN 1.0 
                             ELSE 0.0 
                         END) as grade_match_ratio,
-                        COUNT(DISTINCT cr.subject_id) as graded_requirements_count
+                        COUNT(DISTINCT csr.cah_code) as graded_requirements_count
                     FROM course c
-                    JOIN course_requirement cr ON c.course_id = cr.course_id
-                    LEFT JOIN student_profile sg ON cr.subject_id = sg.subject_id
+                    JOIN course_subject_requirement csr ON c.course_id = csr.course_id
+                    LEFT JOIN subject s ON csr.cah_code = s.cah_code
+                    LEFT JOIN student_profile sg ON s.subject_id = sg.subject_id
                     WHERE sg.student_id IS NOT NULL
                     GROUP BY c.course_id
                 ),
@@ -785,9 +786,9 @@ def get_courses():
         if subject:
             query += """
                 AND c.course_id IN (
-                    SELECT DISTINCT cr.course_id 
-                    FROM course_requirement cr
-                    JOIN subject s ON cr.subject_id = s.subject_id
+                    SELECT DISTINCT csr.course_id 
+                    FROM course_subject_requirement csr
+                    JOIN subject s ON csr.cah_code = s.cah_code
                     WHERE s.subject_name ILIKE %s OR s.subject_id = %s
                 )
             """
@@ -815,10 +816,10 @@ def get_courses():
                     
                     # Get entry requirements
                     cur.execute("""
-                        SELECT s.subject_id, s.subject_name, cr.grade_req
-                        FROM course_requirement cr
-                        JOIN subject s ON cr.subject_id = s.subject_id
-                        WHERE cr.course_id = %s
+                        SELECT s.subject_id, s.subject_name, csr.grade_req
+                        FROM course_subject_requirement csr
+                        JOIN subject s ON csr.cah_code = s.cah_code
+                        WHERE csr.course_id = %s
                     """, (course_id,))
                     
                     requirements = {}
@@ -946,13 +947,19 @@ def add_course():
                             ON CONFLICT (subject_id) DO NOTHING
                         """, (subject_id, subject_name))
                     
-                    # Add requirement
+                    # Add requirement with CAH code mapping
                     req_id = generate_id('REQ')
                     grade_req = grades.get(subject_id, 'C')
-                    cur.execute("""
-                        INSERT INTO course_requirement (req_id, course_id, subject_id, grade_req)
-                        VALUES (%s, %s, %s, %s)
-                    """, (req_id, course_id, subject_id, grade_req))
+                    
+                    # Get CAH code for this subject
+                    cur.execute("SELECT cah_code FROM subject WHERE subject_id = %s", (subject_id,))
+                    cah_result = cur.fetchone()
+                    if cah_result:
+                        cah_code = cah_result[0]
+                        cur.execute("""
+                            INSERT INTO course_subject_requirement (req_id, course_id, cah_code, grade_req, requirement_source)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (req_id, course_id, cah_code, grade_req, 'MANUAL'))
                 
                 conn.commit()
         

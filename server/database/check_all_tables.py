@@ -43,7 +43,7 @@ def check_all_tables():
         ]
         
         app_tables = [
-            'university', 'course', 'subject', 'course_requirement', 
+            'university', 'course', 'subject', 'course_subject_requirement', 
             'career_interest', 'entrance_exam', 'student', 'student_grade',
             'student_career_interest', 'student_preferred_exam', 'course_required_exam',
             'recommendation_run', 'recommendation_result', 'subject_to_career'
@@ -154,7 +154,7 @@ def check_all_tables():
             cur.execute("SELECT COUNT(*) FROM course")
             course_count = cur.fetchone()[0]
             
-            cur.execute("SELECT COUNT(*) FROM course_requirement") 
+            cur.execute("SELECT COUNT(*) FROM course_subject_requirement") 
             req_count = cur.fetchone()[0]
             
             if course_count > 0:
