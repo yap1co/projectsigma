@@ -63,6 +63,25 @@ def read_csv_file(file_path: Path) -> List[Dict]:
     
     return rows
 
+def read_sbj_csv_file(file_path: Path) -> List[Dict]:
+    """Read SBJ.csv file with proper UTF-16 encoding to handle null bytes"""
+    if not file_path.exists():
+        logger.warning(f"File not found: {file_path}")
+        return []
+    
+    rows = []
+    try:
+        with open(file_path, 'r', encoding='utf-16', errors='ignore') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                rows.append(row)
+        logger.info(f"  → Read {len(rows)} rows from {file_path.name} (UTF-16 encoding)")
+    except Exception as e:
+        logger.error(f"  Error reading {file_path.name} with UTF-16: {e}")
+        return []
+    
+    return rows
+
 def import_core_entities(cursor, data_dir: Path):
     """Import core HESA entities (institution and course)"""
     logger.info("\n" + "="*70)
@@ -241,21 +260,20 @@ def import_core_entities(cursor, data_dir: Path):
             )
             logger.info(f"  Imported {len(data)} UCAS Course ID records")
     
-    # 4. SBJ (Subject codes)
+    # 4. SBJ (Subject codes) - Special handling for UTF-16 encoding
     logger.info("\n[4/4] Importing SBJ.csv...")
-    rows = read_csv_file(data_dir / 'SBJ.csv')
+    rows = read_sbj_csv_file(data_dir / 'SBJ.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('SBJ'))
-            )
-            for row in rows
-            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('SBJ'))
-        ]
+        data = []
+        for row in rows:
+            pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
+            ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
+            kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
+            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            sbj = row.get('SBJ', '').strip() if row.get('SBJ') else None
+            
+            if pubukprn and sbj:
+                data.append((pubukprn, ukprn, kiscourseid, kismode, sbj))
         
         if data:
             execute_values(
@@ -266,7 +284,7 @@ def import_core_entities(cursor, data_dir: Path):
                 ON CONFLICT DO NOTHING
                 """,
                 data,
-                page_size=1000
+                page_size=100
             )
             logger.info(f"  Imported {len(data)} Subject records")
 

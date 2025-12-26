@@ -1,3 +1,8 @@
+-- ================================================================================
+-- COMPREHENSIVE DATABASE TABLE CHECK - Project Sigma
+-- Quick SQL query to check all table counts
+-- ================================================================================
+
 -- HESA IMPORT TABLES
 SELECT 'HESA_INSTITUTION' as table_name, COUNT(*) as count FROM hesa_institution
 UNION ALL

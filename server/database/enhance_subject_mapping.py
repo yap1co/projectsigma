@@ -274,15 +274,15 @@ def enhance_subject_course_mapping():
         
         requirements_created = 0
         
-        # Get all courses with their CAH codes from hesa_kiscourse
+        # Get all courses with their CAH codes from hesa_sbj
         cur.execute("""
-            SELECT DISTINCT c.course_id, c.name as course_name, hk.jacs3code as cahcode
+            SELECT DISTINCT c.course_id, c.name as course_name, hs.sbj as cahcode
             FROM course c
-            JOIN hesa_kiscourse hk ON (c.pubukprn = hk.pubukprn 
-                                     AND c.kiscourseid = hk.kiscourseid 
-                                     AND c.kismode = hk.kismode)
-            WHERE hk.jacs3code IS NOT NULL 
-            AND hk.jacs3code != ''
+            JOIN hesa_sbj hs ON (c.pubukprn = hs.pubukprn 
+                               AND c.kiscourseid = hs.kiscourseid 
+                               AND c.kismode = hs.kismode)
+            WHERE hs.sbj IS NOT NULL 
+            AND hs.sbj != ''
         """)
         
         course_cah_mappings = cur.fetchall()
