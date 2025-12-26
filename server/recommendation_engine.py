@@ -1504,7 +1504,7 @@ class RecommendationEngine:
         
         # Add warning if requirements aren't met
         if unmet_requirements:
-            reasons.append(f"⚠ Note: You don't meet all requirements: {', '.join(unmet_requirements)}")
+            reasons.append(f"Note: You don't meet all requirements: {', '.join(unmet_requirements)}")
         
         # Preference reasons
         if 'preferredRegion' in preferences:

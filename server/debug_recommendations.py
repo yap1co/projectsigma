@@ -55,11 +55,11 @@ def debug_recommendations():
         criteria=criteria
     )
     
-    print(f'🔍 RESULTS: {len(recommendations)} recommendations')
-    print(f'🔍 TYPE: {type(recommendations)}')
+    print(f'RESULTS: {len(recommendations)} recommendations')
+    print(f'TYPE: {type(recommendations)}')
     if recommendations:
-        print(f'🔍 FIRST COURSE: {recommendations[0]["course"]["name"]}')
-        print(f'🔍 FIRST UNI: {recommendations[0]["course"]["university"]["name"]}')
+        print(f'FIRST COURSE: {recommendations[0]["course"]["name"]}')
+        print(f'FIRST UNI: {recommendations[0]["course"]["university"]["name"]}')
     
     print(f'Total recommendations: {len(recommendations)}')
     
@@ -189,9 +189,9 @@ def main():
     print(f'Python executable: {sys.executable}')
     print(f'Python path: {sys.path[0]}')
     if 'venv' in sys.executable:
-        print('✅ Using virtual environment')
+        print('Using virtual environment')
     else:
-        print('⚠️  WARNING: Not using virtual environment!')
+        print('WARNING: Not using virtual environment!')
     print()
     
     debug_recommendations()

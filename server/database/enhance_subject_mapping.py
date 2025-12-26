@@ -407,7 +407,7 @@ def enhance_subject_course_mapping():
         for subject in top_subjects:
             logger.info(f"  {subject['subject_name']}: {subject['course_count']} courses")
         
-        logger.info("\n✅ Enhanced subject-to-course mapping complete!")
+        logger.info("\nEnhanced subject-to-course mapping complete!")
         
     except Exception as e:
         logger.error(f"Error enhancing mapping: {e}")
@@ -507,7 +507,7 @@ def create_search_functions():
         """)
         
         conn.commit()
-        logger.info("✅ Search functions created successfully!")
+        logger.info("Search functions created successfully!")
         
     except Exception as e:
         logger.error(f"Error creating search functions: {e}")

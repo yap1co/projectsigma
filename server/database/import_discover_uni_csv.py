@@ -230,22 +230,21 @@ def import_core_entities(cursor, data_dir: Path):
             
             logger.info(f"  Imported {len(data)} KIS Course records")
 
-    # 3. UCASCOURSEID
+    # 3. UCASCOURSEID - Special handling for UTF-16 encoding
     logger.info("\n[3/4] Importing UCASCOURSEID.csv...")
-    rows = read_csv_file(data_dir / 'UCASCOURSEID.csv')
+    rows = read_sbj_csv_file(data_dir / 'UCASCOURSEID.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('LOCID')),
-                normalize_value(row.get('UCASCOURSEID'))
-            )
-            for row in rows
-            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('UCASCOURSEID'))
-        ]
+        data = []
+        for row in rows:
+            pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
+            ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
+            kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
+            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            locid = row.get('LOCID', '').strip() if row.get('LOCID') else None
+            ucascourseid = row.get('UCASCOURSEID', '').strip() if row.get('UCASCOURSEID') else None
+            
+            if pubukprn and ucascourseid:
+                data.append((pubukprn, ukprn, kiscourseid, kismode, locid, ucascourseid))
         
         if data:
             execute_values(
@@ -256,7 +255,7 @@ def import_core_entities(cursor, data_dir: Path):
                 ON CONFLICT DO NOTHING
                 """,
                 data,
-                page_size=1000
+                page_size=100
             )
             logger.info(f"  Imported {len(data)} UCAS Course ID records")
     
@@ -347,40 +346,45 @@ def import_outcome_tables(cursor, data_dir: Path):
             logger.info(f"  Imported {len(data)} Entry records")
     
     # 2. TARIFF (tariff point distributions)
+    # 2. TARIFF - Special handling for UTF-16 encoding
     logger.info("\n[2/6] Importing TARIFF.csv...")
-    rows = read_csv_file(data_dir / 'TARIFF.csv')
+    rows = read_sbj_csv_file(data_dir / 'TARIFF.csv')
     if rows:
-        data = [
-            (
-                normalize_value(row.get('PUBUKPRN')),
-                normalize_value(row.get('UKPRN')),
-                normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('TARUNAVAILREASON')),
-                normalize_int(row.get('TARPOP')),
-                normalize_value(row.get('TARAGG')),
-                normalize_value(row.get('TARAGGYEAR')),
-                normalize_value(row.get('TARYEAR1')),
-                normalize_value(row.get('TARYEAR2')),
-                normalize_value(row.get('TARSBJ')),
-                normalize_int(row.get('T001')),
-                normalize_int(row.get('T048')),
-                normalize_int(row.get('T064')),
-                normalize_int(row.get('T080')),
-                normalize_int(row.get('T096')),
-                normalize_int(row.get('T112')),
-                normalize_int(row.get('T128')),
-                normalize_int(row.get('T144')),
-                normalize_int(row.get('T160')),
-                normalize_int(row.get('T176')),
-                normalize_int(row.get('T192')),
-                normalize_int(row.get('T208')),
-                normalize_int(row.get('T224')),
-                normalize_int(row.get('T240'))
-            )
-            for row in rows
-            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('KISCOURSEID'))
-        ]
+        data = []
+        for row in rows:
+            pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
+            ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
+            kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
+            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            
+            if pubukprn and kiscourseid:
+                data.append((
+                    pubukprn,
+                    ukprn,
+                    kiscourseid,
+                    kismode,
+                    row.get('TARUNAVAILREASON', '').strip() if row.get('TARUNAVAILREASON') else None,
+                    int(row.get('TARPOP', 0)) if row.get('TARPOP', '').strip() else None,
+                    row.get('TARAGG', '').strip() if row.get('TARAGG') else None,
+                    row.get('TARAGGYEAR', '').strip() if row.get('TARAGGYEAR') else None,
+                    row.get('TARYEAR1', '').strip() if row.get('TARYEAR1') else None,
+                    row.get('TARYEAR2', '').strip() if row.get('TARYEAR2') else None,
+                    row.get('TARSBJ', '').strip() if row.get('TARSBJ') else None,
+                    int(row.get('T001', 0)) if row.get('T001', '').strip() else None,
+                    int(row.get('T048', 0)) if row.get('T048', '').strip() else None,
+                    int(row.get('T064', 0)) if row.get('T064', '').strip() else None,
+                    int(row.get('T080', 0)) if row.get('T080', '').strip() else None,
+                    int(row.get('T096', 0)) if row.get('T096', '').strip() else None,
+                    int(row.get('T112', 0)) if row.get('T112', '').strip() else None,
+                    int(row.get('T128', 0)) if row.get('T128', '').strip() else None,
+                    int(row.get('T144', 0)) if row.get('T144', '').strip() else None,
+                    int(row.get('T160', 0)) if row.get('T160', '').strip() else None,
+                    int(row.get('T176', 0)) if row.get('T176', '').strip() else None,
+                    int(row.get('T192', 0)) if row.get('T192', '').strip() else None,
+                    int(row.get('T208', 0)) if row.get('T208', '').strip() else None,
+                    int(row.get('T224', 0)) if row.get('T224', '').strip() else None,
+                    int(row.get('T240', 0)) if row.get('T240', '').strip() else None
+                ))
 
         if data:
             execute_values(
@@ -395,7 +399,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 ON CONFLICT DO NOTHING
                 """,
                 data,
-                page_size=500
+                page_size=100
             )
             logger.info(f"  Imported {len(data)} Tariff records")
 

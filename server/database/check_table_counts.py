@@ -35,7 +35,7 @@ for table in tables:
         cur.execute(f"SELECT COUNT(*) FROM {table}")
         count = cur.fetchone()[0]
         total_rows += count
-        status = "✓" if count > 0 else "⚠ EMPTY"
+        status = "OK" if count > 0 else "EMPTY"
         print(f"{table:<35} {count:>10,} {status:>10}")
 
 print("=" * 52)

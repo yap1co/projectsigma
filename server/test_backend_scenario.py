@@ -53,10 +53,10 @@ def test_complete_backend_scenario():
     if register_response.status_code == 201:
         register_result = json.loads(register_response.data)
         student_id = register_result.get('student_id')
-        print(f"   ✅ Registration successful! Student ID: {student_id}")
+        print(f"   Registration successful! Student ID: {student_id}")
     else:
         error_msg = register_response.data.decode('utf-8')[:200]
-        print(f"   ❌ Registration failed: {error_msg}")
+        print(f"   Registration failed: {error_msg}")
         return
     
     # 2. Test Login
@@ -75,10 +75,10 @@ def test_complete_backend_scenario():
     if login_response.status_code == 200:
         login_result = json.loads(login_response.data)
         token = login_result.get('token')
-        print("   ✅ Login successful!")
+        print("   Login successful!")
     else:
         error_msg = login_response.data.decode('utf-8')[:200]
-        print(f"   ❌ Login failed: {error_msg}")
+        print(f"   Login failed: {error_msg}")
         return
     
     # 3. Test Profile Retrieval with Junction Tables
@@ -91,7 +91,7 @@ def test_complete_backend_scenario():
     print(f"   Status: {profile_response.status_code}")
     if profile_response.status_code == 200:
         profile = json.loads(profile_response.data)
-        print("   ✅ Profile retrieved successfully!")
+        print("   Profile retrieved successfully!")
         print()
         
         # Display student details
@@ -134,7 +134,7 @@ def test_complete_backend_scenario():
                 
     else:
         error_msg = profile_response.data.decode('utf-8')[:200]
-        print(f"   ❌ Profile retrieval failed: {error_msg}")
+        print(f"   Profile retrieval failed: {error_msg}")
         return
     
     # 4. Test Course Recommendations  
@@ -145,7 +145,7 @@ def test_complete_backend_scenario():
     print(f"   Status: {rec_response.status_code}")
     if rec_response.status_code == 200:
         recommendations = json.loads(rec_response.data)
-        print("   ✅ Recommendations generated successfully!")
+        print("   Recommendations generated successfully!")
         print(f"   Found {len(recommendations)} course recommendations")
         
         if recommendations:
@@ -157,13 +157,13 @@ def test_complete_backend_scenario():
                 print()
     else:
         error_msg = rec_response.data.decode('utf-8')[:200]
-        print(f"   ❌ Recommendations failed: {error_msg}")
+        print(f"   Recommendations failed: {error_msg}")
     
     print()
     print("=== BACKEND SCENARIO TESTING COMPLETE ===")
-    print("✅ Junction tables working correctly!")
-    print("✅ 1NF normalization validated!")
-    print("✅ Database schema fully functional!")
+    print("Junction tables working correctly!")
+    print("1NF normalization validated!")
+    print("Database schema fully functional!")
 
 if __name__ == "__main__":
     test_complete_backend_scenario()

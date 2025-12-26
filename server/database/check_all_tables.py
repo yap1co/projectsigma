@@ -20,7 +20,7 @@ def check_all_tables():
         cur = conn.cursor()
         
         print("=" * 80)
-        print("🔍 COMPREHENSIVE DATABASE TABLE CHECK - Project Sigma")
+        print("COMPREHENSIVE DATABASE TABLE CHECK - Project Sigma")
         print("=" * 80)
         
         # Get all table names from the database
@@ -61,14 +61,14 @@ def check_all_tables():
         sql_parts = []
         
         # HESA Tables section
-        print("📊 HESA IMPORT TABLES")
+        print("HESA IMPORT TABLES")
         print("-" * 40)
         for table in sorted(existing_hesa):
             table_display = table.replace('hesa_', '').upper()
             sql_parts.append(f"SELECT 'HESA_{table_display}' as table_name, COUNT(*) as count, 'hesa' as category FROM {table}")
         
         # Application Tables section  
-        print(f"\n📋 APPLICATION TABLES")
+        print(f"\nAPPLICATION TABLES")
         print("-" * 40)
         for table in sorted(existing_app):
             table_display = table.replace('_', ' ').title()
@@ -76,7 +76,7 @@ def check_all_tables():
         
         # System Tables section
         if existing_system:
-            print(f"\n🔧 SYSTEM TABLES")
+            print(f"\nSYSTEM TABLES")
             print("-" * 40)
             for table in sorted(existing_system):
                 table_display = table.replace('_', ' ').title()
@@ -106,13 +106,13 @@ def check_all_tables():
                 # Print category header
                 if category != current_category:
                     if category == 'hesa':
-                        print("📊 HESA IMPORT TABLES")
+                        print("HESA IMPORT TABLES")
                         print("-" * 40)
                     elif category == 'app':
-                        print("\n📋 APPLICATION TABLES") 
+                        print("\nAPPLICATION TABLES") 
                         print("-" * 40)
                     elif category == 'system':
-                        print("\n🔧 SYSTEM TABLES")
+                        print("\nSYSTEM TABLES")
                         print("-" * 40)
                     elif category == 'other':
                         print("\n❓ OTHER TABLES")
@@ -121,11 +121,11 @@ def check_all_tables():
                 
                 # Format the output nicely
                 if count == 0 and 'migration' not in table_name.lower():
-                    status = "❌ EMPTY"
+                    status = "EMPTY"
                 elif count < 100 and 'migration' not in table_name.lower():
-                    status = "⚠️  LOW"
+                    status = "LOW"
                 else:
-                    status = "✅ OK"
+                    status = "OK"
                 
                 print(f"{table_name:<25} {count:>10,} {status:>8}")
                 
@@ -138,7 +138,7 @@ def check_all_tables():
                     total_system += count
             
             print("\n" + "=" * 60)
-            print("📈 SUMMARY STATISTICS")
+            print("SUMMARY STATISTICS")
             print("=" * 60)
             print(f"{'HESA Records Total:':<25} {total_hesa:>15,}")
             print(f"{'Application Records:':<25} {total_app:>15,}")
@@ -147,7 +147,7 @@ def check_all_tables():
             print(f"{'Number of Tables:':<25} {len(all_tables):>15}")
             
             # Additional insights
-            print("\n🎯 KEY METRICS")
+            print("\nKEY METRICS")
             print("-" * 30)
             
             # Check specific important relationships
@@ -176,13 +176,13 @@ def check_all_tables():
                 print(f"University Mapping Rate: {uni_mapping:.1f}%")
             
         else:
-            print("⚠️  No tables found in database")
+            print("No tables found in database")
             
         cur.close()
         conn.close()
         
     except Exception as e:
-        print(f"❌ Error checking tables: {e}")
+        print(f"Error checking tables: {e}")
         return False
         
     return True
@@ -192,5 +192,5 @@ if __name__ == "__main__":
     if not success:
         sys.exit(1)
     
-    print("\n✅ Database check completed successfully!")
+    print("\nDatabase check completed successfully!")
     print("=" * 80)
