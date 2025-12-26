@@ -33,12 +33,12 @@ This means the password in your configuration doesn't match your actual PostgreS
 
 4. **Save the file**
 
-5. **Run the setup script before init_db.py:**
+5. **Run the setup script before setup_database.py:**
    ```powershell
    cd D:\Downloads\Programming\projectSigma\projectsigma
    . .\server\database\setup_local_env.ps1
    cd server\database
-   python init_db.py
+   python setup_database.py
    ```
 
 ---
@@ -75,10 +75,10 @@ This means the password in your configuration doesn't match your actual PostgreS
 
 5. **Save the file**
 
-6. **Now run init_db.py:**
+6. **Now run setup_database.py:**
    ```powershell
    cd database
-   python init_db.py
+   python setup_database.py
    ```
 
 **Note:** The `app.py` uses `load_dotenv()` which automatically loads `.env` from the `server/` directory.
@@ -97,7 +97,7 @@ $env:POSTGRES_HOST = "localhost"
 $env:POSTGRES_PORT = "5432"
 
 cd server\database
-python init_db.py
+python setup_database.py
 ```
 
 **Note:** This only works for the current PowerShell session. Close the terminal and you'll need to set them again.
@@ -136,9 +136,9 @@ notepad .env
 # 2. Add this line (replace with your password):
 POSTGRES_PASSWORD=your_password_here
 
-# 3. Run init
+# 3. Run setup
 cd database
-python init_db.py
+python setup_database.py
 ```
 
 ### Method B: Using setup script
@@ -148,10 +148,10 @@ notepad server\database\setup_local_env.ps1
 
 # 2. Update line 12 with your password
 
-# 3. Run setup then init
+# 3. Run setup script
 . .\server\database\setup_local_env.ps1
 cd server\database
-python init_db.py
+python setup_database.py
 ```
 
 ---

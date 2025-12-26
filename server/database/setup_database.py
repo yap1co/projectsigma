@@ -15,7 +15,7 @@ Usage:
 
 Requirements:
     - PostgreSQL running on localhost:5432
-    - postgres user with password 'postgres123'
+    - postgres user with password set in environment variables
     - CSV files in ../../data/ directory
 """
 
@@ -25,23 +25,32 @@ from pathlib import Path
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from database_helper import generate_id
-from psycopg2.extras import RealDictCursor
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Database configuration
+# Database configuration from environment
+# Password must be set explicitly (fail fast if misconfigured)
+db_password = os.getenv('POSTGRES_PASSWORD')
+if not db_password:
+    raise RuntimeError(
+        "POSTGRES_PASSWORD environment variable is not set. "
+        "Please create server/.env file with database credentials."
+    )
+
 DB_CONFIG = {
     'dbname': 'postgres',  # Connect to postgres DB first
-    'user': 'postgres',
-    'password': 'postgres123',
-    'host': 'localhost',
-    'port': '5432'
+    'user': os.getenv('POSTGRES_USER', 'postgres'),
+    'password': db_password,
+    'host': os.getenv('POSTGRES_HOST', 'localhost'),
+    'port': os.getenv('POSTGRES_PORT', '5432')
 }
 
 TARGET_DB = 'university_recommender'
@@ -74,10 +83,10 @@ def drop_and_create_database():
         logger.info(f"Creating database {TARGET_DB}...")
         cur.execute(f"CREATE DATABASE {TARGET_DB}")
         
-        logger.info("✅ Database created successfully\n")
+        logger.info("Database created successfully\n")
         
     except Exception as e:
-        logger.error(f"❌ Error: {e}")
+        logger.error(f"Error: {e}")
         raise
     finally:
         cur.close()
@@ -111,15 +120,34 @@ def create_schema():
         # Application tables
         logger.info("Creating application tables...")
         
-        # User table
+        # Student table (core entity)
         cur.execute("""
-            CREATE TABLE "user" (
-                user_id VARCHAR(255) PRIMARY KEY,
+            CREATE TABLE student (
+                student_id VARCHAR(50) PRIMARY KEY,
+                display_name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
-                name VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at DATE DEFAULT CURRENT_DATE,
+                region VARCHAR(100),
+                tuition_budget INTEGER
+            )
+        """)
+        
+        # Subject table
+        cur.execute("""
+            CREATE TABLE subject (
+                subject_id VARCHAR(50) PRIMARY KEY,
+                subject_name VARCHAR(255) NOT NULL UNIQUE
+            )
+        """)
+        
+        # StudentGrade table
+        cur.execute("""
+            CREATE TABLE student_grade (
+                student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+                subject_id VARCHAR(50) REFERENCES subject(subject_id) ON DELETE RESTRICT,
+                predicted_grade VARCHAR(5) NOT NULL CHECK (predicted_grade IN ('A*', 'A', 'B', 'C', 'D', 'E', 'U')),
+                PRIMARY KEY (student_id, subject_id)
             )
         """)
         
@@ -147,65 +175,87 @@ def create_schema():
                 annual_fee INTEGER,
                 employability_score INTEGER,
                 course_url TEXT,
+                typical_offer_text VARCHAR(255),
+                typical_offer_tariff INTEGER,
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (pubukprn, kiscourseid, kismode)
             )
         """)
         
         # Course requirements table
         cur.execute("""
             CREATE TABLE course_requirement (
-                requirement_id VARCHAR(255) PRIMARY KEY,
-                course_id VARCHAR(255) REFERENCES course(course_id),
-                subject VARCHAR(255),
-                grade VARCHAR(10),
-                qualification_type VARCHAR(50) DEFAULT 'A-Level',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                req_id VARCHAR(50) PRIMARY KEY,
+                course_id VARCHAR(255) REFERENCES course(course_id) ON DELETE CASCADE,
+                subject_id VARCHAR(50) REFERENCES subject(subject_id) ON DELETE RESTRICT,
+                grade_req VARCHAR(5) NOT NULL CHECK (grade_req IN ('A*', 'A', 'B', 'C', 'D', 'E'))
             )
         """)
         
-        # User preference table
+        # EntranceExam table
         cur.execute("""
-            CREATE TABLE user_preference (
-                preference_id VARCHAR(255) PRIMARY KEY,
-                user_id VARCHAR(255) REFERENCES "user"(user_id),
-                preferred_regions TEXT[],
-                career_interests TEXT[],
-                subject_1 VARCHAR(100),
-                subject_1_grade VARCHAR(2),
-                subject_2 VARCHAR(100),
-                subject_2_grade VARCHAR(2),
-                subject_3 VARCHAR(100),
-                subject_3_grade VARCHAR(2),
-                ucas_points INTEGER,
-                max_fee INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            CREATE TABLE entrance_exam (
+                exam_id VARCHAR(50) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL UNIQUE
             )
         """)
         
-        # User feedback table
-        cur.execute("""
-            CREATE TABLE user_feedback (
-                feedback_id VARCHAR(255) PRIMARY KEY,
-                user_id VARCHAR(255) REFERENCES "user"(user_id),
-                course_id VARCHAR(255) REFERENCES course(course_id),
-                rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-                feedback_text TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        
-        # Career interests lookup table
+        # Career interest table (10 categories)
         cur.execute("""
             CREATE TABLE career_interest (
-                interest_id VARCHAR(255) PRIMARY KEY,
-                interest_name VARCHAR(255) NOT NULL,
-                keywords TEXT[],
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                career_interest_id VARCHAR(50) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL UNIQUE
+            )
+        """)
+        
+        # Student preferred exam junction table
+        cur.execute("""
+            CREATE TABLE student_preferred_exam (
+                student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+                exam_id VARCHAR(50) REFERENCES entrance_exam(exam_id) ON DELETE CASCADE,
+                PRIMARY KEY (student_id, exam_id)
+            )
+        """)
+        
+        # Student career interest junction table
+        cur.execute("""
+            CREATE TABLE student_career_interest (
+                student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+                career_interest_id VARCHAR(50) REFERENCES career_interest(career_interest_id) ON DELETE CASCADE,
+                PRIMARY KEY (student_id, career_interest_id)
+            )
+        """)
+        
+        # CourseRequiredExam table
+        cur.execute("""
+            CREATE TABLE course_required_exam (
+                course_id VARCHAR(255) REFERENCES course(course_id) ON DELETE CASCADE,
+                exam_id VARCHAR(50) REFERENCES entrance_exam(exam_id) ON DELETE RESTRICT,
+                PRIMARY KEY (course_id, exam_id)
+            )
+        """)
+        
+        # RecommendationRun table
+        cur.execute("""
+            CREATE TABLE recommendation_run (
+                run_id VARCHAR(50) PRIMARY KEY,
+                student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+                run_at DATE DEFAULT CURRENT_DATE,
+                weights JSONB,
+                prefs_snapshot JSONB
+            )
+        """)
+        
+        # RecommendationResult table
+        cur.execute("""
+            CREATE TABLE recommendation_result (
+                result_id VARCHAR(50) PRIMARY KEY,
+                run_id VARCHAR(50) REFERENCES recommendation_run(run_id) ON DELETE CASCADE,
+                items JSONB NOT NULL CHECK (jsonb_typeof(items) = 'array')
             )
         """)
         
@@ -227,13 +277,45 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_kiscourse (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
-                kismode VARCHAR(2),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 title TEXT,
-                ucasprogid VARCHAR(10),
-                hecos VARCHAR(100),
-                numstage INTEGER,
-                crseurl TEXT,
+                titlew TEXT,
+                kismode VARCHAR(2),
+                length VARCHAR(50),
+                levelcode VARCHAR(10),
+                locid VARCHAR(50),
+                distance VARCHAR(1),
+                owncohort VARCHAR(1),
+                avgcoursecost VARCHAR(50),
+                avgcoursecostw VARCHAR(50),
+                avcostid VARCHAR(10),
+                feeuk INTEGER,
+                feeeng INTEGER,
+                feeni INTEGER,
+                feesct INTEGER,
+                feewales INTEGER,
+                honours VARCHAR(1),
+                sandwich VARCHAR(1),
+                yearabroad VARCHAR(1),
+                foundationyear VARCHAR(1),
+                jacs3code VARCHAR(10),
+                subjectcodename VARCHAR(255),
+                subjectcodenamew VARCHAR(255),
+                courselocation VARCHAR(255),
+                courselocationw VARCHAR(255),
+                coursepageurl TEXT,
+                coursepageurlw TEXT,
+                coursepageurlid VARCHAR(10),
+                supporturl TEXT,
+                supporturlw TEXT,
+                supporturlid VARCHAR(10),
+                employabilityurl TEXT,
+                employabilityurlw TEXT,
+                employabilityurlid VARCHAR(10),
+                financialurl TEXT,
+                financialurlw TEXT,
+                financialurlid VARCHAR(10),
                 PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
@@ -242,18 +324,22 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_employment (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
+                empunavailreason VARCHAR(50),
+                emppop INTEGER,
                 empagg VARCHAR(2),
+                empaggyear VARCHAR(20),
+                empyear1 VARCHAR(20),
+                empyear2 VARCHAR(20),
+                empsbj VARCHAR(20),
+                workstudy INTEGER,
                 work INTEGER,
                 study INTEGER,
                 unemp INTEGER,
-                workstudy INTEGER,
-                emppop INTEGER,
-                empresponse INTEGER,
-                empresp_rate INTEGER,
-                empsample INTEGER,
-                PRIMARY KEY (pubukprn, kiscourseid, kismode, empagg)
+                "other" INTEGER,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
         
@@ -261,18 +347,27 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_entry (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
+                entrylevel VARCHAR(50),
+                entunavailreason VARCHAR(50),
+                entpop INTEGER,
                 entagg VARCHAR(2),
-                entsbj VARCHAR(10),
+                entaggyear VARCHAR(20),
+                entyear1 VARCHAR(20),
+                entyear2 VARCHAR(20),
+                entsbj VARCHAR(20),
                 alevel INTEGER,
                 access INTEGER,
+                aleveltce INTEGER,
+                bacc INTEGER,
                 degree INTEGER,
-                foundtn INTEGER,
+                foundation INTEGER,
                 noquals INTEGER,
                 "other" INTEGER,
-                entpop INTEGER,
-                PRIMARY KEY (pubukprn, kiscourseid, kismode, entagg, entsbj)
+                otherhe INTEGER,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
         
@@ -280,17 +375,28 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_gosalary (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
-                goagg VARCHAR(2),
-                goinstmed INTEGER,
-                goinstlq INTEGER,
-                goinstuq INTEGER,
-                gopop INTEGER,
-                goresponse INTEGER,
-                goresp_rate INTEGER,
-                gosample INTEGER,
-                PRIMARY KEY (pubukprn, kiscourseid, kismode, goagg)
+                gosunavailreason VARCHAR(50),
+                gospop INTEGER,
+                gosresponse INTEGER,
+                gossample INTEGER,
+                gosresp_rate INTEGER,
+                gosalagg VARCHAR(2),
+                gosaggyear VARCHAR(20),
+                gosyear1 VARCHAR(20),
+                gosyear2 VARCHAR(20),
+                gossbj VARCHAR(20),
+                ldlwr INTEGER,
+                ldmed INTEGER,
+                ldupr INTEGER,
+                ldpop INTEGER,
+                instlwr INTEGER,
+                instmed INTEGER,
+                instupr INTEGER,
+                instpop INTEGER,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
         
@@ -298,13 +404,32 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_joblist (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
+                jobunavailreason VARCHAR(50),
+                jobpop INTEGER,
+                jobresponse INTEGER,
+                jobsample INTEGER,
+                jobresp_rate INTEGER,
                 jobagg VARCHAR(2),
-                job VARCHAR(255),
-                perc INTEGER,
-                "order" INTEGER,
-                PRIMARY KEY (pubukprn, kiscourseid, kismode, jobagg, "order")
+                jobaggyear VARCHAR(20),
+                jobyear1 VARCHAR(20),
+                jobyear2 VARCHAR(20),
+                jobsbj VARCHAR(20),
+                educ INTEGER,
+                health INTEGER,
+                carehome INTEGER,
+                healthsoc INTEGER,
+                retail INTEGER,
+                man INTEGER,
+                info INTEGER,
+                fin INTEGER,
+                pro INTEGER,
+                admin INTEGER,
+                "other" INTEGER,
+                unkwn INTEGER,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
         
@@ -312,34 +437,132 @@ def create_schema():
         cur.execute("""
             CREATE TABLE hesa_leo3 (
                 pubukprn VARCHAR(8),
-                kiscourseid VARCHAR(20),
+                ukprn VARCHAR(8),
+                kiscourseid VARCHAR(50),
                 kismode VARCHAR(2),
-                leoagg VARCHAR(2),
-                leo3instmed INTEGER,
-                leo3instlq INTEGER,
-                leo3instuq INTEGER,
+                leo3unavailreason VARCHAR(50),
                 leo3pop INTEGER,
-                PRIMARY KEY (pubukprn, kiscourseid, kismode, leoagg)
+                leo3agg VARCHAR(2),
+                leo3aggyear VARCHAR(20),
+                leo3year1 VARCHAR(20),
+                leo3year2 VARCHAR(20),
+                leo3sbj VARCHAR(20),
+                leo3instlq INTEGER,
+                leo3instmed INTEGER,
+                leo3instuq INTEGER,
+                leo3instpop INTEGER,
+                leo3seclq INTEGER,
+                leo3secmed INTEGER,
+                leo3secuq INTEGER,
+                leo3secpop INTEGER,
+                leo3sector VARCHAR(50),
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
+            )
+        """)
+        
+        # HESA UCASCOURSEID - UCAS course identifiers
+        cur.execute("""
+            CREATE TABLE hesa_ucascourseid (
+                ucascourseid_id SERIAL PRIMARY KEY,
+                pubukprn VARCHAR(8) NOT NULL,
+                ukprn VARCHAR(8) NOT NULL,
+                kiscourseid VARCHAR(50) NOT NULL,
+                kismode VARCHAR(2) NOT NULL,
+                locid VARCHAR(50),
+                ucascourseid VARCHAR(50) NOT NULL,
+                UNIQUE (pubukprn, kiscourseid, kismode, locid, ucascourseid)
+            )
+        """)
+        
+        # HESA SBJ - Subject codes (CAH) for courses
+        cur.execute("""
+            CREATE TABLE hesa_sbj (
+                pubukprn VARCHAR(8) NOT NULL,
+                ukprn VARCHAR(8) NOT NULL,
+                kiscourseid VARCHAR(50) NOT NULL,
+                kismode VARCHAR(2) NOT NULL,
+                sbj VARCHAR(50) NOT NULL,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode, sbj)
+            )
+        """)
+
+        # HESA TARIFF - Tariff point distributions
+        cur.execute("""
+            CREATE TABLE hesa_tariff (
+                pubukprn VARCHAR(8) NOT NULL,
+                ukprn VARCHAR(8) NOT NULL,
+                kiscourseid VARCHAR(50) NOT NULL,
+                kismode VARCHAR(2) NOT NULL,
+                tarunavailreason VARCHAR(2),
+                tarpop INTEGER,
+                taragg VARCHAR(2),
+                taraggyear VARCHAR(10),
+                taryear1 VARCHAR(10),
+                taryear2 VARCHAR(10),
+                tarsbj VARCHAR(50),
+                t001 INTEGER,
+                t048 INTEGER,
+                t064 INTEGER,
+                t080 INTEGER,
+                t096 INTEGER,
+                t112 INTEGER,
+                t128 INTEGER,
+                t144 INTEGER,
+                t160 INTEGER,
+                t176 INTEGER,
+                t192 INTEGER,
+                t208 INTEGER,
+                t224 INTEGER,
+                t240 INTEGER,
+                PRIMARY KEY (pubukprn, kiscourseid, kismode)
             )
         """)
         
         # Create indexes for performance
         logger.info("Creating indexes...")
         cur.execute("CREATE INDEX idx_course_university ON course(university_id)")
-        cur.execute("CREATE INDEX idx_course_hesa ON course(pubukprn, kiscourseid, kismode)")
         cur.execute("CREATE INDEX idx_requirement_course ON course_requirement(course_id)")
-        cur.execute("CREATE INDEX idx_preference_user ON user_preference(user_id)")
-        cur.execute("CREATE INDEX idx_feedback_user ON user_feedback(user_id)")
-        cur.execute("CREATE INDEX idx_feedback_course ON user_feedback(course_id)")
+        # Note: Removed redundant indexes where PK/UNIQUE constraints already create indexes:
+        # - idx_course_hesa: course has UNIQUE(pubukprn, kiscourseid, kismode)
+        # - idx_sbj_course: hesa_sbj PK covers (pubukprn, kiscourseid, kismode, sbj)
+        # - idx_ucascourseid_course: hesa_ucascourseid UNIQUE covers those columns
+        # - idx_tariff_course: hesa_tariff PK covers those columns
+        
+        # Create trigger function for updating updated_at timestamp
+        logger.info("Creating triggers...")
+        cur.execute("""
+            CREATE OR REPLACE FUNCTION update_updated_at_column()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                NEW.updated_at = CURRENT_TIMESTAMP;
+                RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        """)
+        
+        # Apply trigger to tables with updated_at
+        cur.execute("""
+            CREATE TRIGGER update_university_updated_at
+            BEFORE UPDATE ON university
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+        """)
+        
+        cur.execute("""
+            CREATE TRIGGER update_course_updated_at
+            BEFORE UPDATE ON course
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+        """)
         
         # Record migration
         cur.execute("INSERT INTO schema_migrations (version) VALUES ('001_complete_schema')")
         
         conn.commit()
-        logger.info("✅ Schema created successfully\n")
+        logger.info("Schema created successfully\n")
         
     except Exception as e:
-        logger.error(f"❌ Error creating schema: {e}")
+        logger.error(f"Error creating schema: {e}")
         conn.rollback()
         raise
     finally:
@@ -356,7 +579,7 @@ def import_hesa_data():
     import import_discover_uni_csv
     import_discover_uni_csv.main()
     
-    logger.info("✅ HESA data imported successfully\n")
+    logger.info("HESA data imported successfully\n")
 
 def map_hesa_to_application():
     """Map HESA data to application tables"""
@@ -368,7 +591,35 @@ def map_hesa_to_application():
     import map_hesa_to_main_tables
     map_hesa_to_main_tables.map_hesa_to_main_tables()
     
-    logger.info("✅ HESA data mapped successfully\n")
+    logger.info("HESA data mapped successfully\n")
+
+def create_career_mappings():
+    """Create subject to career interest mappings and seed career interests"""
+    logger.info("="*70)
+    logger.info("STEP 5: CREATE CAREER INTEREST MAPPINGS")
+    logger.info("="*70)
+    
+    # Import and run career mapping script
+    import subject_to_career_mapping
+    subject_to_career_mapping.create_subject_to_career_table()
+    
+    # Seed career interests for student profile
+    import seed_career_interests
+    seed_career_interests.seed_career_interests()
+    
+    logger.info("Career interest mappings created successfully\n")
+
+def enhance_subject_mappings():
+    """Enhance subject-to-course mappings for better search"""
+    logger.info("="*70)
+    logger.info("STEP 6: ENHANCE SUBJECT-TO-COURSE MAPPINGS")
+    logger.info("="*70)
+    
+    # Import and run subject mapping enhancement
+    import enhance_subject_mapping
+    enhance_subject_mapping.main()
+    
+    logger.info("Subject-to-course mappings enhanced successfully\n")
 
 def main():
     """Run complete database setup"""
@@ -389,9 +640,15 @@ def main():
         # Step 4: Map to application tables
         map_hesa_to_application()
         
+        # Step 5: Create career interest mappings
+        create_career_mappings()
+        
+        # Step 6: Enhance subject-to-course mappings
+        enhance_subject_mappings()
+        
         # Summary
         logger.info("\n" + "="*70)
-        logger.info("✅ DATABASE SETUP COMPLETE!")
+        logger.info("DATABASE SETUP COMPLETE!")
         logger.info("="*70)
         
         conn = get_target_db_connection()
@@ -414,13 +671,13 @@ def main():
         cur.execute("SELECT COUNT(*) FROM course_requirement")
         logger.info(f"  - Course Requirements: {cur.fetchone()[0]}")
         
-        logger.info("\nDatabase ready for use! 🎉\n")
+        logger.info("\nDatabase ready for use!\n")
         
         cur.close()
         conn.close()
         
     except Exception as e:
-        logger.error(f"\n❌ Setup failed: {e}")
+        logger.error(f"\nSetup failed: {e}")
         sys.exit(1)
 
 if __name__ == '__main__':

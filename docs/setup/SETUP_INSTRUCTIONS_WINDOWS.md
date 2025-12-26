@@ -56,9 +56,9 @@ Or manually initialize:
 # Install Python dependencies first
 pip install psycopg2-binary pandas
 
-# Run initialization script
+# Run setup script (automated - creates database, imports HESA data)
 cd server/database
-python init_db.py
+python setup_database.py
 ```
 
 ## Step 4: Prepare CSV Files

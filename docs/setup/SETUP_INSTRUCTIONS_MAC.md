@@ -76,9 +76,9 @@ docker-compose exec postgres psql -U postgres -d university_recommender
 
 Or manually initialize:
 ```bash
-# Run initialization script
+# Run setup script (automated - creates database, imports HESA data)
 cd server/database
-python3 init_db.py
+python3 setup_database.py
 ```
 
 ## Step 5: Prepare CSV Files

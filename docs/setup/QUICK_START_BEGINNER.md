@@ -75,8 +75,8 @@ cd D:\Downloads\Programming\projectsigma\server\database
 # Edit setup_local_env.ps1 - change password!
 . .\setup_local_env.ps1
 
-# Initialize database
-python init_db.py
+# Initialize database (automated - creates all tables, imports HESA data)
+python setup_database.py
 ```
 
 ### Step 6: Configure Environment (5 minutes)

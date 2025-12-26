@@ -20,7 +20,7 @@ The project follows a modular, three-tier architecture with clear separation of 
 ```
 projectsigma/
 ├── data/                   # 📊 HESA Source Data
-│   └── [7 CSV files: 478 universities, 30,835 courses]
+│   └── [10 CSV files: 478 universities, 30,835 courses]
 │
 ├── server/                 # 🐍 Backend (Python/Flask)
 │   ├── app.py              # Main Flask API (12 REST endpoints)
@@ -35,14 +35,11 @@ projectsigma/
 │   │   └── course.py       # Course model (inheritance from BaseModel)
 │   │
 │   ├── database/           # 🗄️ Database Layer
-│   │   ├── setup_database.py       # ⭐ Automated setup (single command)
-│   │   ├── import_discover_uni_csv.py  # HESA CSV import (7 files)
-│   │   ├── map_hesa_to_main_tables.py  # HESA → application mapping
-│   │   ├── init_db.py              # Legacy initialization
-│   │   ├── add_sample_data.py      # Test data generator
-│   │   └── migrations/             # Schema version control
-│   │       ├── 001_initial_schema.sql          # 15 application tables
-│   │       └── 002_discover_uni_data_schema.sql # 7 HESA tables
+│   │   ├── setup_database.py       # ⭐ Automated setup (single command - 669 lines)
+│   │   ├── import_discover_uni_csv.py  # HESA CSV import (618 lines)
+│   │   ├── map_hesa_to_main_tables.py  # HESA → application mapping (298 lines)
+│   │   ├── seed_career_interests.py    # Lookup table seeding (99 lines)
+│   │   └── subject_to_career_mapping.py # Subject-career logic (184 lines)
 │   │
 │   └── tests/              # 🧪 Test Suite (43 tests, 100% passing)
 │       ├── test_recommendation_engine.py  # Algorithm tests (8 tests)
@@ -183,19 +180,24 @@ CREATE DATABASE university_recommender;
 **Goal:** Set up PostgreSQL database and import HESA data
 
 **Tasks:**
-- [x] Create database schema (23 tables)
-- [x] Write migration scripts (`001_initial_schema.sql`, `002_discover_uni_data_schema.sql`)
-- [x] Import HESA CSV files (`import_discover_uni_csv.py`)
+- [x] Create database schema (25 tables: 14 application + 10 HESA + 1 system)
+- [x] Normalize student preferences (junction tables for 1NF compliance)
+- [x] Add database triggers for automatic updated_at timestamps
+- [x] Implement fail-fast environment variable validation
+- [x] Import HESA CSV files (`import_discover_uni_csv.py` - 10 CSV files)
 - [x] Map HESA data to application tables (`map_hesa_to_main_tables.py`)
 
 **Challenges Encountered:**
-1. **VARCHAR Length Error:** HESA aggregation fields stored as VARCHAR(1) but contained 2-digit values
-   - **Solution:** Altered schema to VARCHAR(2) for all `*agg` columns
+1. **TEXT[] Arrays Violating 1NF:** Arrays in student table broke First Normal Form
+   - **Solution:** Created junction tables (`student_career_interest`, `student_preferred_exam`) with proper foreign keys
    
-2. **NoneType Comparison Error:** `entry_data.get('alevel', 0)` returned None instead of 0
-   - **Solution:** Added explicit None checking: `alevel_value = alevel_value if alevel_value is not None else 0`
+2. **Duplicate HESA Course Imports:** Missing UNIQUE constraint allowed duplicate courses
+   - **Solution:** Added `UNIQUE (pubukprn, kiscourseid, kismode)` constraint to course table
 
-**Evidence:** See [server/database/migrations/002_discover_uni_data_schema.sql](../../server/database/migrations/002_discover_uni_data_schema.sql)
+3. **updated_at Never Updating:** Timestamp only set on INSERT, never on UPDATE
+   - **Solution:** Implemented PostgreSQL triggers with plpgsql function for automatic timestamp updates
+
+**Evidence:** See [server/database/setup_database.py](../../server/database/setup_database.py) (669 lines), [docs/database/SCHEMA_IMPROVEMENTS_2025.md](../database/SCHEMA_IMPROVEMENTS_2025.md)
 
 ### 2.2 Sprint 2: Recommendation Engine (Week 3-4)
 
@@ -337,7 +339,7 @@ for row in cur.fetchall():
 
 **After:**
 - 23 database tables (48% reduction)
-- 7 HESA CSV files (79% reduction)
+- 10 HESA CSV files (70% reduction)
 - Schema: 850 lines (53% reduction)
 
 **Justification:** Focus on core functionality for NEA submission while maintaining full recommendation capability

@@ -27,27 +27,30 @@ This automated script will:
    ```bash
    pip install -r ../requirements.txt
    ```
-3. **7 HESA CSV files** in `../../data/` directory
+3. **10 HESA CSV files** in `../../data/` directory
 
 ## Database Configuration
 
-Default settings (edit in `setup_database.py` if needed):
-- Host: `localhost`
-- Port: `5432`
-- User: `postgres`
-- Password: `postgres123`
+Default settings (configured via environment variables):
+- Host: `localhost` (default)
+- Port: `5432` (default)
+- User: `postgres` (default)
+- Password: Must be set in `.env` file (POSTGRES_PASSWORD)
 - Database: `university_recommender`
 
 ## Required CSV Files
 
 Place these in `data/` directory:
-1. `INSTITUTION.csv` - University information
-2. `KISCOURSE.csv` - Course catalog
-3. `EMPLOYMENT.csv` - Graduate employment
+1. `INSTITUTION.csv` - University information (478 institutions)
+2. `KISCOURSE.csv` - Course catalog (~30,835 courses)
+3. `EMPLOYMENT.csv` - Graduate employment statistics
 4. `ENTRY.csv` - Entry requirements
 5. `GOSALARY.csv` - Graduate salaries
 6. `JOBLIST.csv` - Job destinations
-7. `LEO3.csv` - Earnings data
+7. `LEO3.csv` - Earnings data (Longitudinal Education Outcomes)
+8. `SBJ.csv` - Subject codes/classifications
+9. `TARIFF.csv` - UCAS tariff points
+10. `UCASCOURSEID.csv` - UCAS course identifiers
 
 ---
 

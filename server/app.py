@@ -20,6 +20,34 @@ from validators import (
 # Load environment variables
 load_dotenv()
 
+# Mapping functions for frontend display names to database IDs
+def career_name_to_id(career_name):
+    """Convert career display name to database ID"""
+    mapping = {
+        'Medicine & Healthcare': 'healthcare',
+        'Engineering & Technology': 'engineering',
+        'Business & Finance': 'business',
+        'Law': 'law',
+        'Education': 'education',
+        'Arts & Humanities': 'humanities',
+        'Sciences': 'sciences',
+        'Social Sciences': 'social_sciences',
+        'Creative Arts': 'creative_arts',
+        'Sports & Fitness': 'sports'
+    }
+    return mapping.get(career_name)
+
+def exam_name_to_id(exam_name):
+    """Convert exam display name to database ID"""
+    mapping = {
+        'A-Level': 'a_level',
+        'BTEC': 'btec',
+        'International Baccalaureate': 'ib',
+        'Scottish Highers': 'scottish_highers',
+        'Access Course': 'access_course'
+    }
+    return mapping.get(exam_name)
+
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
@@ -96,8 +124,8 @@ def register():
                 # Insert student
                 cur.execute("""
                     INSERT INTO student (student_id, display_name, email, password_hash, 
-                                      region, tuition_budget, preferred_exams, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
+                                      region, tuition_budget, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, CURRENT_DATE)
                     RETURNING student_id
                 """, (
                     student_id,
@@ -105,11 +133,32 @@ def register():
                     data['email'],
                     password_hash,
                     preferences.get('preferredRegion'),
-                    preferences.get('maxBudget'),
-                    preferences.get('preferredExams', [])
+                    preferences.get('maxBudget')
                 ))
                 
                 student_id = cur.fetchone()['student_id']
+                
+                # Insert preferred exams into junction table
+                preferred_exams = preferences.get('preferredExams', [])
+                for exam_name in preferred_exams:
+                    exam_id = exam_name_to_id(exam_name)
+                    if exam_id:  # Only insert if valid mapping exists
+                        cur.execute("""
+                            INSERT INTO student_preferred_exam (student_id, exam_id)
+                            VALUES (%s, %s)
+                            ON CONFLICT DO NOTHING
+                        """, (student_id, exam_id))
+                
+                # Insert career interests into junction table
+                career_interests = preferences.get('careerInterests', [])
+                for career_name in career_interests:
+                    career_id = career_name_to_id(career_name)
+                    if career_id:  # Only insert if valid mapping exists
+                        cur.execute("""
+                            INSERT INTO student_career_interest (student_id, career_interest_id)
+                            VALUES (%s, %s)
+                            ON CONFLICT DO NOTHING
+                        """, (student_id, career_id))
                 
                 # Insert student grades if provided
                 predicted_grades = data.get('predictedGrades', {})
@@ -207,9 +256,43 @@ def get_profile():
                 if not student:
                     return jsonify({'message': 'Student not found'}), 404
                 
-                # Remove password from response
+                # Get A-level subjects and grades
+                cur.execute("""
+                    SELECT sg.subject_id, sg.predicted_grade, s.subject_name
+                    FROM student_grade sg
+                    JOIN subject s ON sg.subject_id = s.subject_id
+                    WHERE sg.student_id = %s
+                """, (student_id,))
+                
+                grade_records = cur.fetchall()
+                a_level_subjects = [record['subject_id'] for record in grade_records]
+                predicted_grades = {record['subject_id']: record['predicted_grade'] for record in grade_records}
+                
+                # Get career interests from junction table
+                cur.execute("""
+                    SELECT ci.name
+                    FROM student_career_interest sci
+                    JOIN career_interest ci ON sci.career_interest_id = ci.career_interest_id
+                    WHERE sci.student_id = %s
+                """, (student_id,))
+                career_interests = [row['name'] for row in cur.fetchall()]
+                
+                # Get preferred exams from junction table
+                cur.execute("""
+                    SELECT ee.name
+                    FROM student_preferred_exam spe
+                    JOIN entrance_exam ee ON spe.exam_id = ee.exam_id
+                    WHERE spe.student_id = %s
+                """, (student_id,))
+                preferred_exams = [row['name'] for row in cur.fetchall()]
+                
+                # Remove password from response and add academic data
                 del student['password_hash']
                 student['yearGroup'] = 'Year 12'  # Default, can be stored if needed
+                student['aLevelSubjects'] = a_level_subjects
+                student['predictedGrades'] = predicted_grades
+                student['careerInterests'] = career_interests
+                student['preferredExams'] = preferred_exams
                 
                 return jsonify({'student': student})
         
@@ -240,14 +323,25 @@ def update_profile():
                     prefs = data['preferences']
                     cur.execute("""
                         UPDATE student
-                        SET region = %s, tuition_budget = %s, preferred_exams = %s
+                        SET region = %s, tuition_budget = %s
                         WHERE student_id = %s
                     """, (
                         prefs.get('preferredRegion'),
                         prefs.get('maxBudget'),
-                        prefs.get('preferredExams', []),
                         student_id
                     ))
+                    
+                    # Update preferred exams (delete and re-insert)
+                    if 'preferredExams' in prefs:
+                        cur.execute("DELETE FROM student_preferred_exam WHERE student_id = %s", (student_id,))
+                        for exam_name in prefs.get('preferredExams', []):
+                            exam_id = exam_name_to_id(exam_name)
+                            if exam_id:
+                                cur.execute("""
+                                    INSERT INTO student_preferred_exam (student_id, exam_id)
+                                    VALUES (%s, %s)
+                                    ON CONFLICT DO NOTHING
+                                """, (student_id, exam_id))
                 
                 # Update student grades
                 if 'aLevelSubjects' in data and 'predictedGrades' in data:
@@ -270,6 +364,21 @@ def update_profile():
                                 INSERT INTO student_grade (student_id, subject_id, predicted_grade)
                                 VALUES (%s, %s, %s)
                             """, (student_id, subject_id, data['predictedGrades'][subject_id]))
+                
+                # Update career interests using junction table
+                if 'careerInterests' in data:
+                    # Delete existing career interests
+                    cur.execute("DELETE FROM student_career_interest WHERE student_id = %s", (student_id,))
+                    
+                    # Insert new career interests
+                    for career_name in data['careerInterests']:
+                        career_id = career_name_to_id(career_name)
+                        if career_id:
+                            cur.execute("""
+                                INSERT INTO student_career_interest (student_id, career_interest_id)
+                                VALUES (%s, %s)
+                                ON CONFLICT DO NOTHING
+                            """, (student_id, career_id))
                 
                 conn.commit()
         
@@ -340,14 +449,52 @@ def get_recommendations():
                 if not student:
                     return jsonify({'message': 'Student not found'}), 404
                 
+                # Get A-level subjects and grades from student_grade table
+                cur.execute("""
+                    SELECT sg.subject_id, sg.predicted_grade, s.subject_name
+                    FROM student_grade sg
+                    JOIN subject s ON sg.subject_id = s.subject_id
+                    WHERE sg.student_id = %s
+                """, (student_id,))
+                
+                grade_records = cur.fetchall()
+                a_level_subjects = [record['subject_id'] for record in grade_records]
+                predicted_grades = {record['subject_id']: record['predicted_grade'] for record in grade_records}
+                
+                # Get career interests from junction table
+                cur.execute("""
+                    SELECT ci.name
+                    FROM student_career_interest sci
+                    JOIN career_interest ci ON sci.career_interest_id = ci.career_interest_id
+                    WHERE sci.student_id = %s
+                """, (student_id,))
+                career_interests = [row['name'] for row in cur.fetchall()]
+                
+                # Get preferred exams from junction table
+                cur.execute("""
+                    SELECT ee.name
+                    FROM student_preferred_exam spe
+                    JOIN entrance_exam ee ON spe.exam_id = ee.exam_id
+                    WHERE spe.student_id = %s
+                """, (student_id,))
+                preferred_exams = [row['name'] for row in cur.fetchall()]
+                
+                # Build preferences object
+                preferences = {
+                    'preferredRegion': student.get('region', ''),
+                    'maxBudget': student.get('tuition_budget', 20000),
+                    'preferredExams': preferred_exams,
+                    'careerInterests': career_interests
+                }
+                
                 # Add student_id to criteria for feedback lookup
                 criteria_with_student = {**criteria, 'student_id': student_id}
                 
                 # Generate recommendations
                 recommendations = recommendation_engine.get_recommendations(
-                    student.get('aLevelSubjects', []),
-                    student.get('predictedGrades', {}),
-                    student.get('preferences', {}),
+                    a_level_subjects,
+                    predicted_grades,
+                    preferences,
                     criteria_with_student
                 )
                 
@@ -529,6 +676,69 @@ def get_advanced_recommendations():
         return jsonify({'message': f'Failed to get advanced recommendations: {str(e)}'}), 500
 
 # Course and university data routes
+@app.route('/api/courses/search-by-subjects', methods=['POST'])
+def search_courses_by_subjects():
+    """Search courses by A-level subjects"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'message': 'Request body is required'}), 400
+        
+        subjects = data.get('subjects', [])
+        min_match = float(data.get('min_match_percentage', 0.5))
+        limit = validate_limit(data.get('limit', 50), max_limit=100)
+        
+        if not subjects:
+            return jsonify({'message': 'At least one subject is required'}), 400
+        
+        if not isinstance(subjects, list):
+            return jsonify({'message': 'Subjects must be an array'}), 400
+            
+        if min_match < 0 or min_match > 1:
+            return jsonify({'message': 'min_match_percentage must be between 0 and 1'}), 400
+        
+        # Sanitize subject names
+        subjects = [sanitize_string(subject, 100) for subject in subjects]
+        
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Use the custom function to match courses
+        cur.execute("""
+            SELECT * FROM match_courses_to_student(%s, %s)
+            LIMIT %s
+        """, (subjects, min_match, limit))
+        
+        results = cur.fetchall()
+        
+        # Format response
+        courses = []
+        for row in results:
+            courses.append({
+                'course_id': row['course_id'],
+                'name': row['course_name'],
+                'university_name': row['university_name'],
+                'match_percentage': float(row['match_percentage']),
+                'matching_subjects': row['matching_subjects'],
+                'match_score': round(float(row['match_percentage']) * 100, 1)
+            })
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'courses': courses,
+            'search_criteria': {
+                'subjects': subjects,
+                'min_match_percentage': min_match
+            },
+            'total_results': len(courses)
+        })
+        
+    except Exception as e:
+        logger.error(f"Course search error: {e}")
+        return jsonify({'message': f'Failed to search courses: {str(e)}'}), 500
+
 @app.route('/api/courses', methods=['GET'])
 def get_courses():
     """Get all courses with optional filtering"""
@@ -670,188 +880,6 @@ def get_universities():
         
     except Exception as e:
         return jsonify({'message': f'Failed to get universities: {str(e)}'}), 500
-
-# Recommendation Feedback routes
-@app.route('/api/recommendations/feedback', methods=['POST'])
-@jwt_required()
-def submit_feedback():
-    """Submit feedback (thumbs up/down) on a recommendation"""
-    try:
-        student_id = get_jwt_identity()
-        data = request.get_json()
-        
-        # Validate input
-        if not data:
-            return jsonify({'message': 'Request body is required'}), 400
-        
-        course_id = data.get('courseId') or data.get('course_id')
-        feedback_type = data.get('feedbackType') or data.get('feedback_type')
-        match_score = data.get('matchScore') or data.get('match_score')
-        search_criteria = data.get('searchCriteria') or data.get('search_criteria', {})
-        notes = data.get('notes', '')
-        
-        if not course_id:
-            return jsonify({'message': 'courseId is required'}), 400
-        
-        if feedback_type not in ['positive', 'negative']:
-            return jsonify({'message': 'feedbackType must be "positive" or "negative"'}), 400
-        
-        # Validate course exists
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SELECT course_id FROM course WHERE course_id = %s", (course_id,))
-                if not cur.fetchone():
-                    return jsonify({'message': 'Course not found'}), 404
-                
-                # Insert feedback
-                feedback_id = generate_id('FB')
-                cur.execute("""
-                    INSERT INTO recommendation_feedback 
-                        (feedback_id, student_id, course_id, feedback_type, match_score, search_criteria, notes)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    feedback_id,
-                    student_id,
-                    course_id,
-                    feedback_type,
-                    match_score,
-                    json.dumps(search_criteria),
-                    notes[:500] if notes else None  # Limit notes length
-                ))
-                
-                conn.commit()
-        
-        return jsonify({
-            'message': 'Feedback submitted successfully',
-            'feedbackId': feedback_id
-        })
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to submit feedback: {str(e)}'}), 500
-
-@app.route('/api/recommendations/feedback/<course_id>', methods=['GET'])
-@jwt_required()
-def get_course_feedback(course_id):
-    """Get feedback history for a specific course"""
-    try:
-        student_id = get_jwt_identity()
-        
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    SELECT 
-                        feedback_id,
-                        feedback_type,
-                        feedback_at,
-                        match_score,
-                        notes
-                    FROM recommendation_feedback
-                    WHERE student_id = %s AND course_id = %s
-                    ORDER BY feedback_at DESC
-                    LIMIT 50
-                """, (student_id, course_id))
-                
-                feedback_history = [dict(row) for row in cur.fetchall()]
-                
-                # Calculate summary
-                positive_count = sum(1 for f in feedback_history if f['feedback_type'] == 'positive')
-                negative_count = sum(1 for f in feedback_history if f['feedback_type'] == 'negative')
-                
-        return jsonify({
-            'courseId': course_id,
-            'feedbackHistory': feedback_history,
-            'summary': {
-                'positive': positive_count,
-                'negative': negative_count,
-                'total': len(feedback_history)
-            }
-        })
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to get feedback: {str(e)}'}), 500
-
-@app.route('/api/recommendations/settings', methods=['GET'])
-@jwt_required()
-def get_recommendation_settings():
-    """Get tunable recommendation settings"""
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
-                    SELECT setting_key, setting_value, description
-                    FROM recommendation_settings
-                    ORDER BY setting_key
-                """)
-                
-                settings = {}
-                for row in cur.fetchall():
-                    settings[row['setting_key']] = {
-                        'value': row['setting_value'],
-                        'description': row['description']
-                    }
-        
-        return jsonify({'settings': settings})
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to get settings: {str(e)}'}), 500
-
-@app.route('/api/recommendations/settings/<setting_key>', methods=['PUT'])
-@jwt_required()
-def update_recommendation_setting(setting_key):
-    """Update a tunable recommendation setting (admin or student preference)"""
-    try:
-        student_id = get_jwt_identity()
-        data = request.get_json()
-        
-        if not data or 'value' not in data:
-            return jsonify({'message': 'value is required'}), 400
-        
-        new_value = data['value']
-        
-        # Validate setting key
-        valid_keys = ['feedback_weight', 'feedback_decay_days', 'min_feedback_count', 
-                     'positive_feedback_boost', 'negative_feedback_penalty']
-        if setting_key not in valid_keys:
-            return jsonify({'message': f'Invalid setting key. Valid keys: {", ".join(valid_keys)}'}), 400
-        
-        # Validate value based on key
-        try:
-            if setting_key in ['feedback_decay_days', 'min_feedback_count']:
-                new_value = int(new_value)
-                if new_value < 0:
-                    return jsonify({'message': 'Value must be non-negative'}), 400
-            else:
-                new_value = float(new_value)
-                if setting_key == 'feedback_weight' and not (0 <= new_value <= 1):
-                    return jsonify({'message': 'feedback_weight must be between 0 and 1'}), 400
-        except (ValueError, TypeError):
-            return jsonify({'message': 'Invalid value type'}), 400
-        
-        with get_db_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                # Update setting
-                cur.execute("""
-                    UPDATE recommendation_settings
-                    SET setting_value = %s,
-                        updated_at = CURRENT_TIMESTAMP,
-                        updated_by = %s
-                    WHERE setting_key = %s
-                    RETURNING setting_id
-                """, (new_value, student_id, setting_key))
-                
-                if not cur.fetchone():
-                    return jsonify({'message': 'Setting not found'}), 404
-                
-                conn.commit()
-        
-        return jsonify({
-            'message': 'Setting updated successfully',
-            'settingKey': setting_key,
-            'newValue': new_value
-        })
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to update setting: {str(e)}'}), 500
 
 # Admin routes
 @app.route('/api/admin/courses', methods=['POST'])

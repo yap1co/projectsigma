@@ -82,12 +82,12 @@ def map_hesa_to_main_tables():
                 kc.kiscourseid,
                 kc.kismode,
                 kc.title,
-                kc.ucasprogid,
-                kc.hecos,
-                kc.numstage,
+                NULL as ucasprogid,
+                NULL as hecos,
+                NULL as numstage,
                 uc.ucascourseid
             FROM hesa_kiscourse kc
-            LEFT JOIN ucascourseid uc ON 
+            LEFT JOIN hesa_ucascourseid uc ON 
                 kc.pubukprn = uc.pubukprn AND
                 kc.kiscourseid = uc.kiscourseid AND
                 kc.kismode = uc.kismode
@@ -130,6 +130,31 @@ def map_hesa_to_main_tables():
                     employability = 75
             else:
                 employability = 75  # Default if no employment data
+
+            # Get typical tariff points from hesa_tariff (median bin)
+            typical_tariff = None
+            cur.execute("""
+                SELECT t001, t048, t064, t080, t096, t112, t128, t144, t160, t176, t192, t208, t224, t240
+                FROM hesa_tariff
+                WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
+                LIMIT 1
+            """, (pubukprn, kc['kiscourseid'], kc['kismode']))
+            tariff_row = cur.fetchone()
+            if tariff_row:
+                bins = [
+                    ('t001', 1), ('t048', 48), ('t064', 64), ('t080', 80), ('t096', 96),
+                    ('t112', 112), ('t128', 128), ('t144', 144), ('t160', 160), ('t176', 176),
+                    ('t192', 192), ('t208', 208), ('t224', 224), ('t240', 240)
+                ]
+                total = sum((tariff_row.get(col) or 0) for col, _ in bins)
+                if total and total > 0:
+                    half = total / 2
+                    cumulative = 0
+                    for col, val in bins:
+                        cumulative += (tariff_row.get(col) or 0)
+                        if cumulative >= half:
+                            typical_tariff = val
+                            break
             
             # Handle UCAS code duplicates by making it NULL if it would conflict
             # or by appending a suffix
@@ -143,25 +168,36 @@ def map_hesa_to_main_tables():
                 INSERT INTO course (
                     course_id, university_id, name, ucas_code, 
                     annual_fee, employability_score, course_url,
+                    typical_offer_text, typical_offer_tariff,
                     pubukprn, kiscourseid, kismode
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (course_id) DO UPDATE
-                SET name = EXCLUDED.name,
-                    ucas_code = EXCLUDED.ucas_code,
-                    employability_score = EXCLUDED.employability_score,
-                    pubukprn = EXCLUDED.pubukprn,
-                    kiscourseid = EXCLUDED.kiscourseid,
-                    kismode = EXCLUDED.kismode
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (pubukprn, kiscourseid, kismode) DO NOTHING
             """, (
                 course_id, uni_id, course_name, ucas_code,
                 9250,  # Default UK fee
                 employability,
                 kc.get('crseurl'),  # Course URL from KIS data
+                None,  # typical_offer_text (not available in HESA)
+                typical_tariff,
                 pubukprn,  # Store HESA identifiers for linking back
                 kc['kiscourseid'],
                 kc['kismode']
             ))
+            
+            # Verify course exists (get actual course_id if conflict occurred)
+            cur.execute("""
+                SELECT course_id FROM course 
+                WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
+            """, (pubukprn, kc['kiscourseid'], kc['kismode']))
+            
+            existing_course = cur.fetchone()
+            if not existing_course:
+                # Course insertion failed for some reason, skip
+                continue
+            
+            # Use the actual course_id from database (might be different if duplicate)
+            actual_course_id = existing_course['course_id']
             
             # Step 3: Add entry requirements from hesa_entry and SBJ tables
             # Get entry qualifications (A-level requirements)
@@ -177,7 +213,7 @@ def map_hesa_to_main_tables():
             # Get subjects from SBJ table
             cur.execute("""
                 SELECT DISTINCT sbj
-                FROM sbj
+                FROM hesa_sbj
                 WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
             """, (pubukprn, kc['kiscourseid'], kc['kismode']))
             
@@ -217,7 +253,7 @@ def map_hesa_to_main_tables():
                         INSERT INTO course_requirement (req_id, course_id, subject_id, grade_req)
                         VALUES (%s, %s, %s, %s)
                         ON CONFLICT (req_id) DO NOTHING
-                    """, (req_id, course_id, subject_id, default_grade))
+                    """, (req_id, actual_course_id, subject_id, default_grade))
             
             course_count += 1
             if course_count % 100 == 0:

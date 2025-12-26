@@ -79,7 +79,7 @@ projectsigma/
 ## 🚀 Quick Start
 
 1. **Start PostgreSQL** (see `docs/database/QUICK_START_LOCAL.md`)
-2. **Initialize Database**: `cd server/database && python init_db.py`
+2. **Initialize Database**: `cd server/database && python setup_database.py`
 3. **Run Tests**: `cd server && python -m pytest tests/ -v`
 4. **Start Server**: `cd server && python app.py`
 

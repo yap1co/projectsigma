@@ -74,7 +74,7 @@ def import_core_entities(cursor, data_dir: Path):
     logger.info("\n[1/2] Importing INSTITUTION.csv...")
     rows = read_csv_file(data_dir / 'INSTITUTION.csv')
     if rows:
-        data = [
+        raw_data = [
             (
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('FIRST_TRADING_NAME')),
@@ -85,6 +85,18 @@ def import_core_entities(cursor, data_dir: Path):
             for row in rows
             if normalize_value(row.get('PUBUKPRN'))
         ]
+        
+        # Deduplicate by PUBUKPRN (keep last/most recent occurrence for mergers/takeovers)
+        data_dict = {}
+        duplicates = 0
+        for item in raw_data:
+            pubukprn = item[0]
+            if pubukprn in data_dict:
+                duplicates += 1
+            data_dict[pubukprn] = item
+        
+        data = list(data_dict.values())
+        
         if data:
             execute_values(
                 cursor,
@@ -99,7 +111,7 @@ def import_core_entities(cursor, data_dir: Path):
                 data,
                 page_size=1000
             )
-            logger.info(f"  ✓ Imported {len(data)} Institution records")
+            logger.info(f"  ✓ Imported {len(data)} Institution records (kept most recent of {duplicates} duplicate PUBUKPRNs)")
     
     # 2. KISCOURSE
     logger.info("\n[2/2] Importing KISCOURSE.csv...")
@@ -187,6 +199,65 @@ def import_core_entities(cursor, data_dir: Path):
             
             logger.info(f"  ✓ Imported {len(data)} KIS Course records")
 
+    # 3. UCASCOURSEID
+    logger.info("\n[3/4] Importing UCASCOURSEID.csv...")
+    rows = read_csv_file(data_dir / 'UCASCOURSEID.csv')
+    if rows:
+        data = [
+            (
+                normalize_value(row.get('PUBUKPRN')),
+                normalize_value(row.get('UKPRN')),
+                normalize_value(row.get('KISCOURSEID')),
+                normalize_value(row.get('KISMODE')),
+                normalize_value(row.get('LOCID')),
+                normalize_value(row.get('UCASCOURSEID'))
+            )
+            for row in rows
+            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('UCASCOURSEID'))
+        ]
+        
+        if data:
+            execute_values(
+                cursor,
+                """
+                INSERT INTO hesa_ucascourseid (pubukprn, ukprn, kiscourseid, kismode, locid, ucascourseid)
+                VALUES %s
+                ON CONFLICT DO NOTHING
+                """,
+                data,
+                page_size=1000
+            )
+            logger.info(f"  ✓ Imported {len(data)} UCAS Course ID records")
+    
+    # 4. SBJ (Subject codes)
+    logger.info("\n[4/4] Importing SBJ.csv...")
+    rows = read_csv_file(data_dir / 'SBJ.csv')
+    if rows:
+        data = [
+            (
+                normalize_value(row.get('PUBUKPRN')),
+                normalize_value(row.get('UKPRN')),
+                normalize_value(row.get('KISCOURSEID')),
+                normalize_value(row.get('KISMODE')),
+                normalize_value(row.get('SBJ'))
+            )
+            for row in rows
+            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('SBJ'))
+        ]
+        
+        if data:
+            execute_values(
+                cursor,
+                """
+                INSERT INTO hesa_sbj (pubukprn, ukprn, kiscourseid, kismode, sbj)
+                VALUES %s
+                ON CONFLICT DO NOTHING
+                """,
+                data,
+                page_size=1000
+            )
+            logger.info(f"  ✓ Imported {len(data)} Subject records")
+
 def import_outcome_tables(cursor, data_dir: Path):
     """Import employment and outcomes data"""
     logger.info("\n" + "="*70)
@@ -194,7 +265,7 @@ def import_outcome_tables(cursor, data_dir: Path):
     logger.info("="*70)
     
     # 1. ENTRY
-    logger.info("\n[1/5] Importing ENTRY.csv...")
+    logger.info("\n[1/6] Importing ENTRY.csv...")
     rows = read_csv_file(data_dir / 'ENTRY.csv')
     if rows:
         data = [
@@ -230,10 +301,10 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO hesa_entry (pubukprn, kiscourseid, kismode, entagg, entsbj, alevel, access, degree, foundtn, noquals, "other", entpop
+                INSERT INTO hesa_entry (pubukprn, ukprn, kiscourseid, kismode, entrylevel,
                                  entunavailreason, entpop, entagg, entaggyear, entyear1,
                                  entyear2, entsbj, alevel, access, aleveltce, bacc,
-                                 degree, foundation, noquals, other, otherhe)
+                                 degree, foundation, noquals, "other", otherhe)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                        %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
@@ -245,8 +316,61 @@ def import_outcome_tables(cursor, data_dir: Path):
             )
             logger.info(f"  ✓ Imported {len(data)} Entry records")
     
-    # 2. EMPLOYMENT
-    logger.info("\n[2/5] Importing EMPLOYMENT.csv...")
+    # 2. TARIFF (tariff point distributions)
+    logger.info("\n[2/6] Importing TARIFF.csv...")
+    rows = read_csv_file(data_dir / 'TARIFF.csv')
+    if rows:
+        data = [
+            (
+                normalize_value(row.get('PUBUKPRN')),
+                normalize_value(row.get('UKPRN')),
+                normalize_value(row.get('KISCOURSEID')),
+                normalize_value(row.get('KISMODE')),
+                normalize_value(row.get('TARUNAVAILREASON')),
+                normalize_int(row.get('TARPOP')),
+                normalize_value(row.get('TARAGG')),
+                normalize_value(row.get('TARAGGYEAR')),
+                normalize_value(row.get('TARYEAR1')),
+                normalize_value(row.get('TARYEAR2')),
+                normalize_value(row.get('TARSBJ')),
+                normalize_int(row.get('T001')),
+                normalize_int(row.get('T048')),
+                normalize_int(row.get('T064')),
+                normalize_int(row.get('T080')),
+                normalize_int(row.get('T096')),
+                normalize_int(row.get('T112')),
+                normalize_int(row.get('T128')),
+                normalize_int(row.get('T144')),
+                normalize_int(row.get('T160')),
+                normalize_int(row.get('T176')),
+                normalize_int(row.get('T192')),
+                normalize_int(row.get('T208')),
+                normalize_int(row.get('T224')),
+                normalize_int(row.get('T240'))
+            )
+            for row in rows
+            if normalize_value(row.get('PUBUKPRN')) and normalize_value(row.get('KISCOURSEID'))
+        ]
+
+        if data:
+            execute_values(
+                cursor,
+                """
+                INSERT INTO hesa_tariff (
+                    pubukprn, ukprn, kiscourseid, kismode, tarunavailreason, tarpop,
+                    taragg, taraggyear, taryear1, taryear2, tarsbj,
+                    t001, t048, t064, t080, t096, t112, t128, t144,
+                    t160, t176, t192, t208, t224, t240
+                ) VALUES %s
+                ON CONFLICT DO NOTHING
+                """,
+                data,
+                page_size=500
+            )
+            logger.info(f"  ✓ Imported {len(data)} Tariff records")
+
+    # 3. EMPLOYMENT
+    logger.info("\n[3/6] Importing EMPLOYMENT.csv...")
     rows = read_csv_file(data_dir / 'EMPLOYMENT.csv')
     if rows:
         data = [
@@ -277,10 +401,10 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO hesa_employment (pubukprn, kiscourseid, kismode, empagg, work, study, unemp, workstudy, emppop, empresponse, empresp_rate, empsample
+                INSERT INTO hesa_employment (pubukprn, ukprn, kiscourseid, kismode,
                                       empunavailreason, emppop, empagg, empaggyear,
                                       empyear1, empyear2, empsbj, workstudy, work,
-                                      study, unemp, other)
+                                      study, unemp, "other")
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                 SET emppop = EXCLUDED.emppop,
@@ -291,8 +415,8 @@ def import_outcome_tables(cursor, data_dir: Path):
             )
             logger.info(f"  ✓ Imported {len(data)} Employment records")
     
-    # 3. JOBLIST
-    logger.info("\n[3/5] Importing JOBLIST.csv...")
+    # 4. JOBLIST
+    logger.info("\n[4/6] Importing JOBLIST.csv...")
     rows = read_csv_file(data_dir / 'JOBLIST.csv')
     if rows:
         data = [
@@ -333,11 +457,11 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO hesa_joblist (pubukprn, kiscourseid, kismode,
+                INSERT INTO hesa_joblist (pubukprn, ukprn, kiscourseid, kismode,
                                     jobunavailreason, jobpop, jobresponse, jobsample,
                                     jobresp_rate, jobagg, jobaggyear, jobyear1,
                                     jobyear2, jobsbj, educ, health, carehome, healthsoc,
-                                    retail, man, info, fin, pro, admin, other, unkwn)
+                                    retail, man, info, fin, pro, admin, "other", unkwn)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
@@ -348,8 +472,8 @@ def import_outcome_tables(cursor, data_dir: Path):
             )
             logger.info(f"  ✓ Imported {len(data)} Job List records")
     
-    # 4. GOSALARY
-    logger.info("\n[4/5] Importing GOSALARY.csv...")
+    # 5. GOSALARY
+    logger.info("\n[5/6] Importing GOSALARY.csv...")
     rows = read_csv_file(data_dir / 'GOSALARY.csv')
     if rows:
         data = [
@@ -386,7 +510,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO hesa_gosalary (pubukprn, kiscourseid, kismode,
+                INSERT INTO hesa_gosalary (pubukprn, ukprn, kiscourseid, kismode,
                                     gosunavailreason, gospop, gosresponse, gossample,
                                     gosresp_rate, gosalagg, gosaggyear, gosyear1,
                                     gosyear2, gossbj, ldlwr, ldmed, ldupr, ldpop,
@@ -401,8 +525,8 @@ def import_outcome_tables(cursor, data_dir: Path):
             )
             logger.info(f"  ✓ Imported {len(data)} Graduate Salary records")
     
-    # 5. LEO3
-    logger.info("\n[5/5] Importing LEO3.csv...")
+    # 6. LEO3
+    logger.info("\n[6/6] Importing LEO3.csv...")
     rows = read_csv_file(data_dir / 'LEO3.csv')
     if rows:
         data = [
@@ -437,7 +561,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO leo3 (pubukprn, ukprn, kiscourseid, kismode,
+                INSERT INTO hesa_leo3 (pubukprn, ukprn, kiscourseid, kismode,
                                 leo3unavailreason, leo3pop, leo3agg, leo3aggyear,
                                 leo3year1, leo3year2, leo3sbj, leo3instlq, leo3instmed,
                                 leo3instuq, leo3instpop, leo3seclq, leo3secmed,
@@ -454,8 +578,8 @@ def import_outcome_tables(cursor, data_dir: Path):
 
 def main():
     """Main import function"""
-    # Get data directory
-    data_dir = Path(__file__).parent / 'data'
+    # Get data directory from project root
+    data_dir = Path(__file__).parent.parent.parent / 'data'
     
     logger.info("="*70)
     logger.info("DISCOVER UNI CSV DATA IMPORT (CLEANED)")

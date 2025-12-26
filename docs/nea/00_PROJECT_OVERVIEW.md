@@ -91,7 +91,7 @@ projectsigma/
 ## Project Scope (Post-Reduction)
 
 - **Database Tables:** 23 total (15 core application + 7 HESA + 1 migrations)
-- **Data Files:** 7 HESA CSV files (79% reduction from original 33 files)
+- **Data Files:** 10 HESA CSV files (70% reduction from original 33 files)
 - **Code Size:** ~14,000 lines
 - **HESA Tables:** `hesa_institution`, `hesa_kiscourse`, `hesa_employment`, `hesa_entry`, `hesa_gosalary`, `hesa_joblist`, `hesa_leo3`
 

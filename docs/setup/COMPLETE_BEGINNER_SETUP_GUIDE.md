@@ -371,8 +371,8 @@ The database stores all your data. Let's set it up.
 # Navigate to database folder
 cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
 
-# Run initialization script
-python init_db.py
+# Run setup script (automated - creates database + imports HESA data)
+python setup_database.py
 ```
 
 **What this does:**
@@ -463,9 +463,9 @@ Now let's create all the database tables.
    cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
    ```
 
-2. **Run Initialization:**
+2. **Run Setup Script:**
    ```powershell
-   python init_db.py
+   python setup_database.py
    ```
 
 **What you'll see:**
@@ -545,7 +545,7 @@ python run_feedback_migration.py
 - Creates `recommendation_feedback` and `recommendation_settings` tables
 - Sets up feedback system
 
-**Note:** These migrations are usually run automatically by `init_db.py`, but you can run them manually if needed.
+**Note:** These migrations are usually run automatically by `setup_database.py`, but you can run them manually if needed.
 
 ---
 
@@ -802,9 +802,9 @@ psql -U postgres -d university_recommender
 # List tables
 \dt
 
-# Run migrations
+# Run database setup
 cd server\database
-python init_db.py
+python setup_database.py
 ```
 
 ### Git Commands (For Later)

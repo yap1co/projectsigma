@@ -58,14 +58,17 @@ projectsigma/
 ├── .git/                   # Git version control
 ├── venv/                   # Python virtual environment
 │
-├── data/                   # 📊 HESA Source Data (7 CSV files)
+├── data/                   # 📊 HESA Source Data (10 CSV files)
 │   ├── INSTITUTION.csv     # 478 UK universities
 │   ├── KISCOURSE.csv       # 30,835 university courses
 │   ├── EMPLOYMENT.csv      # Graduate employment statistics
 │   ├── ENTRY.csv           # Course entry requirements
 │   ├── GOSALARY.csv        # Graduate salary data
 │   ├── JOBLIST.csv         # Job destinations for graduates
-│   └── LEO3.csv            # Longitudinal Education Outcomes
+│   ├── LEO3.csv            # Longitudinal Education Outcomes
+│   ├── SBJ.csv             # Subject classifications
+│   ├── TARIFF.csv          # UCAS tariff points
+│   └── UCASCOURSEID.csv    # UCAS course identifiers
 │
 ├── server/                 # 🐍 Backend Application (Python/Flask)
 │   ├── app.py              # Main Flask API (12 endpoints)
@@ -148,19 +151,19 @@ projectsigma/
 3. **Professional Standards**
    - Follows Flask best practices (flat structure for small-medium apps)
    - Follows Next.js 14 App Router conventions
-   - Uses standard naming (`tests/`, `migrations/`, `components/`)
+   - Uses standard naming (`tests/`, `database/`, `components/`)
 
 4. **Scalability**
    - Easy to add new API endpoints in `app.py`
    - New models added to `models/` folder
    - New React components in `components/` folder
-   - Database changes tracked via `migrations/`
+   - Database schema maintained in `setup_database.py`
 
 5. **Evidence of Advanced Programming**
    - `models/` folder demonstrates OOP (inheritance, abstraction)
    - `tests/` folder shows test-driven development
    - `scoring_components.py` demonstrates composition pattern
-   - `migrations/` shows iterative database design
+   - Database triggers/constraints show advanced SQL knowledge
 
 This structure ensures that each component can be:
 - **Developed independently** (e.g., frontend team works in `client/`)
@@ -180,171 +183,611 @@ This structure ensures that each component can be:
 
 ## 2. Database Design
 
-### 2.1 Entity-Relationship Diagram
+### 2.1 Overview
 
+The database consists of **25 tables** organized into three layers:
+- **14 Application Tables** - Core business logic (students, courses, recommendations)
+- **10 HESA Tables** - Raw HESA data import (institutions, courses, outcomes)
+- **1 System Table** - Migration tracking
+
+**Key Design Decisions:**
+1. **1NF Compliance:** Removed TEXT[] arrays, created junction tables for many-to-many relationships
+2. **Data Integrity:** UNIQUE constraint on HESA identifiers (pubukprn, kiscourseid, kismode)
+3. **Automation:** PostgreSQL triggers for automatic `updated_at` timestamps
+4. **Referential Integrity:** Foreign keys with CASCADE/RESTRICT policies
+
+### 2.1 Entity-Relationship Diagram (ERD)
+
+#### Application Layer - Core Entities
+
+```mermaid
+erDiagram
+    STUDENT ||--o{ STUDENT_GRADE : has
+    STUDENT ||--o{ STUDENT_CAREER_INTEREST : has
+    STUDENT ||--o{ STUDENT_PREFERRED_EXAM : has
+    STUDENT ||--o{ RECOMMENDATION_RUN : generates
+    
+    CAREER_INTEREST ||--o{ STUDENT_CAREER_INTEREST : "linked to"
+    ENTRANCE_EXAM ||--o{ STUDENT_PREFERRED_EXAM : "linked to"
+    SUBJECT ||--o{ STUDENT_GRADE : "graded in"
+    
+    UNIVERSITY ||--o{ COURSE : offers
+    COURSE ||--o{ COURSE_REQUIREMENT : requires
+    COURSE ||--o{ COURSE_REQUIRED_EXAM : accepts
+    COURSE ||--o{ RECOMMENDATION_RESULT : recommended
+    
+    SUBJECT ||--o{ COURSE_REQUIREMENT : "required for"
+    ENTRANCE_EXAM ||--o{ COURSE_REQUIRED_EXAM : "accepted by"
+    
+    RECOMMENDATION_RUN ||--o{ RECOMMENDATION_RESULT : contains
+    
+    STUDENT {
+        string student_id PK
+        string display_name
+        string email UK
+        string password_hash
+        date created_at
+        string region
+        int tuition_budget
+        timestamp updated_at
+    }
+    
+    SUBJECT {
+        string subject_id PK
+        string subject_name UK
+    }
+    
+    STUDENT_GRADE {
+        string student_id PK,FK
+        string subject_id PK,FK
+        string predicted_grade
+    }
+    
+    CAREER_INTEREST {
+        string career_interest_id PK
+        string name UK
+    }
+    
+    STUDENT_CAREER_INTEREST {
+        string student_id PK,FK
+        string career_interest_id PK,FK
+    }
+    
+    ENTRANCE_EXAM {
+        string exam_id PK
+        string name UK
+    }
+    
+    STUDENT_PREFERRED_EXAM {
+        string student_id PK,FK
+        string exam_id PK,FK
+    }
+    
+    UNIVERSITY {
+        string university_id PK
+        string name
+        string region
+        int rank_overall
+        int employability_score
+        string website_url
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    COURSE {
+        string course_id PK
+        string university_id FK
+        string name
+        string ucas_code UK
+        int annual_fee
+        string pubukprn
+        string kiscourseid
+        string kismode
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    COURSE_REQUIREMENT {
+        string req_id PK
+        string course_id FK
+        string subject_id FK
+        string grade_req
+    }
+    
+    COURSE_REQUIRED_EXAM {
+        string course_id PK,FK
+        string exam_id PK,FK
+    }
+    
+    RECOMMENDATION_RUN {
+        string run_id PK
+        string student_id FK
+        timestamp run_at
+    }
+    
+    RECOMMENDATION_RESULT {
+        string result_id PK
+        string run_id FK
+        string course_id FK
+        float match_score
+        int rank
+    }
 ```
-┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│   UNIVERSITY │─────────│    COURSE    │─────────│  COURSE_REQ  │
-│              │ 1     * │              │ 1     * │              │
-│ university_id│         │ course_id    │         │ requirement_ │
-│ name         │         │ university_id│         │ course_id    │
-│ region       │         │ name         │         │ subject      │
-│ rank         │         │ ucas_code    │         │ grade        │
-│ employability│         │ annual_fee   │         └──────────────┘
-│ website_url  │         │ employability│
-└──────────────┘         │ pubukprn *   │
-                         │ kiscourseid *│
-                         │ kismode *    │
-                         └──────────────┘
-                               │
-                               │ FK: (pubukprn, kiscourseid, kismode)
-                               │
-         ┌─────────────────────┴────────────────────────┐
-         │                                               │
-         ▼                                               ▼
-┌──────────────────┐                           ┌──────────────────┐
-│ HESA_KISCOURSE   │                           │ HESA_EMPLOYMENT  │
-│                  │                           │                  │
-│ pubukprn (PK)    │                           │ pubukprn (PK)    │
-│ kiscourseid (PK) │                           │ kiscourseid (PK) │
-│ kismode (PK)     │                           │ kismode (PK)     │
-│ title            │                           │ work             │
-│ hecos            │                           │ study            │
-│ numstage         │                           │ unemp            │
-└──────────────────┘                           │ workstudy        │
-                                               └──────────────────┘
 
-┌──────────────────┐
-│ HESA_INSTITUTION │
-│                  │
-│ pubukprn (PK)    │
-│ first_trading_   │
-│ legal_name       │
-│ country          │
-│ provurl          │
-└──────────────────┘
+#### HESA Data Layer - External Data Sources
+
+```mermaid
+erDiagram
+    COURSE ||--o{ HESA_KISCOURSE : "maps to"
+    UNIVERSITY ||--o{ HESA_INSTITUTION : "maps to"
+    
+    HESA_KISCOURSE ||--o{ HESA_EMPLOYMENT : "has stats"
+    HESA_KISCOURSE ||--o{ HESA_ENTRY : "has requirements"
+    HESA_KISCOURSE ||--o{ HESA_GOSALARY : "has salary"
+    HESA_KISCOURSE ||--o{ HESA_JOBLIST : "has jobs"
+    HESA_KISCOURSE ||--o{ HESA_LEO3 : "has earnings"
+    HESA_KISCOURSE ||--o{ HESA_SBJ : "has subjects"
+    HESA_KISCOURSE ||--o{ HESA_TARIFF : "has tariffs"
+    HESA_KISCOURSE ||--o{ HESA_UCASCOURSEID : "has UCAS"
+    
+    HESA_INSTITUTION {
+        string pubukprn PK
+        string first_trading_name
+        string legal_name
+        string country
+        string provurl
+    }
+    
+    HESA_KISCOURSE {
+        string pubukprn PK
+        string kiscourseid PK
+        string kismode PK
+        string title
+        int feeuk
+        string distance
+    }
+    
+    HESA_EMPLOYMENT {
+        string pubukprn PK
+        string kiscourseid PK
+        string kismode PK
+        string empagg PK
+        int work
+        int study
+        int unemp
+    }
+    
+    HESA_ENTRY {
+        string pubukprn PK
+        string kiscourseid PK
+        string kismode PK
+        string entryagg PK
+        int entry_alevel
+        int entry_btec
+    }
+    
+    HESA_SBJ {
+        string pubukprn PK
+        string kiscourseid PK
+        string kismode PK
+        string sbj PK
+    }
+    
+    HESA_TARIFF {
+        string pubukprn PK
+        string kiscourseid PK
+        string kismode PK
+        string tariffagg PK
+        int t001
+        int t120
+        int t128
+    }
 ```
 
-### 2.2 Table Schemas
+**Diagram Notes:**
+- **PK** = Primary Key
+- **FK** = Foreign Key  
+- **UK** = Unique Key
+- **||--o{** = One-to-Many relationship
+- Composite keys shown with multiple PK annotations
 
-#### Application Tables
+### 2.2 Table Schemas (Updated December 2025)
+
+#### Application Tables (14 tables)
+
+**student** (Normalized - arrays removed for 1NF compliance)
+```sql
+CREATE TABLE student (
+    student_id VARCHAR(50) PRIMARY KEY,
+    display_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at DATE DEFAULT CURRENT_DATE,
+    region VARCHAR(100),
+    tuition_budget INTEGER,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Trigger updates this
+);
+```
+
+**subject**
+```sql
+CREATE TABLE subject (
+    subject_id VARCHAR(50) PRIMARY KEY,
+    subject_name VARCHAR(255) NOT NULL UNIQUE
+);
+```
+
+**student_grade** (Junction table with composite PK)
+```sql
+CREATE TABLE student_grade (
+    student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+    subject_id VARCHAR(50) REFERENCES subject(subject_id) ON DELETE RESTRICT,
+    predicted_grade VARCHAR(5) NOT NULL CHECK (predicted_grade IN ('A*', 'A', 'B', 'C', 'D', 'E', 'U')),
+    PRIMARY KEY (student_id, subject_id)
+);
+```
+
+**career_interest** (Lookup table - seeded by seed_career_interests.py)
+```sql
+CREATE TABLE career_interest (
+    career_interest_id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+-- Data: 10 career categories (Healthcare, Engineering, Business, Law, etc.)
+```
+
+**student_career_interest** (Junction table - many-to-many, 1NF compliant)
+```sql
+CREATE TABLE student_career_interest (
+    student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+    career_interest_id VARCHAR(50) REFERENCES career_interest(career_interest_id) ON DELETE CASCADE,
+    PRIMARY KEY (student_id, career_interest_id)
+);
+```
+
+**entrance_exam** (Lookup table)
+```sql
+CREATE TABLE entrance_exam (
+    exam_id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+-- Data: 5 exam types (A-Level, BTEC, IB, Scottish Highers, Access Course)
+```
+
+**student_preferred_exam** (Junction table - many-to-many, 1NF compliant)
+```sql
+CREATE TABLE student_preferred_exam (
+    student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+    exam_id VARCHAR(50) REFERENCES entrance_exam(exam_id) ON DELETE CASCADE,
+    PRIMARY KEY (student_id, exam_id)
+);
+```
 
 **university**
 ```sql
 CREATE TABLE university (
-    university_id VARCHAR(255) PRIMARY KEY,
+    university_id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     region VARCHAR(100),
     rank_overall INTEGER,
-    employability_score INTEGER,
-    website_url TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    employability_score INTEGER CHECK (employability_score BETWEEN 0 AND 100),
+    website_url VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Trigger updates this
 );
 ```
 
-**course**
+**course** (Updated with UNIQUE constraint on HESA identifiers)
 ```sql
 CREATE TABLE course (
     course_id VARCHAR(255) PRIMARY KEY,
-    university_id VARCHAR(255) REFERENCES university(university_id),
-    name TEXT NOT NULL,
-    ucas_code VARCHAR(10) UNIQUE,
+    university_id VARCHAR(255) REFERENCES university(university_id) ON DELETE CASCADE,
+    ucas_code VARCHAR(20) UNIQUE,
+    name VARCHAR(255) NOT NULL,
     annual_fee INTEGER,
     employability_score INTEGER,
-    course_url TEXT,
-    pubukprn VARCHAR(8),    -- HESA link
-    kiscourseid VARCHAR(20), -- HESA link
-    kismode VARCHAR(2),      -- HESA link
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    duration_years DECIMAL(3,1),
+    distance_learning VARCHAR(1),
+    pubukprn VARCHAR(8),      -- HESA link
+    kiscourseid VARCHAR(50),  -- HESA link
+    kismode VARCHAR(2),       -- HESA link
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (pubukprn, kiscourseid, kismode)  -- ✅ Prevents duplicate HESA courses
 );
 ```
 
-**user**
+**course_requirement**
 ```sql
-CREATE TABLE "user" (
-    user_id VARCHAR(255) PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE course_requirement (
+    req_id VARCHAR(50) PRIMARY KEY,
+    course_id VARCHAR(50) REFERENCES course(course_id) ON DELETE CASCADE,
+    subject_id VARCHAR(50) REFERENCES subject(subject_id) ON DELETE RESTRICT,
+    grade_req VARCHAR(5) NOT NULL CHECK (grade_req IN ('A*', 'A', 'B', 'C', 'D', 'E'))
 );
 ```
 
-**user_preference**
+**course_required_exam**
 ```sql
-CREATE TABLE user_preference (
-    preference_id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES "user"(user_id),
-    preferred_regions TEXT[],
-    career_interests TEXT[],
-    subject_1 VARCHAR(100),
-    subject_1_grade VARCHAR(2),
-    subject_2 VARCHAR(100),
-    subject_2_grade VARCHAR(2),
-    subject_3 VARCHAR(100),
-    subject_3_grade VARCHAR(2),
-    ucas_points INTEGER,
-    max_fee INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE course_required_exam (
+    course_id VARCHAR(50) REFERENCES course(course_id) ON DELETE CASCADE,
+    exam_id VARCHAR(50) REFERENCES entrance_exam(exam_id) ON DELETE CASCADE,
+    PRIMARY KEY (course_id, exam_id)
 );
 ```
 
-#### HESA Tables (7 tables - reduced scope)
+**recommendation_run**
+```sql
+CREATE TABLE recommendation_run (
+    run_id VARCHAR(50) PRIMARY KEY,
+    student_id VARCHAR(50) REFERENCES student(student_id) ON DELETE CASCADE,
+    run_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    filter_region VARCHAR(100),
+    filter_max_fee INTEGER
+);
+```
 
-**hesa_institution**
+**recommendation_result**
+```sql
+CREATE TABLE recommendation_result (
+    result_id VARCHAR(50) PRIMARY KEY,
+    run_id VARCHAR(50) REFERENCES recommendation_run(run_id) ON DELETE CASCADE,
+    course_id VARCHAR(50) REFERENCES course(course_id) ON DELETE CASCADE,
+    match_score DECIMAL(5,2) NOT NULL CHECK (match_score BETWEEN 0 AND 100),
+    rank INTEGER NOT NULL
+);
+```
+
+**subject_to_career** (Derived/lookup table - seeded by subject_to_career_mapping.py)
+```sql
+CREATE TABLE subject_to_career (
+    sbj VARCHAR(50) PRIMARY KEY,  -- CAH subject code
+    career_interest_id VARCHAR(50) REFERENCES career_interest(career_interest_id)
+);
+-- Maps 21 CAH subject codes to 10 career categories
+```
+
+#### HESA Tables (10 tables - imported from 10 CSV files)
+
+**hesa_institution** (478 UK universities)
 ```sql
 CREATE TABLE hesa_institution (
-    pubukprn VARCHAR(8) PRIMARY KEY,
+    pubukprn VARCHAR(8) PRIMARY KEY,        -- UK Provider Reference Number
     first_trading_name VARCHAR(255),
     legal_name VARCHAR(255),
     country VARCHAR(10),
-    provurl TEXT
+    provurl VARCHAR(500)                     -- University website
 );
 ```
 
-**hesa_kiscourse**
+**hesa_kiscourse** (30,835 courses - composite PK)
 ```sql
 CREATE TABLE hesa_kiscourse (
-    pubukprn VARCHAR(8),
-    kiscourseid VARCHAR(20),
-    kismode VARCHAR(2),
-    title TEXT,
-    ucasprogid VARCHAR(10),
-    hecos VARCHAR(100),
-    numstage INTEGER,
-    crseurl TEXT,
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,             -- 01=Full-time, 02=Part-time
+    title VARCHAR(255) NOT NULL,
+    titlew VARCHAR(255),                     -- Welsh translation
+    length VARCHAR(50),
+    levelcode VARCHAR(10),
+    distance VARCHAR(1),                     -- Distance learning flag
+    feeuk INTEGER,                           -- UK student fees
+    feeeng INTEGER,                          -- English student fees
     PRIMARY KEY (pubukprn, kiscourseid, kismode)
 );
 ```
 
-**hesa_employment**
+**hesa_employment** (Graduate employment outcomes)
 ```sql
 CREATE TABLE hesa_employment (
-    pubukprn VARCHAR(8),
-    kiscourseid VARCHAR(20),
-    kismode VARCHAR(2),
-    empagg VARCHAR(2),
-    work INTEGER,
-    study INTEGER,
-    unemp INTEGER,
-    workstudy INTEGER,
-    emppop INTEGER,
-    empresponse INTEGER,
-    empresp_rate INTEGER,
-    empsample INTEGER,
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    empagg VARCHAR(2) NOT NULL,              -- Employment aggregation
+    work INTEGER,                            -- % in employment
+    study INTEGER,                           -- % in further study
+    unemp INTEGER,                           -- % unemployed
+    workstudy INTEGER,                       -- % work & study
     PRIMARY KEY (pubukprn, kiscourseid, kismode, empagg)
 );
 ```
 
-[Continue with hesa_entry, hesa_gosalary, hesa_joblist, hesa_leo3...]
+**hesa_entry** (Course entry requirements)
+```sql
+CREATE TABLE hesa_entry (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    entryagg VARCHAR(2) NOT NULL,            -- Entry aggregation
+    alevel INTEGER,                          -- % A-Level entrants
+    btec INTEGER,                            -- % BTEC entrants
+    ib INTEGER,                              -- % IB entrants
+    foundation INTEGER,                      -- % Foundation course entrants
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, entryagg)
+);
+```
 
-### 2.3 Data Dictionary
+**hesa_gosalary** (Graduate salary data - 6 months post-graduation)
+```sql
+CREATE TABLE hesa_gosalary (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    salagg VARCHAR(2) NOT NULL,              -- Salary aggregation
+    lq INTEGER,                              -- Lower quartile salary
+    med INTEGER,                             -- Median salary
+    uq INTEGER,                              -- Upper quartile salary
+    instmed INTEGER,                         -- Institution median
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, salagg)
+);
+```
 
-[For each important field, document:
-- Field name
-- Data type
-- Description
-- Validation rules
+**hesa_joblist** (Graduate job destinations)
+```sql
+CREATE TABLE hesa_joblist (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    jobagg VARCHAR(2) NOT NULL,              -- Job aggregation
+    job VARCHAR(10) NOT NULL,                -- SOC job code
+    joborder INTEGER,                        -- Job ranking
+    perc INTEGER,                            -- % in this job type
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, jobagg, job)
+);
+```
+
+**hesa_leo3** (Longitudinal Education Outcomes - 3 years post-graduation)
+```sql
+CREATE TABLE hesa_leo3 (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    leo3agg VARCHAR(2) NOT NULL,             -- LEO aggregation
+    earnings_lq INTEGER,                     -- Lower quartile earnings
+    earnings_med INTEGER,                    -- Median earnings
+    earnings_uq INTEGER,                     -- Upper quartile earnings
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, leo3agg)
+);
+```
+
+**hesa_sbj** (Subject codes - CAH classification)
+```sql
+CREATE TABLE hesa_sbj (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    sbj VARCHAR(50) NOT NULL,                -- CAH subject code
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, sbj)
+);
+```
+
+**hesa_tariff** (UCAS tariff point distributions)
+```sql
+CREATE TABLE hesa_tariff (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    tariffagg VARCHAR(2) NOT NULL,           -- Tariff aggregation
+    t001 INTEGER,                            -- % with 0-79 points
+    t120 INTEGER,                            -- % with 80-119 points
+    t128 INTEGER,                            -- % with 120-159 points
+    t144 INTEGER,                            -- % with 160+ points
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, tariffagg)
+);
+```
+
+**hesa_ucascourseid** (UCAS course identifiers)
+```sql
+CREATE TABLE hesa_ucascourseid (
+    pubukprn VARCHAR(8) NOT NULL,
+    ukprn VARCHAR(8) NOT NULL,
+    kiscourseid VARCHAR(50) NOT NULL,
+    kismode VARCHAR(2) NOT NULL,
+    ucasprogid VARCHAR(10) NOT NULL,         -- UCAS programme code
+    PRIMARY KEY (pubukprn, kiscourseid, kismode, ucasprogid)
+);
+```
+
+#### System Table (1 table)
+
+**schema_migrations** (Database version tracking)
+```sql
+CREATE TABLE schema_migrations (
+    version VARCHAR(255) PRIMARY KEY,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 2.3 Normalization & Design Principles
+
+#### First Normal Form (1NF) Compliance
+
+**Problem Identified:** Original design violated 1NF with TEXT[] arrays:
+```sql
+-- ❌ BEFORE: Violates 1NF
+CREATE TABLE student (
+    preferred_exams TEXT[],        -- Array = 1NF violation
+    career_interests TEXT[]        -- Array = 1NF violation
+);
+```
+
+**Solution Implemented:** Junction tables for many-to-many relationships:
+```sql
+-- ✅ AFTER: 1NF Compliant
+CREATE TABLE student_preferred_exam (
+    student_id VARCHAR(50),
+    exam_id VARCHAR(50),
+    PRIMARY KEY (student_id, exam_id)
+);
+
+CREATE TABLE student_career_interest (
+    student_id VARCHAR(50),
+    career_interest_id VARCHAR(50),
+    PRIMARY KEY (student_id, career_interest_id)
+);
+```
+
+**Benefits:**
+- ✅ Referential integrity with foreign keys
+- ✅ Efficient querying: `JOIN student_career_interest sci ON sci.career_interest_id = 'healthcare'`
+- ✅ Scalable: Add unlimited career interests per student
+- ✅ AQA Group A skill: "Complex data model in database (e.g. several interlinked tables)"
+
+#### Data Integrity Constraints
+
+**UNIQUE Constraints:**
+```sql
+-- Prevents duplicate HESA course imports
+UNIQUE (pubukprn, kiscourseid, kismode) ON course
+
+-- Prevents duplicate career/exam names
+UNIQUE (name) ON career_interest
+UNIQUE (name) ON entrance_exam
+```
+
+**CHECK Constraints:**
+```sql
+-- Grade validation
+CHECK (predicted_grade IN ('A*', 'A', 'B', 'C', 'D', 'E', 'U'))
+CHECK (employability_score BETWEEN 0 AND 100)
+```
+
+**Foreign Key Policies:**
+- `CASCADE`: When parent deleted, children deleted (e.g., student → student_grades)
+- `RESTRICT`: Prevent deletion if children exist (e.g., subject → course_requirements)
+
+#### Database Automation (PostgreSQL Triggers)
+
+**Automatic Timestamp Updates:**
+```sql
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_course_updated_at
+BEFORE UPDATE ON course
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+```
+
+**Demonstrates:**
+- ✅ AQA Group A skill: Database triggers
+- ✅ Advanced PostgreSQL features (plpgsql)
+- ✅ Automated data maintenance
+
+### 2.4 Data Dictionary
 - Source (if HESA data)]
 
 ---

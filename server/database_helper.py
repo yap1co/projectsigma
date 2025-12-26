@@ -44,7 +44,7 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
     cursor.execute("""
         SELECT 
             s.student_id, s.display_name, s.email, s.password_hash,
-            s.created_at, s.region, s.tuition_budget, s.preferred_exams
+            s.created_at, s.region, s.tuition_budget
         FROM student s
         WHERE s.student_id = %s
     """, (student_id,))
@@ -74,11 +74,30 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
     student['aLevelSubjects'] = subjects
     student['predictedGrades'] = grades
     
+    # Get career interests from junction table
+    cursor.execute("""
+        SELECT ci.name
+        FROM student_career_interest sci
+        JOIN career_interest ci ON sci.career_interest_id = ci.career_interest_id
+        WHERE sci.student_id = %s
+    """, (student_id,))
+    career_interests = [row['name'] for row in cursor.fetchall()]
+    
+    # Get preferred exams from junction table
+    cursor.execute("""
+        SELECT ee.name
+        FROM student_preferred_exam spe
+        JOIN entrance_exam ee ON spe.exam_id = ee.exam_id
+        WHERE spe.student_id = %s
+    """, (student_id,))
+    preferred_exams = [row['name'] for row in cursor.fetchall()]
+    
     # Build preferences dict
     student['preferences'] = {
         'preferredRegion': student.get('region'),
         'maxBudget': student.get('tuition_budget'),
-        'preferredExams': student.get('preferred_exams', [])
+        'careerInterests': career_interests,
+        'preferredExams': preferred_exams
     }
     
     # Add firstName and lastName from display_name

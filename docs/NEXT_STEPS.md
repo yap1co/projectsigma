@@ -96,7 +96,7 @@ cd D:\Downloads\Programming\projectSigma\projectsigma
 ### Initialize Database
 ```powershell
 cd server\database
-python init_db.py
+python setup_database.py
 ```
 
 **Expected Output:**
@@ -192,7 +192,7 @@ Should return: `{"status": "healthy"}`
 → Wrong password. Update `setup_local_env.ps1` or `.env` file (Step 2).
 
 ### "Database does not exist"
-→ Run `python init_db.py` (Step 3).
+→ Run `python setup_database.py` (Step 3).
 
 ### "psql: command not found"
 → Add PostgreSQL to PATH:

@@ -374,7 +374,7 @@ High user satisfaction validates:
 | Objective | Achievement | Notes |
 |-----------|-------------|-------|
 | Design algorithm | ✅ Achieved | Weighted scoring with 6 components |
-| Design database schema | ✅ Achieved | 23 tables, normalized to 3NF |
+| Design database schema | ✅ Achieved | 25 tables (14 application + 10 HESA + 1 system), normalized to 1NF with junction tables |
 | Create UI wireframes | ✅ Achieved | 3 wireframes (landing, profile, dashboard) |
 | Plan testing | ✅ Achieved | 49 tests across 6 categories |
 
@@ -476,7 +476,7 @@ High user satisfaction validates:
 
 **1. Scope Creep is Real**
 - Original project had 42 tables (too many)
-- Reduction to 23 tables made project manageable
+- Database design with 25 tables demonstrates complexity while remaining manageable
 - **Takeaway:** Prioritize ruthlessly, defer non-essentials
 
 **2. User Feedback Invaluable**

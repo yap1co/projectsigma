@@ -105,18 +105,9 @@ class RecommendationEngine:
             'art': lambda subj: 'art' in subj.lower() or 'design' in subj.lower()
         }
         
-        # Tunable settings for feedback-based learning
-        self.feedback_settings = {
-            'feedback_weight': 0.15,  # Weight of feedback in final score (0-1)
-            'feedback_decay_days': 90,  # Feedback relevance decays after this many days
-            'min_feedback_count': 3,  # Minimum feedback count to apply feedback boost
-            'positive_feedback_boost': 0.2,  # Score boost for positive feedback
-            'negative_feedback_penalty': -0.3  # Score penalty for negative feedback
-        }
-        
         # Career interests data loaded from database (cached)
-        self.career_keywords_map = {}  # Maps interest_name -> [keywords]
-        self.conflicting_career_fields = {}  # Maps interest_name -> [conflicting_interest_names]
+        # Load career interests using CAH-based mapping (replaces old keyword system)
+        self.course_career_mapping = self._get_course_career_mapping()
         self._load_career_interests_from_db()
     
     def get_recommendations(self, a_level_subjects: List[str], 
@@ -147,10 +138,7 @@ class RecommendationEngine:
         # Get all courses from database
         courses = self._get_all_courses()
         
-        # Load tunable settings from database (with fallback to defaults)
-        self._load_feedback_settings()
-        
-        # Get student ID from criteria or preferences for feedback lookup
+        # Get student ID from criteria or preferences
         student_id = criteria.get('student_id') or preferences.get('student_id')
         
         # Identify highest predicted grade and subject
@@ -215,26 +203,18 @@ class RecommendationEngine:
             if best_course:
                 best_courses_map[uni_name] = best_course
         
-        # Get feedback scores for top courses (if student_id available)
-        # Includes feedback from this student AND similar students with similar profiles
-        feedback_scores = {}
-        if student_id:
-            course_ids = [course.get('course_id') for _, _, course in sorted_courses if course.get('course_id')]
-            feedback_scores = self._get_student_feedback_scores(student_id, course_ids, preferences)
-        
         # Add diversity bonus: prioritize courses that match different subject combinations
         # This ensures varied recommendations for students with diverse subject profiles
         subject_diversity_bonus = {}
         highest_grade_bonus = {}  # Bonus for courses related to highest-graded subject
         career_interest_bonus = {}  # Bonus for courses matching career interests
-        conflicting_courses = set()  # Courses that conflict with career interests (to be filtered)
         student_subjects_normalized = {s.lower().strip() for s in a_level_subjects}
         
-        # Get career interests for matching (loaded from database)
+        # Get career interests for matching using CAH-based mapping
         career_interests = preferences.get('careerInterests', [])
-        # Use database-loaded career keywords and conflicts
-        career_keywords_map = self.career_keywords_map
-        conflicting_career_fields = self.conflicting_career_fields
+        
+        # Get course-to-career mapping using CAH codes instead of keyword matching
+        course_career_mapping = self._get_course_career_mapping()
         
         # Normalize highest grade subject for matching
         highest_grade_subject_normalized = None
@@ -290,71 +270,19 @@ class RecommendationEngine:
             if matches_highest_grade and not has_career_interests:
                 highest_grade_bonus[course_id] = 0.25  # Strong bonus for highest-grade subject
             
-            # Give STRONG bonus for courses matching career interests (overrides grade-based prioritization)
-            # Also mark courses that conflict with career interests for filtering
+            # Give STRONG bonus for courses matching career interests using CAH mapping
             if has_career_interests and career_interests:
-                course_name_lower = course.get('name', '').lower()
                 course_matches_interest = False
+                course_career_interests = course_career_mapping.get(course_id, set())
                 
-                # Check if course matches any selected career interest
-                # Use more lenient matching to catch courses like "Business Management", "Finance and Accounting"
-                for interest in career_interests:
-                    keywords = career_keywords_map.get(interest, [])
-                    for keyword in keywords:
-                        # Check if keyword appears in course name
-                        if keyword in course_name_lower:
-                            # Check if this is Business & Finance (or variations)
-                            is_business_finance = (
-                                'business' in interest.lower() and 'finance' in interest.lower() or
-                                interest.lower() == 'business' or 
-                                interest.lower() == 'finance'
-                            )
-                            
-                            if is_business_finance:
-                                # Match business, finance, economics, accounting, management, etc.
-                                # BUT explicitly exclude Computer Science, Physics, etc.
-                                business_finance_keywords = ['business', 'finance', 'economics', 'accounting', 'management', 
-                                                           'banking', 'investment', 'marketing', 'entrepreneurship', 
-                                                           'commerce', 'financial']
-                                
-                                # Check if keyword is a valid Business & Finance keyword
-                                if keyword in business_finance_keywords:
-                                    # Double-check: course name should NOT contain conflicting terms
-                                    conflicting_terms_in_name = ['computer science', 'computing', 'physics', 'chemistry', 
-                                                               'biology', 'engineering', 'technology', 'software']
-                                    if not any(term in course_name_lower for term in conflicting_terms_in_name):
-                                        course_matches_interest = True
-                                        career_interest_bonus[course_id] = 0.4  # Very strong bonus
-                                        break
-                            else:
-                                # For other interests, use the keyword matching
-                                course_matches_interest = True
-                                career_interest_bonus[course_id] = 0.4
-                                break
-                    if course_matches_interest:
+                # Check if any of the course's career interests match student's interests
+                for student_interest in career_interests:
+                    if student_interest in course_career_interests:
+                        course_matches_interest = True
+                        career_interest_bonus[course_id] = 0.4  # Strong bonus for career match
                         break
                 
-                # Check if course conflicts with selected career interests
-                # e.g., Physics/Computer Science should be filtered when Business & Finance is selected
-                if not course_matches_interest:
-                    for interest in career_interests:
-                        conflicting_fields = conflicting_career_fields.get(interest, [])
-                        for conflicting_field in conflicting_fields:
-                            conflicting_keywords = career_keywords_map.get(conflicting_field, [])
-                            for keyword in conflicting_keywords:
-                                # Use whole word matching for conflicts
-                                if keyword in course_name_lower:
-                                    # Special handling: "science" in "Business Studies" should NOT conflict
-                                    # But "physics", "computer", "chemistry", "biology" should conflict
-                                    if keyword == 'science' and ('business' in course_name_lower or 'finance' in course_name_lower):
-                                        continue  # Skip - this is Business Studies, not a science course
-                                    # Mark this course as conflicting - will be filtered out
-                                    conflicting_courses.add(course_id)
-                                    break
-                            if course_id in conflicting_courses:
-                                break
-                        if course_id in conflicting_courses:
-                            break
+                # No additional conflict detection needed - CAH mapping is precise
         
         recommendations = []
         for neg_score, idx, course in sorted_courses:
@@ -362,62 +290,21 @@ class RecommendationEngine:
             course_id = course.get('course_id')
             course_name_lower = course.get('name', '').lower()
             
-            # STRICT FILTERING: If career interests are specified, FILTER OUT conflicting courses immediately
-            # This happens BEFORE bonuses to prevent non-matching courses from sneaking through
+            # CAREER INTEREST FILTERING: If career interests specified, only show matching courses
             if has_career_interests and career_interests:
-                # CRITICAL: Explicit check for Computer Science, Physics, etc. when Business & Finance is selected
-                # This must happen FIRST before any other checks
-                # Check if Business & Finance (or variations) is selected
-                has_business_finance = any(
-                    ('business' in interest.lower() and 'finance' in interest.lower()) or
-                    (interest.lower() == 'business') or 
-                    (interest.lower() == 'finance')
-                    for interest in career_interests
-                )
+                course_career_interests = course_career_mapping.get(course_id, set())
                 
-                if has_business_finance:
-                    course_name_lower_check = course.get('name', '').lower()
-                    # Explicitly filter out these conflicting courses
-                    conflicting_course_terms = ['computer science', 'computing', 'physics', 'chemistry', 'biology', 
-                                               'engineering', 'technology', 'software', 'electrical', 'mechanical',
-                                               'computer', 'tech']
-                    if any(term in course_name_lower_check for term in conflicting_course_terms):
-                        # Special exception: "Business Information Systems" or similar should NOT be filtered
-                        if 'business' in course_name_lower_check or 'finance' in course_name_lower_check:
-                            pass  # Allow it - it's a business-related course
-                        else:
-                            continue  # Filter out - this is a conflicting course (e.g., Computer Science)
+                # Check if course matches any of the student's career interests
+                course_matches_career = any(interest in course_career_interests for interest in career_interests)
                 
-                # First check: Is this course explicitly conflicting with career interests?
-                # e.g., Physics/Computer Science when Business & Finance is selected
-                if course_id in conflicting_courses:
-                    continue  # Skip this course entirely - don't include in recommendations
-                
-                # Second check: Does this course match the career interests?
-                course_matches_career = course_id in career_interest_bonus
+                # If no match, skip this course
+                if not course_matches_career:
+                    continue
                 
                 if not course_matches_career:
                     # Course doesn't match career interests - check if it conflicts
-                    # Additional strict check: if course contains keywords from conflicting fields, filter it out
-                    # This prevents showing Physics/Computer Science when Business & Finance is selected
-                    should_filter = False
-                    for interest in career_interests:
-                        conflicting_fields = conflicting_career_fields.get(interest, [])
-                        for conflicting_field in conflicting_fields:
-                            conflicting_keywords = career_keywords_map.get(conflicting_field, [])
-                            for keyword in conflicting_keywords:
-                                # Use whole word or significant phrase matching
-                                if keyword in course_name_lower:
-                                    # Special case: "science" in "Business Studies" should NOT be filtered
-                                    if keyword == 'science' and ('business' in course_name_lower or 'finance' in course_name_lower):
-                                        continue
-                                    # This course conflicts with career interest - filter it out
-                                    should_filter = True
-                                    break
-                            if should_filter:
-                                break
-                        if should_filter:
-                            break
+                # Career filtering already handled above using CAH mapping
+                # No additional conflict checking needed
                     
                     if should_filter:
                         continue  # Skip this course - don't include in recommendations
@@ -446,12 +333,6 @@ class RecommendationEngine:
             # This ensures courses matching career interests rank higher than subject-based matches
             if course_id in career_interest_bonus:
                 match_score = min(match_score + career_interest_bonus[course_id], 1.0)
-            
-            # Apply feedback-based score adjustment (dynamic learning)
-            # This uses feedback from this student AND similar students with similar profiles
-            if course_id in feedback_scores:
-                feedback_adjustment = feedback_scores[course_id] * self.feedback_settings['feedback_weight']
-                match_score = max(0.0, min(1.0, match_score + feedback_adjustment))
             
             # FINAL STRICT FILTER: If career interests are specified, ONLY show courses that match
             # This is the final gate - no exceptions for non-matching courses
@@ -490,34 +371,7 @@ class RecommendationEngine:
                     # This ensures Physics/Computer Science are NOT shown when Business & Finance is selected
                     continue  # Skip this course - don't include in recommendations
                 
-                # Second: Double-check for conflicting keywords even if it matched
-                # This catches edge cases where a course might have matched a keyword but shouldn't be shown
-                # Check for explicit conflicting terms (computer, computing, physics, chemistry, etc.)
-                # These should NEVER appear when Business & Finance is selected
-                conflicting_terms = ['computer', 'computing', 'physics', 'chemistry', 'biology', 'engineering', 'technology']
-                has_conflicting_term = any(term in course_name_for_check for term in conflicting_terms)
-                
-                if has_conflicting_term and has_business_finance_final:
-                    # Definitely filter out - this is a conflicting course
-                    continue
-                    
-                # For other career interests, check if this course conflicts
-                if has_conflicting_term:
-                    should_filter_conflict = False
-                    for interest in career_interests:
-                        conflicting_fields = conflicting_career_fields.get(interest, [])
-                        for conflicting_field in conflicting_fields:
-                            # Check if the conflicting field contains these terms
-                            conflicting_keywords = career_keywords_map.get(conflicting_field, [])
-                            if any(term in conflicting_keywords for term in conflicting_terms):
-                                # This course conflicts with the selected career interest
-                                should_filter_conflict = True
-                                break
-                        if should_filter_conflict:
-                            break
-                    
-                    if should_filter_conflict:
-                        continue  # Skip this course - it conflicts with career interests
+                # Career filtering already completed above - no additional checks needed
             
             # Check if student meets all grade requirements
             meets_all_requirements = self._meets_all_grade_requirements(
@@ -725,7 +579,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT e.pubukprn, e.kiscourseid, e.kismode,
                                    e.work, e.study, e.unemp, e.workstudy,
-                                   e.emppop, e.empresponse, e.empresp_rate, e.empsample
+                                   e.emppop, e.empagg
                             FROM hesa_employment e
                             INNER JOIN temp_hesa_lookup t ON 
                                 e.pubukprn = t.pubukprn AND 
@@ -739,7 +593,7 @@ class RecommendationEngine:
                         # Batch fetch salary data
                         cur.execute("""
                             SELECT g.pubukprn, g.kiscourseid, g.kismode,
-                                   g.goinstmed, g.goinstlq, g.goinstuq
+                                   g.instmed, g.instlwr, g.instupr
                             FROM hesa_gosalary g
                             INNER JOIN temp_hesa_lookup t ON 
                                 g.pubukprn = t.pubukprn AND 
@@ -764,27 +618,13 @@ class RecommendationEngine:
                             key = (row['pubukprn'], row['kiscourseid'], row['kismode'])
                             leo3_data[key] = dict(row)
                         
-                        # Batch fetch job types
-                        cur.execute("""
-                            SELECT j.pubukprn, j.kiscourseid, j.kismode,
-                                   j.job, j.perc, j."order"
-                            FROM hesa_joblist j
-                            INNER JOIN temp_hesa_lookup t ON 
-                                j.pubukprn = t.pubukprn AND 
-                                j.kiscourseid = t.kiscourseid AND 
-                                j.kismode = t.kismode
-                            ORDER BY j.pubukprn, j.kiscourseid, j.kismode, j."order" ASC
-                        """)
-                        for row in cur.fetchall():
-                            key = (row['pubukprn'], row['kiscourseid'], row['kismode'])
-                            if key not in job_types_data:
-                                job_types_data[key] = []
-                            job_types_data[key].append({'job': row['job'], 'percentage': row['perc']})
+                        # Note: hesa_joblist contains job percentages by category, not individual job listings
+                        # Skip job types enrichment for now
                         
                         # Batch fetch entry statistics
                         cur.execute("""
                             SELECT en.pubukprn, en.kiscourseid, en.kismode,
-                                   en.alevel, en.access, en.degree, en.foundtn, en.noquals, en.other, en.entpop
+                                   en.alevel, en.access, en.degree, en.foundation, en.noquals, en.other, en.entpop
                             FROM hesa_entry en
                             INNER JOIN temp_hesa_lookup t ON 
                                 en.pubukprn = t.pubukprn AND 
@@ -819,8 +659,6 @@ class RecommendationEngine:
                                     'studying': emp.get('study'),
                                     'unemployed': emp.get('unemp'),
                                     'workingAndStudying': emp.get('workstudy'),
-                                    'sampleSize': emp.get('empsample'),
-                                    'responseRate': emp.get('empresp_rate'),
                                     'totalGraduates': emp.get('emppop')
                                 }
                                 
@@ -835,12 +673,12 @@ class RecommendationEngine:
                             if key in salary_data:
                                 sal = salary_data[key]
                                 enriched_course['salaryData'] = {
-                                    'medianSalary': sal.get('goinstmed'),
-                                    'lowerQuartile': sal.get('goinstlq'),
-                                    'upperQuartile': sal.get('goinstuq')
+                                    'medianSalary': sal.get('instmed'),
+                                    'lowerQuartile': sal.get('instlwr'),
+                                    'upperQuartile': sal.get('instupr')
                                 }
-                                if sal.get('goinstmed'):
-                                    enriched_course.setdefault('employability', {})['averageSalary'] = sal['goinstmed']
+                                if sal.get('instmed'):
+                                    enriched_course.setdefault('employability', {})['averageSalary'] = sal['instmed']
                             
                             # Add earnings data
                             if key in leo3_data:
@@ -853,9 +691,7 @@ class RecommendationEngine:
                                 if not enriched_course.get('employability', {}).get('averageSalary') and leo.get('leo3instmed'):
                                     enriched_course.setdefault('employability', {})['averageSalary'] = leo['leo3instmed']
                             
-                            # Add job types
-                            if key in job_types_data:
-                                enriched_course['commonJobTypes'] = job_types_data[key][:5]  # Top 5
+                            # Note: Skip job types - data structure mismatch
                             
                             # Add entry statistics
                             if key in entry_stats_data:
@@ -864,7 +700,7 @@ class RecommendationEngine:
                                     'aLevelStudents': ent.get('alevel'),
                                     'accessStudents': ent.get('access'),
                                     'degreeStudents': ent.get('degree'),
-                                    'foundationStudents': ent.get('foundtn'),
+                                    'foundationStudents': ent.get('foundation'),
                                     'noQualifications': ent.get('noquals'),
                                     'otherQualifications': ent.get('other'),
                                     'totalEntryPopulation': ent.get('entpop')
@@ -937,7 +773,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT 
                                 work, study, unemp, workstudy,
-                                emppop, empresponse, empresp_rate
+                                emppop, empagg
                             FROM hesa_employment
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
@@ -947,7 +783,7 @@ class RecommendationEngine:
                         # Get salary data
                         cur.execute("""
                             SELECT 
-                                goinstmed, goinstlq, goinstuq
+                                instmed, instlwr, instupr
                             FROM hesa_gosalary
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
@@ -964,20 +800,13 @@ class RecommendationEngine:
                         """, (pubukprn, kiscourseid, kismode))
                         leo3 = cur.fetchone()
                         
-                        # Get common job types
-                        cur.execute("""
-                            SELECT job, perc, "order"
-                            FROM hesa_joblist
-                            WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
-                            ORDER BY "order" ASC
-                            LIMIT 5
-                        """, (pubukprn, kiscourseid, kismode))
-                        job_types = cur.fetchall()
+                        # Note: hesa_joblist contains job percentages by category, not individual job listings
+                        # Skip job types for now
                         
                         # Get entry qualification statistics (aggregated)
                         cur.execute("""
                             SELECT 
-                                alevel, access, degree, foundtn, noquals, other,
+                                alevel, access, degree, foundation, noquals, other,
                                 entpop
                             FROM hesa_entry
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
@@ -991,15 +820,13 @@ class RecommendationEngine:
                             'studying': employment['study'] if employment and employment.get('study') else None,
                             'unemployed': employment['unemp'] if employment and employment.get('unemp') else None,
                             'workingAndStudying': employment['workstudy'] if employment and employment.get('workstudy') else None,
-                            'sampleSize': employment['empsample'] if employment and employment.get('empsample') else None,
-                            'responseRate': employment['empresp_rate'] if employment and employment.get('empresp_rate') else None,
                             'totalGraduates': employment['emppop'] if employment and employment.get('emppop') else None
                         } if employment else None
                         
                         course['salaryData'] = {
-                            'medianSalary': salary['goinstmed'] if salary and salary.get('goinstmed') else None,
-                            'lowerQuartile': salary['goinstlq'] if salary and salary.get('goinstlq') else None,
-                            'upperQuartile': salary['goinstuq'] if salary and salary.get('goinstuq') else None
+                            'medianSalary': salary['instmed'] if salary and salary.get('instmed') else None,
+                            'lowerQuartile': salary['instlwr'] if salary and salary.get('instlwr') else None,
+                            'upperQuartile': salary['instupr'] if salary and salary.get('instupr') else None
                         } if salary else None
                         
                         course['earningsData'] = {
@@ -1008,16 +835,13 @@ class RecommendationEngine:
                             'upperQuartile3Years': leo3['leo3instuq'] if leo3 and leo3.get('leo3instuq') else None
                         } if leo3 else None
                         
-                        course['commonJobTypes'] = [
-                            {'job': job['job'], 'percentage': job['perc']}
-                            for job in job_types
-                        ] if job_types else []
+                        # Note: Skip job types - data structure mismatch
                         
                         course['entryStatistics'] = {
                             'aLevelStudents': entry_stats['alevel'] if entry_stats and entry_stats.get('alevel') else None,
                             'accessStudents': entry_stats['access'] if entry_stats and entry_stats.get('access') else None,
                             'degreeStudents': entry_stats['degree'] if entry_stats and entry_stats.get('degree') else None,
-                            'foundationStudents': entry_stats['foundtn'] if entry_stats and entry_stats.get('foundtn') else None,
+                            'foundationStudents': entry_stats['foundation'] if entry_stats and entry_stats.get('foundation') else None,
                             'noQualifications': entry_stats['noquals'] if entry_stats and entry_stats.get('noquals') else None,
                             'otherQualifications': entry_stats['other'] if entry_stats and entry_stats.get('other') else None,
                             'totalEntryPopulation': entry_stats['entpop'] if entry_stats and entry_stats.get('entpop') else None
@@ -1030,8 +854,8 @@ class RecommendationEngine:
                                 employment_rate = int((employment['work'] / total) * 100)
                                 course['employability']['employmentRate'] = employment_rate
                         
-                        if salary and salary.get('goinstmed'):
-                            course['employability']['averageSalary'] = salary['goinstmed']
+                        if salary and salary.get('instmed'):
+                            course['employability']['averageSalary'] = salary['instmed']
                         elif leo3 and leo3.get('leo3instmed'):
                             course['employability']['averageSalary'] = leo3['leo3instmed']
             
@@ -1498,265 +1322,84 @@ class RecommendationEngine:
         return related_term in student_subject.lower()
     
     def _load_career_interests_from_db(self):
-        """Load career interests, keywords, and conflicts from database"""
+        """Load career interests from CAH mapping (replaces old keyword system)"""
+        # Career interests are now loaded via CAH mapping in _get_course_career_mapping()
+        # This method exists for compatibility but no longer loads keywords/conflicts
         try:
             from database_helper import get_db_connection
             from psycopg2.extras import RealDictCursor
             
             with get_db_connection() as conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    # Load all active career interests
+                    # Get available career interests from CAH mapping
                     cur.execute("""
-                        SELECT interest_id, interest_name, display_name
-                        FROM career_interest
-                        WHERE is_active = TRUE
-                        ORDER BY display_order, interest_name
+                        SELECT DISTINCT career_interest_name as interest_name
+                        FROM subject_to_career
+                        ORDER BY career_interest_name
                     """)
                     
-                    interests = {}
-                    for row in cur.fetchall():
-                        interests[row['interest_name']] = {
-                            'id': row['interest_id'],
-                            'display_name': row['display_name']
-                        }
-                    
-                    # Load keywords for each interest
-                    cur.execute("""
-                        SELECT cik.interest_id, ci.interest_name, cik.keyword, cik.priority
-                        FROM career_interest_keyword cik
-                        JOIN career_interest ci ON cik.interest_id = ci.interest_id
-                        WHERE cik.is_active = TRUE AND ci.is_active = TRUE
-                        ORDER BY ci.interest_name, cik.priority DESC, cik.keyword
-                    """)
-                    
-                    self.career_keywords_map = {}
-                    for row in cur.fetchall():
-                        interest_name = row['interest_name']
-                        keyword = row['keyword'].lower()
-                        
-                        if interest_name not in self.career_keywords_map:
-                            self.career_keywords_map[interest_name] = []
-                        
-                        self.career_keywords_map[interest_name].append(keyword)
-                    
-                    # Load conflicts
-                    cur.execute("""
-                        SELECT 
-                            ci1.interest_name as interest_name,
-                            ci2.interest_name as conflicting_interest_name,
-                            cic.conflict_strength
-                        FROM career_interest_conflict cic
-                        JOIN career_interest ci1 ON cic.interest_id = ci1.interest_id
-                        JOIN career_interest ci2 ON cic.conflicting_interest_id = ci2.interest_id
-                        WHERE ci1.is_active = TRUE AND ci2.is_active = TRUE
-                        ORDER BY ci1.interest_name, cic.conflict_strength DESC
-                    """)
-                    
-                    self.conflicting_career_fields = {}
-                    for row in cur.fetchall():
-                        interest_name = row['interest_name']
-                        conflicting_name = row['conflicting_interest_name']
-                        
-                        if interest_name not in self.conflicting_career_fields:
-                            self.conflicting_career_fields[interest_name] = []
-                        
-                        self.conflicting_career_fields[interest_name].append(conflicting_name)
-                    
-                    print(f"Loaded {len(self.career_keywords_map)} career interests with keywords from database")
+                    career_interests = [row['interest_name'] for row in cur.fetchall()]
+                    print(f"Loaded {len(career_interests)} career interests from CAH mapping: {career_interests}")
                     
         except Exception as e:
-            print(f"Warning: Could not load career interests from database: {e}")
-            print("Falling back to hardcoded values")
-            # Fallback to hardcoded values if database fails
-            self.career_keywords_map = {
-                'Business & Finance': ['business', 'finance', 'accounting', 'economics', 'management', 'banking', 'investment', 'marketing', 'entrepreneurship', 'commerce', 'financial'],
-                'Medicine & Healthcare': ['medicine', 'health', 'nursing', 'pharmacy', 'dentistry', 'veterinary', 'biomedical', 'medical'],
-                'Engineering & Technology': ['engineering', 'technology', 'computer', 'software', 'electrical', 'mechanical', 'civil', 'computing', 'tech'],
-                'Law': ['law', 'legal', 'jurisprudence', 'criminology'],
-                'Education': ['education', 'teaching', 'pedagogy'],
-                'Arts & Humanities': ['arts', 'humanities', 'history', 'literature', 'philosophy', 'classics'],
-                'Sciences': ['science', 'physics', 'chemistry', 'biology', 'mathematics', 'maths', 'physics', 'chemical', 'biological'],
-                'Social Sciences': ['sociology', 'psychology', 'politics', 'international relations', 'anthropology'],
-                'Creative Arts': ['art', 'design', 'creative', 'fine art', 'graphic design', 'fashion'],
-                'Sports & Fitness': ['sports', 'fitness', 'exercise', 'physical education', 'kinesiology']
-            }
-            self.conflicting_career_fields = {
-                'Business & Finance': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Medicine & Healthcare': ['Engineering & Technology', 'Sciences', 'Business & Finance'],
-                'Engineering & Technology': ['Business & Finance', 'Medicine & Healthcare', 'Law', 'Arts & Humanities'],
-                'Sciences': ['Business & Finance', 'Law', 'Arts & Humanities', 'Creative Arts'],
-                'Law': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Arts & Humanities': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Social Sciences': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Creative Arts': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Education': ['Engineering & Technology', 'Sciences', 'Medicine & Healthcare'],
-                'Sports & Fitness': ['Engineering & Technology', 'Sciences', 'Business & Finance']
-            }
+            print(f"Warning: Could not load career interests: {e}")
+            print("Using default career interests")
+            career_interests = [
+                'Business & Finance', 'Medicine & Healthcare', 'Engineering & Technology',
+                'Law', 'Education', 'Arts & Humanities', 'Sciences', 'Social Sciences',
+                'Creative Arts', 'Sports & Fitness'
+            ]
     
-    def _load_feedback_settings(self):
-        """Load tunable feedback settings from database, with fallback to defaults"""
+    def _get_course_career_mapping(self):
+        """Get mapping of course_id to career interests using CAH codes"""
         try:
             from database_helper import get_db_connection
             from psycopg2.extras import RealDictCursor
             
-            with get_db_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    cur.execute("""
-                        SELECT setting_key, setting_value
-                        FROM recommendation_settings
-                    """)
-                    
-                    for row in cur.fetchall():
-                        key = row['setting_key']
-                        value = row['setting_value']
-                        
-                        # Update settings if key exists in our settings dict
-                        if key == 'feedback_weight':
-                            self.feedback_settings['feedback_weight'] = float(value) if isinstance(value, (int, float, str)) else 0.15
-                        elif key == 'feedback_decay_days':
-                            self.feedback_settings['feedback_decay_days'] = int(value) if isinstance(value, (int, str)) else 90
-                        elif key == 'min_feedback_count':
-                            self.feedback_settings['min_feedback_count'] = int(value) if isinstance(value, (int, str)) else 3
-                        elif key == 'positive_feedback_boost':
-                            self.feedback_settings['positive_feedback_boost'] = float(value) if isinstance(value, (int, float, str)) else 0.2
-                        elif key == 'negative_feedback_penalty':
-                            self.feedback_settings['negative_feedback_penalty'] = float(value) if isinstance(value, (int, float, str)) else -0.3
-                            
+            conn = get_db_connection()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            
+            # Get course career interests via CAH mapping
+            cursor.execute("""
+                SELECT DISTINCT k.kiscourseid as course_id, ccm.career_interest_name
+                FROM hesa_kiscourse k
+                JOIN hesa_sbj s ON k.kiscourseid = s.kiscourseid
+                JOIN subject_to_career ccm ON ccm.cah_code = SUBSTRING(s.sbj FROM 1 FOR 5)
+                WHERE k.title IS NOT NULL
+            """)
+            
+            mapping = {}
+            for row in cursor.fetchall():
+                course_id = row['course_id']
+                career = row['career_interest_name']
+                if course_id not in mapping:
+                    mapping[course_id] = set()
+                mapping[course_id].add(career)
+            
+            cursor.close()
+            conn.close()
+            
+            return mapping
+            
         except Exception as e:
-            # If settings table doesn't exist or query fails, use defaults
-            print(f"Warning: Could not load feedback settings from database: {e}")
-            pass  # Use default settings already in self.feedback_settings
+            print(f"Error loading course career mapping: {e}")
+            return {}
     
-    def _get_student_feedback_scores(self, student_id: str, course_ids: List[str], 
-                                     preferences: Dict[str, Any] = None) -> Dict[str, float]:
-        """
-        Get feedback-based scores for courses from the database.
-        Includes feedback from:
-        1. This specific student
-        2. Similar students with similar profiles (career interests, subjects, grades)
+    def _get_highest_grade_subject(self, predicted_grades: Dict[str, str]) -> str:
+        """Get the subject with the highest predicted grade"""
+        if not predicted_grades:
+            return None
         
-        Returns a dictionary mapping course_id -> feedback_score (-1 to 1)
-        """
-        if not student_id or not course_ids:
-            return {}
+        highest_grade = None
+        highest_subject = None
         
-        try:
-            from database_helper import get_db_connection
-            from psycopg2.extras import RealDictCursor
-            
-            with get_db_connection() as conn:
-                with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                    # Get feedback for these courses from this student
-                    cur.execute("""
-                        SELECT 
-                            course_id,
-                            COUNT(*) FILTER (WHERE feedback_type = 'positive') as positive_count,
-                            COUNT(*) FILTER (WHERE feedback_type = 'negative') as negative_count,
-                            MAX(feedback_at) as last_feedback_date,
-                            COUNT(*) as total_feedback
-                        FROM recommendation_feedback
-                        WHERE student_id = %s 
-                          AND course_id = ANY(%s)
-                          AND feedback_at >= CURRENT_DATE - INTERVAL '%s days'
-                        GROUP BY course_id
-                    """, (student_id, course_ids, self.feedback_settings['feedback_decay_days']))
-                    
-                    feedback_scores = {}
-                    student_feedback = {}
-                    for row in cur.fetchall():
-                        course_id = row['course_id']
-                        positive = row['positive_count'] or 0
-                        negative = row['negative_count'] or 0
-                        total = row['total_feedback'] or 0
-                        student_feedback[course_id] = {
-                            'positive': positive,
-                            'negative': negative,
-                            'total': total
-                        }
-                    
-                    # Also get feedback from similar students (similar career interests)
-                    # This allows feedback to benefit students with similar profiles
-                    if preferences and preferences.get('careerInterests'):
-                        career_interests = preferences.get('careerInterests', [])
-                        # Get feedback from other students who have similar career interests
-                        # This is stored in search_criteria JSONB field
-                        cur.execute("""
-                            SELECT 
-                                rf.course_id,
-                                COUNT(*) FILTER (WHERE rf.feedback_type = 'positive') as positive_count,
-                                COUNT(*) FILTER (WHERE rf.feedback_type = 'negative') as negative_count,
-                                COUNT(*) as total_feedback
-                            FROM recommendation_feedback rf
-                            WHERE rf.course_id = ANY(%s)
-                              AND rf.feedback_at >= CURRENT_DATE - INTERVAL '%s days'
-                              AND rf.student_id != %s
-                              AND rf.search_criteria IS NOT NULL
-                              AND rf.search_criteria::jsonb @> %s::jsonb
-                            GROUP BY rf.course_id
-                        """, (
-                            course_ids,
-                            self.feedback_settings['feedback_decay_days'],
-                            student_id,
-                            json.dumps({'careerInterests': career_interests})
-                        ))
-                        
-                        similar_student_feedback = {}
-                        for row in cur.fetchall():
-                            course_id = row['course_id']
-                            positive = row['positive_count'] or 0
-                            negative = row['negative_count'] or 0
-                            total = row['total_feedback'] or 0
-                            
-                            if course_id not in similar_student_feedback:
-                                similar_student_feedback[course_id] = {'positive': 0, 'negative': 0, 'total': 0}
-                            
-                            similar_student_feedback[course_id]['positive'] += positive
-                            similar_student_feedback[course_id]['negative'] += negative
-                            similar_student_feedback[course_id]['total'] += total
-                        
-                        # Combine student's own feedback with similar students' feedback
-                        # Weight: 60% own feedback, 40% similar students' feedback
-                        for course_id in course_ids:
-                            own_pos = student_feedback.get(course_id, {}).get('positive', 0)
-                            own_neg = student_feedback.get(course_id, {}).get('negative', 0)
-                            own_total = student_feedback.get(course_id, {}).get('total', 0)
-                            
-                            similar_pos = similar_student_feedback.get(course_id, {}).get('positive', 0)
-                            similar_neg = similar_student_feedback.get(course_id, {}).get('negative', 0)
-                            similar_total = similar_student_feedback.get(course_id, {}).get('total', 0)
-                            
-                            # Weighted combination
-                            combined_pos = (own_pos * 0.6) + (similar_pos * 0.4)
-                            combined_neg = (own_neg * 0.6) + (similar_neg * 0.4)
-                            combined_total = (own_total * 0.6) + (similar_total * 0.4)
-                            
-                            if combined_total >= self.feedback_settings['min_feedback_count']:
-                                if combined_total > 0:
-                                    net_score = (combined_pos - combined_neg) / combined_total
-                                    if net_score > 0:
-                                        feedback_scores[course_id] = net_score * self.feedback_settings['positive_feedback_boost']
-                                    else:
-                                        feedback_scores[course_id] = net_score * abs(self.feedback_settings['negative_feedback_penalty'])
-                    else:
-                        # No similar student matching - just use this student's feedback
-                        for course_id, feedback in student_feedback.items():
-                            positive = feedback['positive']
-                            negative = feedback['negative']
-                            total = feedback['total']
-                            
-                            if total >= self.feedback_settings['min_feedback_count']:
-                                if total > 0:
-                                    net_score = (positive - negative) / total
-                                    if net_score > 0:
-                                        feedback_scores[course_id] = net_score * self.feedback_settings['positive_feedback_boost']
-                                    else:
-                                        feedback_scores[course_id] = net_score * abs(self.feedback_settings['negative_feedback_penalty'])
-                    
-                    return feedback_scores
-                    
-        except Exception as e:
-            print(f"Warning: Could not fetch feedback scores: {e}")
-            return {}
+        for subject, grade in predicted_grades.items():
+            grade_value = self.grade_values.get(grade, 0)
+            if highest_grade is None or grade_value > highest_grade:
+                highest_grade = grade_value
+                highest_subject = subject
+        
+        return highest_subject
     
     def _get_match_reasons(self, course: Dict[str, Any], 
                           a_level_subjects: List[str],
@@ -1880,19 +1523,16 @@ class RecommendationEngine:
         if employability.get('employmentRate', 0) >= 90:
             reasons.append(f"High graduate employment rate ({employability['employmentRate']}%)")
         
-        # Career interest reasons (use database-loaded keywords)
+        # Career interest reasons (use CAH-based mapping)
         career_interests = preferences.get('careerInterests', [])
         if career_interests:
-            course_name_lower = course.get('name', '').lower()
-            career_keywords_map = self.career_keywords_map
+            course_id = course.get('course_id')
+            course_career_interests = self.course_career_mapping.get(course_id, set())
             
             matched_interests = []
             for interest in career_interests:
-                keywords = career_keywords_map.get(interest, [])
-                for keyword in keywords:
-                    if keyword in course_name_lower:
-                        matched_interests.append(interest)
-                        break
+                if interest in course_career_interests:
+                    matched_interests.append(interest)
             
             if matched_interests:
                 reasons.append(f"Matches your career interests: {', '.join(matched_interests)}")
@@ -1917,7 +1557,6 @@ class RecommendationEngine:
                     c.pubukprn, c.kiscourseid, c.kismode
                 FROM course c
                 JOIN university u ON c.university_id = u.university_id
-                LIMIT 1000
             """
             
             courses = []

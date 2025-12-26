@@ -101,8 +101,8 @@ After successful import, you should have:
 ## Troubleshooting
 
 ### "Table does not exist" errors
-- Run the migration: `python init_db.py` (if not already done)
-- Ensure `002_discover_uni_data_schema.sql` has been applied
+- Run the setup script: `python setup_database.py` (creates all 25 tables)
+- This automatically creates both application and HESA tables
 
 ### "File not found" errors
 - Ensure CSV files are in `server/database/data/` directory

@@ -82,9 +82,8 @@ recommendations = engine.get_recommendations(subjects, grades, preferences, crit
 - Configuration: `client/next.config.js`
 
 ### Database
-- Migrations: `server/database/migrations/`
-- Import Scripts: `server/database/`
-- Data: `server/database/data/`
+- Setup Scripts: `server/database/` (setup_database.py, import_discover_uni_csv.py)
+- Data: `server/database/data/` (HESA CSV files)
 
 ## Environment Variables
 
@@ -121,9 +120,9 @@ npm run build                    # Production build
 ### Database
 ```bash
 cd server/database
-python init_db.py                # Initialize database
-python run_career_interests_migration.py  # Run career interests migration
-python run_feedback_migration.py # Run feedback migration
+python setup_database.py         # Setup database (creates all tables + imports HESA data)
+python seed_career_interests.py  # Seed career interests lookup table
+python check_table_counts.py     # Verify data imported correctly
 ```
 
 ## API Quick Reference

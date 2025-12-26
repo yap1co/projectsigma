@@ -43,7 +43,7 @@ Run the initialization:
 
 ```powershell
 cd D:\Downloads\Programming\projectSigma\projectsigma\server\database
-python init_db.py
+python setup_database.py
 ```
 
 ---
