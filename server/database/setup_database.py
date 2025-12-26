@@ -130,7 +130,7 @@ def create_schema():
         cur.execute("""
             CREATE TABLE subject (
                 subject_id VARCHAR(50) PRIMARY KEY,
-                subject_name VARCHAR(255) NOT NULL UNIQUE
+                subject_name VARCHAR(255) NOT NULL
             )
         """)
         
@@ -148,6 +148,7 @@ def create_schema():
         cur.execute("""
             CREATE TABLE university (
                 university_id VARCHAR(255) PRIMARY KEY,
+                pubukprn VARCHAR(8) UNIQUE,
                 name VARCHAR(255) NOT NULL,
                 region VARCHAR(100),
                 rank_overall INTEGER,

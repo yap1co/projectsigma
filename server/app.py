@@ -169,11 +169,13 @@ def register():
                         # Check if subject exists, if not create it
                         cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
                         if not cur.fetchone():
+                            # Create display name from subject_id
+                            subject_name = subject_id.replace('_', ' ').title()
                             cur.execute("""
                                 INSERT INTO subject (subject_id, subject_name)
                                 VALUES (%s, %s)
                                 ON CONFLICT (subject_id) DO NOTHING
-                            """, (subject_id, subject_id))
+                            """, (subject_id, subject_name))
                         
                         cur.execute("""
                             INSERT INTO student_grade (student_id, subject_id, predicted_grade)
@@ -354,11 +356,13 @@ def update_profile():
                             # Ensure subject exists
                             cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
                             if not cur.fetchone():
+                                # Create display name from subject_id
+                                subject_name = subject_id.replace('_', ' ').title()
                                 cur.execute("""
                                     INSERT INTO subject (subject_id, subject_name)
                                     VALUES (%s, %s)
                                     ON CONFLICT (subject_id) DO NOTHING
-                                """, (subject_id, subject_id))
+                                """, (subject_id, subject_name))
                             
                             cur.execute("""
                                 INSERT INTO student_grade (student_id, subject_id, predicted_grade)
@@ -934,11 +938,13 @@ def add_course():
                     # Ensure subject exists
                     cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
                     if not cur.fetchone():
+                        # Create display name from subject_id
+                        subject_name = subject_id.replace('_', ' ').title()
                         cur.execute("""
                             INSERT INTO subject (subject_id, subject_name)
                             VALUES (%s, %s)
                             ON CONFLICT (subject_id) DO NOTHING
-                        """, (subject_id, subject_id))
+                        """, (subject_id, subject_name))
                     
                     # Add requirement
                     req_id = generate_id('REQ')

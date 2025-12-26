@@ -171,34 +171,43 @@ def import_core_entities(cursor, data_dir: Path):
                 ))
         
         if data:
-            # Process in batches
-            batch_size = 1000
+            # Process in smaller batches to avoid memory issues
+            batch_size = 100  # Reduced from 1000 to avoid memory issues
+            total_batches = (len(data) - 1) // batch_size + 1
+            
             for i in range(0, len(data), batch_size):
                 batch = data[i:i + batch_size]
-                execute_batch(
-                    cursor,
-                    """
-                    INSERT INTO hesa_kiscourse (
-                        pubukprn, ukprn, kiscourseid, title, titlew, kismode, length,
-                        levelcode, locid, distance, owncohort, avgcoursecost, avgcoursecostw,
-                        avcostid, feeuk, feeeng, feeni, feesct, feewales, honours,
-                        sandwich, yearabroad, foundationyear, jacs3code, subjectcodename,
-                        subjectcodenamew, courselocation, courselocationw, coursepageurl,
-                        coursepageurlw, coursepageurlid, supporturl, supporturlw, supporturlid,
-                        employabilityurl, employabilityurlw, employabilityurlid,
-                        financialurl, financialurlw, financialurlid
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
-                    SET title = EXCLUDED.title,
-                        jacs3code = EXCLUDED.jacs3code,
-                        feeuk = EXCLUDED.feeuk
-                    """,
-                    batch,
-                    page_size=1000
-                )
-                logger.info(f"  → Processed batch {i//batch_size + 1}/{(len(data)-1)//batch_size + 1}")
+                batch_num = i//batch_size + 1
+                
+                try:
+                    execute_batch(
+                        cursor,
+                        """
+                        INSERT INTO hesa_kiscourse (
+                            pubukprn, ukprn, kiscourseid, title, titlew, kismode, length,
+                            levelcode, locid, distance, owncohort, avgcoursecost, avgcoursecostw,
+                            avcostid, feeuk, feeeng, feeni, feesct, feewales, honours,
+                            sandwich, yearabroad, foundationyear, jacs3code, subjectcodename,
+                            subjectcodenamew, courselocation, courselocationw, coursepageurl,
+                            coursepageurlw, coursepageurlid, supporturl, supporturlw, supporturlid,
+                            employabilityurl, employabilityurlw, employabilityurlid,
+                            financialurl, financialurlw, financialurlid
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
+                        SET title = EXCLUDED.title,
+                            jacs3code = EXCLUDED.jacs3code,
+                            feeuk = EXCLUDED.feeuk
+                        """,
+                        batch,
+                        page_size=100  # Reduced page size
+                    )
+                    logger.info(f"  → Processed batch {batch_num}/{total_batches}")
+                except Exception as e:
+                    logger.error(f"  → Error in batch {batch_num}: {e}")
+                    # Continue with next batch instead of failing completely
+                    continue
             
             logger.info(f"  Imported {len(data)} KIS Course records")
 
@@ -401,21 +410,35 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('KISMODE')))
         ]
         if data:
-            execute_batch(
-                cursor,
-                """
-                INSERT INTO hesa_employment (pubukprn, ukprn, kiscourseid, kismode,
-                                      empunavailreason, emppop, empagg, empaggyear,
-                                      empyear1, empyear2, empsbj, workstudy, work,
-                                      study, unemp, "other")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
-                SET emppop = EXCLUDED.emppop,
-                    work = EXCLUDED.work
-                """,
-                data,
-                page_size=1000
-            )
+            # Process employment data in smaller batches
+            batch_size = 100
+            total_batches = (len(data) - 1) // batch_size + 1
+            
+            for i in range(0, len(data), batch_size):
+                batch = data[i:i + batch_size]
+                batch_num = i // batch_size + 1
+                
+                try:
+                    execute_batch(
+                        cursor,
+                        """
+                        INSERT INTO hesa_employment (pubukprn, ukprn, kiscourseid, kismode,
+                                              empunavailreason, emppop, empagg, empaggyear,
+                                              empyear1, empyear2, empsbj, workstudy, work,
+                                              study, unemp, "other")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
+                        SET emppop = EXCLUDED.emppop,
+                            work = EXCLUDED.work
+                        """,
+                        batch,
+                        page_size=100
+                    )
+                    logger.info(f"  → Employment batch {batch_num}/{total_batches}")
+                except Exception as e:
+                    logger.error(f"  → Error in employment batch {batch_num}: {e}")
+                    continue
+            
             logger.info(f"  Imported {len(data)} Employment records")
     
     # 4. JOBLIST

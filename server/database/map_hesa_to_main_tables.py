@@ -1,5 +1,5 @@
 """
-Map HESA Discover Uni data to main university and course tables
+Map HESA Discotablesver Uni data to main university and course tables
 This script reads from the HESA tables (hesa_institution, hesa_kiscourse) and 
 populates the main tables (university, course) used by the recommendation engine
 """
@@ -25,7 +25,6 @@ def map_hesa_to_main_tables():
     try:
         logger.info("="*70)
         logger.info("MAPPING HESA DATA TO MAIN TABLES")
-        logger.info("="*70)
         
         # Step 1: Map institutions to universities
         logger.info("\n[1/3] Mapping institutions to universities...")
@@ -34,12 +33,12 @@ def map_hesa_to_main_tables():
                 i.pubukprn,
                 COALESCE(i.first_trading_name, i.legal_name, 'Unknown University') as name,
                 CASE 
-                    WHEN i.country = 'W92000024' THEN 'Wales'
-                    WHEN i.country = 'S92000003' THEN 'Scotland'
-                    WHEN i.country = 'N92000002' THEN 'Northern Ireland'
-                    ELSE 'England'
-                END as region,
-                NULL::INTEGER as rank_overall,
+                    WHEN i.country = 'XI' THEN 'Wales'
+                    WHEN i.country = 'XH' THEN 'Scotland'
+                    WHEN i.country = 'XG' THEN 'Northern Ireland'
+                    WHEN i.country = 'XF' THEN 'England'
+                    ELSE 'Unknown'
+                END as region,                NULL::INTEGER as rank_overall,
                 75 as employability_score,  -- Default, can be updated from other HESA tables
                 i.provurl as website_url  -- Include PROVURL from hesa_institution table
             FROM hesa_institution i
@@ -59,15 +58,15 @@ def map_hesa_to_main_tables():
                 website_url = 'https://' + website_url.lstrip('/')
             
             cur.execute("""
-                INSERT INTO university (university_id, name, region, rank_overall, employability_score, website_url)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (university_id) DO UPDATE
+                INSERT INTO university (university_id, pubukprn, name, region, rank_overall, employability_score, website_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (pubukprn) DO UPDATE
                 SET name = EXCLUDED.name,
                     region = EXCLUDED.region,
                     rank_overall = EXCLUDED.rank_overall,
                     employability_score = EXCLUDED.employability_score,
                     website_url = EXCLUDED.website_url
-            """, (uni_id, inst['name'], inst['region'], inst['rank_overall'], inst['employability_score'], website_url))
+            """, (uni_id, pubukprn, inst['name'], inst['region'], inst['rank_overall'], inst['employability_score'], website_url))
             
             university_map[pubukprn] = uni_id
         
@@ -103,10 +102,14 @@ def map_hesa_to_main_tables():
         
         for kc in courses_data:
             pubukprn = kc['pubukprn']
-            if pubukprn not in university_map:
-                continue
             
-            uni_id = university_map[pubukprn]
+            # Look up university_id from database using pubukprn
+            cur.execute("SELECT university_id FROM university WHERE pubukprn = %s", (pubukprn,))
+            uni_result = cur.fetchone()
+            if not uni_result:
+                continue  # Skip if university doesn't exist
+            
+            uni_id = uni_result['university_id']
             course_id = generate_id('COURSE_')
             course_name = kc['title']
             ucas_code = kc.get('ucascourseid') or kc.get('ucasprogid')
@@ -210,50 +213,8 @@ def map_hesa_to_main_tables():
             
             entry_data = cur.fetchone()
             
-            # Get subjects from SBJ table
-            cur.execute("""
-                SELECT DISTINCT sbj
-                FROM hesa_sbj
-                WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
-            """, (pubukprn, kc['kiscourseid'], kc['kismode']))
-            
-            subjects = [row['sbj'] for row in cur.fetchall() if row['sbj']]
-            
-            # Add course requirements
-            # Note: HESA data doesn't have explicit grade requirements, so we'll infer from typical offers
-            # For now, we'll add subject requirements without grades, or use default grades
-            for subject_name in subjects[:3]:  # Limit to 3 subjects
-                if subject_name:
-                    # Ensure subject exists
-                    subject_id = subject_name.replace(" ", "_").replace("&", "and")[:50]
-                    cur.execute("""
-                        SELECT subject_id FROM subject WHERE subject_name = %s OR subject_id = %s
-                        LIMIT 1
-                    """, (subject_name, subject_id))
-                    existing_subj = cur.fetchone()
-                    
-                    if existing_subj:
-                        subject_id = existing_subj['subject_id']
-                    else:
-                        # Create subject if it doesn't exist
-                        cur.execute("""
-                            INSERT INTO subject (subject_id, subject_name)
-                            VALUES (%s, %s)
-                            ON CONFLICT (subject_id) DO NOTHING
-                        """, (subject_id, subject_name))
-                    
-                    # Add requirement with default grade (can be refined later)
-                    # If entry data shows A-levels, use A; otherwise use B
-                    alevel_value = entry_data.get('alevel', 0) if entry_data else 0
-                    alevel_value = alevel_value if alevel_value is not None else 0
-                    default_grade = 'A' if alevel_value > 0 else 'B'
-                    
-                    req_id = generate_id('REQ_')
-                    cur.execute("""
-                        INSERT INTO course_requirement (req_id, course_id, subject_id, grade_req)
-                        VALUES (%s, %s, %s, %s)
-                        ON CONFLICT (req_id) DO NOTHING
-                    """, (req_id, actual_course_id, subject_id, default_grade))
+            # Note: Course requirements will be created by enhance_subject_mapping.py
+            # based on CAH codes, which provides more accurate subject-to-course mappings
             
             course_count += 1
             if course_count % 100 == 0:
