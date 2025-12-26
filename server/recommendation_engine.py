@@ -9,6 +9,8 @@ Implements Top-K heap algorithm for efficient recommendation selection
 from typing import List, Dict, Any
 import heapq
 import json
+from database_helper import get_db_connection
+from psycopg2.extras import RealDictCursor
 from scoring_components import (
     SubjectMatchScorer, GradeMatchScorer, PreferenceMatchScorer,
     RankingScorer, EmployabilityScorer
@@ -24,100 +26,114 @@ class RecommendationEngine:
     """
     
     def __init__(self):
-        # Weight configuration for different criteria
-        # Increased subject_match weight to better reflect subject diversity
-        self.weights = {
-            'subject_match': 0.35,      # A-level subject alignment (increased to prioritize diverse matches)
-            'grade_match': 0.25,        # Predicted grades vs requirements
-            'preference_match': 0.15,   # Student preferences (location, budget, etc.)
-            'university_ranking': 0.15,  # University prestige/ranking
-            'employability': 0.10       # Graduate employment prospects
-        }
+        # Load all configuration from database
+        self._load_config_from_db()
         
         # Composition: Use separate scorer components (OOP composition pattern)
-        if SubjectMatchScorer:
-            self.subject_scorer = SubjectMatchScorer()
-            self.grade_scorer = GradeMatchScorer()
-            self.preference_scorer = PreferenceMatchScorer()
-            self.ranking_scorer = RankingScorer()
-            self.employability_scorer = EmployabilityScorer()
-        else:
-            # Fallback to direct methods if components not available
-            self.subject_scorer = None
-            self.grade_scorer = None
-            self.preference_scorer = None
-            self.ranking_scorer = None
-            self.employability_scorer = None
-        
-        # Grade conversion mapping (kept for backward compatibility)
-        self.grade_values = {
-            'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0
-        }
-        
-        # UK regions for location matching (kept for backward compatibility)
-        self.regions = {
-            'London': ['London'],
-            'South East': ['Oxford', 'Cambridge', 'Brighton', 'Canterbury', 'Reading'],
-            'South West': ['Bristol', 'Bath', 'Exeter', 'Plymouth'],
-            'Midlands': ['Birmingham', 'Coventry', 'Leicester', 'Nottingham'],
-            'North West': ['Manchester', 'Liverpool', 'Lancaster'],
-            'North East': ['Newcastle', 'Durham', 'York'],
-            'Scotland': ['Edinburgh', 'Glasgow', 'St Andrews', 'Aberdeen'],
-            'Wales': ['Cardiff', 'Swansea', 'Bangor']
-        }
-        
-        # Subject mappings for finding related courses (used in subject matching)
-        self.subject_mappings = {
-            'english language': ['english', 'literature', 'language', 'writing', 'linguistics', 'humanities'],
-            'english literature': ['english', 'literature', 'language', 'writing', 'humanities'],
-            'philosophy': ['philosophy', 'ethics', 'theology', 'religious studies', 'politics', 'humanities', 'philosophical'],
-            'mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'further mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'physics': ['physics', 'engineering', 'mathematics', 'computing', 'computer science'],
-            'chemistry': ['chemistry', 'biology', 'medicine', 'pharmacy'],
-            'biology': ['biology', 'medicine', 'pharmacy', 'chemistry', 'biochemistry'],
-            'history': ['history', 'politics', 'archaeology', 'humanities'],
-            'geography': ['geography', 'environmental', 'geology', 'urban planning'],
-            'economics': ['economics', 'business', 'finance', 'accounting', 'politics'],
-            'business studies': ['business', 'economics', 'finance', 'accounting', 'management'],
-            'psychology': ['psychology', 'sociology', 'neuroscience', 'criminology'],
-            'sociology': ['sociology', 'psychology', 'politics', 'criminology', 'social work'],
-            'politics': ['politics', 'international relations', 'history', 'philosophy', 'economics'],
-            'art': ['art', 'design', 'fine art', 'creative', 'visual arts'],
-            'design technology': ['design', 'engineering', 'technology', 'product design'],
-            'computer science': ['computer science', 'computing', 'software', 'it', 'mathematics', 'physics']
-        }
-        
-        # Generic false positive prevention: terms that are too generic to match alone
-        # These terms need to be part of a longer phrase or matched with specific subjects
-        self.generic_terms = {'science', 'studies', 'business', 'management', 'technology', 'design', 'art'}
-        
-        # Subjects that can legitimately match generic terms (e.g., "computer science" can match "science")
-        # This is a more generic approach - checks if the student subject contains the generic term
-        # or if the generic term is part of a compound subject name
-        self.legitimate_generic_matches = {
-            'science': lambda subj: 'science' in subj.lower() or subj.lower() in ['physics', 'chemistry', 'biology'],
-            'studies': lambda subj: 'studies' in subj.lower(),
-            'business': lambda subj: 'business' in subj.lower() or 'economics' in subj.lower(),
-            'management': lambda subj: 'business' in subj.lower() or 'management' in subj.lower(),
-            'technology': lambda subj: 'technology' in subj.lower() or 'engineering' in subj.lower(),
-            'design': lambda subj: 'design' in subj.lower() or 'art' in subj.lower(),
-            'art': lambda subj: 'art' in subj.lower() or 'design' in subj.lower()
-        }
-        
-        # Tunable settings for feedback-based learning
-        self.feedback_settings = {
-            'feedback_weight': 0.15,  # Weight of feedback in final score (0-1)
-            'feedback_decay_days': 90,  # Feedback relevance decays after this many days
-            'min_feedback_count': 3,  # Minimum feedback count to apply feedback boost
-            'positive_feedback_boost': 0.2,  # Score boost for positive feedback
-            'negative_feedback_penalty': -0.3  # Score penalty for negative feedback
-        }
+        # Pass database-loaded config to scorers
+        self.subject_scorer = SubjectMatchScorer(
+            subject_mappings=self.subject_mappings
+        )
+        self.grade_scorer = GradeMatchScorer(grade_values=self.grade_values)
+        self.preference_scorer = PreferenceMatchScorer(regions=self.regions)
+        self.ranking_scorer = RankingScorer()
+        self.employability_scorer = EmployabilityScorer()
         
         # Career interests data loaded from database (cached)
         self.career_keywords_map = {}  # Maps interest_name -> [keywords]
         self.conflicting_career_fields = {}  # Maps interest_name -> [conflicting_interest_names]
         self._load_career_interests_from_db()
+    
+    def _load_config_from_db(self):
+        """Load all configuration from database tables"""
+        try:
+            with get_db_connection() as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    # Load weights
+                    cur.execute("SELECT weight_key, weight_value FROM uni_recomm_recommendation_weight")
+                    self.weights = {row['weight_key']: float(row['weight_value']) for row in cur.fetchall()}
+                    if not self.weights:
+                        # Fallback to defaults if database is empty
+                        self.weights = {
+                            'subject_match': 0.35,
+                            'grade_match': 0.25,
+                            'preference_match': 0.15,
+                            'university_ranking': 0.15,
+                            'employability': 0.10
+                        }
+                    
+                    # Load grade values
+                    cur.execute("SELECT grade, numeric_value FROM uni_recomm_grade_value")
+                    self.grade_values = {row['grade']: row['numeric_value'] for row in cur.fetchall()}
+                    if not self.grade_values:
+                        # Fallback to defaults
+                        self.grade_values = {'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0}
+                    
+                    # Load regions directly from university table (HESA data)
+                    cur.execute("SELECT DISTINCT region FROM uni_recomm_university WHERE region IS NOT NULL ORDER BY region")
+                    self.regions = [row['region'] for row in cur.fetchall()]
+                    if not self.regions:
+                        # Fallback to defaults if no regions found
+                        self.regions = ['London', 'South East', 'South West', 'Midlands', 'North West', 'North East', 'Scotland', 'Wales']
+                    
+                    # Subject mappings removed - now using CAH codes from subject_course_mapping
+                    # Subject matching is done via CAH codes, not related terms
+                    self.subject_mappings = {}
+                    
+                    # Load feedback settings from recommendation_settings (JSONB values stored as strings)
+                    cur.execute("SELECT setting_key, setting_value FROM uni_recomm_recommendation_settings")
+                    for row in cur.fetchall():
+                        key = row['setting_key']
+                        value = row['setting_value']
+                        # Handle JSONB - if it's a string, try to parse it, otherwise use as-is
+                        if isinstance(value, str):
+                            try:
+                                # Try to parse as number
+                                if '.' in value:
+                                    self.feedback_settings[key] = float(value)
+                                else:
+                                    self.feedback_settings[key] = int(value)
+                            except (ValueError, TypeError):
+                                self.feedback_settings[key] = value
+                        else:
+                            self.feedback_settings[key] = value
+                    if not self.feedback_settings:
+                        # Fallback to defaults
+                        self.feedback_settings = {
+                            'feedback_weight': 0.15,
+                            'feedback_decay_days': 90,
+                            'min_feedback_count': 3,
+                            'positive_feedback_boost': 0.2,
+                            'negative_feedback_penalty': -0.3
+                        }
+        except Exception as e:
+            # Fallback to hardcoded defaults if database connection fails
+            print(f"Warning: Failed to load config from database: {e}. Using defaults.")
+            self.weights = {
+                'subject_match': 0.35,
+                'grade_match': 0.25,
+                'preference_match': 0.15,
+                'university_ranking': 0.15,
+                'employability': 0.10
+            }
+            self.grade_values = {'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0}
+            # Fallback: load from university table if available, otherwise use defaults
+            try:
+                with get_db_connection() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        cur.execute("SELECT DISTINCT region FROM uni_recomm_university WHERE region IS NOT NULL ORDER BY region")
+                        self.regions = [row['region'] for row in cur.fetchall()]
+            except:
+                self.regions = ['London', 'South East', 'South West', 'Midlands', 'North West', 'North East', 'Scotland', 'Wales']
+            # Subject mappings removed - using CAH codes for matching instead
+            self.subject_mappings = {}
+            self.feedback_settings = {
+                'feedback_weight': 0.15,
+                'feedback_decay_days': 90,
+                'min_feedback_count': 3,
+                'positive_feedback_boost': 0.2,
+                'negative_feedback_penalty': -0.3
+            }
     
     def get_recommendations(self, a_level_subjects: List[str], 
                           predicted_grades: Dict[str, str],
@@ -579,8 +595,8 @@ class RecommendationEngine:
                             c.course_url,
                             u.university_id, u.name as university_name, u.region,
                             u.rank_overall, u.website_url
-                        FROM course c
-                        JOIN university u ON c.university_id = u.university_id
+                        FROM uni_recomm_course c
+                        JOIN uni_recomm_university u ON c.university_id = u.university_id
                         WHERE u.name = %s
                           AND c.employability_score IS NOT NULL
                         ORDER BY c.employability_score DESC NULLS LAST
@@ -595,8 +611,8 @@ class RecommendationEngine:
                         # Get entry requirements for the best course
                         cur.execute("""
                             SELECT s.subject_id, s.subject_name, cr.grade_req
-                            FROM course_requirement cr
-                            JOIN subject s ON cr.subject_id = s.subject_id
+                            FROM uni_recomm_course_requirement cr
+                            JOIN uni_recomm_subject s ON cr.subject_id = s.subject_id
                             WHERE cr.course_id = %s
                         """, (best_course['course_id'],))
                         
@@ -667,7 +683,7 @@ class RecommendationEngine:
                     # Batch fetch HESA identifiers for all courses
                     cur.execute("""
                         SELECT course_id, pubukprn, kiscourseid, kismode
-                        FROM course
+                        FROM uni_recomm_course
                         WHERE course_id = ANY(%s)
                     """, (course_ids,))
                     
@@ -726,7 +742,7 @@ class RecommendationEngine:
                             SELECT e.pubukprn, e.kiscourseid, e.kismode,
                                    e.work, e.study, e.unemp, e.workstudy,
                                    e.emppop, e.empresponse, e.empresp_rate, e.empsample
-                            FROM employment e
+                            FROM hesa_employment e
                             INNER JOIN temp_hesa_lookup t ON 
                                 e.pubukprn = t.pubukprn AND 
                                 e.kiscourseid = t.kiscourseid AND 
@@ -740,7 +756,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT g.pubukprn, g.kiscourseid, g.kismode,
                                    g.goinstmed, g.goinstlq, g.goinstuq
-                            FROM gosalary g
+                            FROM hesa_gosalary g
                             INNER JOIN temp_hesa_lookup t ON 
                                 g.pubukprn = t.pubukprn AND 
                                 g.kiscourseid = t.kiscourseid AND 
@@ -754,7 +770,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT l.pubukprn, l.kiscourseid, l.kismode,
                                    l.leo3instmed, l.leo3instlq, l.leo3instuq
-                            FROM leo3 l
+                            FROM hesa_leo3 l
                             INNER JOIN temp_hesa_lookup t ON 
                                 l.pubukprn = t.pubukprn AND 
                                 l.kiscourseid = t.kiscourseid AND 
@@ -768,7 +784,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT j.pubukprn, j.kiscourseid, j.kismode,
                                    j.job, j.perc, j."order"
-                            FROM joblist j
+                            FROM hesa_joblist j
                             INNER JOIN temp_hesa_lookup t ON 
                                 j.pubukprn = t.pubukprn AND 
                                 j.kiscourseid = t.kiscourseid AND 
@@ -785,7 +801,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT en.pubukprn, en.kiscourseid, en.kismode,
                                    en.alevel, en.access, en.degree, en.foundtn, en.noquals, en.other, en.entpop
-                            FROM entry en
+                            FROM hesa_entry en
                             INNER JOIN temp_hesa_lookup t ON 
                                 en.pubukprn = t.pubukprn AND 
                                 en.kiscourseid = t.kiscourseid AND 
@@ -892,7 +908,7 @@ class RecommendationEngine:
                     # Get HESA identifiers from course table (if stored)
                     cur.execute("""
                         SELECT pubukprn, kiscourseid, kismode
-                        FROM course
+                        FROM uni_recomm_course
                         WHERE course_id = %s
                     """, (course_id,))
                     
@@ -916,8 +932,8 @@ class RecommendationEngine:
                             university_name = course.get('university', {}).get('name', '')
                             cur.execute("""
                                 SELECT kc.pubukprn, kc.kiscourseid, kc.kismode
-                                FROM kiscourse kc
-                                JOIN institution i ON kc.pubukprn = i.pubukprn
+                                FROM hesa_kiscourse kc
+                                JOIN hesa_institution i ON kc.pubukprn = i.pubukprn
                                 WHERE kc.title ILIKE %s 
                                   AND i.first_trading_name ILIKE %s
                                   AND kc.kismode = '01'
@@ -938,7 +954,7 @@ class RecommendationEngine:
                             SELECT 
                                 work, study, unemp, workstudy,
                                 emppop, empresponse, empresp_rate
-                            FROM employment
+                            FROM hesa_employment
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -948,7 +964,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT 
                                 goinstmed, goinstlq, goinstuq
-                            FROM gosalary
+                            FROM hesa_gosalary
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -958,7 +974,7 @@ class RecommendationEngine:
                         cur.execute("""
                             SELECT 
                                 leo3instmed, leo3instlq, leo3instuq
-                            FROM leo3
+                            FROM hesa_leo3
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -967,7 +983,7 @@ class RecommendationEngine:
                         # Get common job types
                         cur.execute("""
                             SELECT job, perc, "order"
-                            FROM joblist
+                            FROM hesa_joblist
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             ORDER BY "order" ASC
                             LIMIT 5
@@ -979,7 +995,7 @@ class RecommendationEngine:
                             SELECT 
                                 alevel, access, degree, foundtn, noquals, other,
                                 entpop
-                            FROM entry
+                            FROM hesa_entry
                             WHERE pubukprn = %s AND kiscourseid = %s AND kismode = %s
                             LIMIT 1
                         """, (pubukprn, kiscourseid, kismode))
@@ -1123,27 +1139,8 @@ class RecommendationEngine:
         student_subjects_normalized = {s.lower().strip() for s in a_level_subjects}
         required_subjects_normalized = {s.lower().strip() for s in required_subjects} if required_subjects else set()
         
-        # Subject mapping for related fields (e.g., "English Language" -> "English", "Literature")
-        subject_mappings = {
-            'english language': ['english', 'literature', 'language', 'writing', 'linguistics'],
-            'english literature': ['english', 'literature', 'language', 'writing', 'humanities'],
-            'philosophy': ['philosophy', 'ethics', 'theology', 'religious studies', 'politics', 'humanities'],
-            'mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'further mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'physics': ['physics', 'engineering', 'mathematics', 'computing', 'computer science'],
-            'chemistry': ['chemistry', 'biology', 'medicine', 'pharmacy'],
-            'biology': ['biology', 'medicine', 'pharmacy', 'chemistry', 'biochemistry'],
-            'history': ['history', 'politics', 'archaeology', 'humanities'],
-            'geography': ['geography', 'environmental', 'geology', 'urban planning'],
-            'economics': ['economics', 'business', 'finance', 'accounting', 'politics'],
-            'business studies': ['business', 'economics', 'finance', 'accounting', 'management'],
-            'psychology': ['psychology', 'sociology', 'neuroscience', 'criminology'],
-            'sociology': ['sociology', 'psychology', 'politics', 'criminology', 'social work'],
-            'politics': ['politics', 'international relations', 'history', 'philosophy', 'economics'],
-            'art': ['art', 'design', 'fine art', 'creative', 'visual arts'],
-            'design technology': ['design', 'engineering', 'technology', 'product design'],
-            'computer science': ['computer science', 'computing', 'software', 'it', 'mathematics', 'physics']
-        }
+        # Use database-loaded subject mappings
+        subject_mappings = self.subject_mappings
         
         # Calculate required subject match (existing logic)
         matching_required = set()
@@ -1416,13 +1413,17 @@ class RecommendationEngine:
         return (employment_rate / 100) * 0.7 + salary_score * 0.3
     
     def _get_course_region(self, course: Dict[str, Any]) -> str:
-        """Determine the region of a course's university"""
-        university_name = course.get('university', {}).get('name', '').lower()
+        """Determine the region of a course's university - get directly from university data"""
+        # Get region directly from university data (from HESA)
+        region = course.get('university', {}).get('region')
+        if region:
+            return region
         
-        for region, cities in self.regions.items():
-            for city in cities:
-                if city.lower() in university_name:
-                    return region
+        # Fallback: try to match from university name
+        university_name = course.get('university', {}).get('name', '').lower()
+        for region in self.regions:
+            if region.lower() in university_name:
+                return region
         
         return 'Unknown'
     
@@ -1475,27 +1476,18 @@ class RecommendationEngine:
     
     def _is_legitimate_match(self, related_term: str, student_subject: str) -> bool:
         """
-        Generic method to check if a related term is a legitimate match for a student subject.
-        Prevents false positives by checking if generic terms are part of compound subject names.
+        Check if a match is legitimate - now simplified since we use CAH codes.
+        Subject matching is done via CAH codes from subject_course_mapping.
         
         Args:
-            related_term: The related term from subject mappings (e.g., 'science', 'studies')
-            student_subject: The student's subject (e.g., 'computer science', 'business studies')
+            related_term: The related term (not used anymore, kept for compatibility)
+            student_subject: The student's subject
             
         Returns:
-            True if the match is legitimate, False if it's a false positive
+            True (matching now done via CAH codes)
         """
-        # If the term is not generic, it's always legitimate
-        if related_term not in self.generic_terms:
-            return True
-        
-        # For generic terms, check if the student subject legitimately contains it
-        if related_term in self.legitimate_generic_matches:
-            return self.legitimate_generic_matches[related_term](student_subject)
-        
-        # Default: if generic term is part of the subject name, it's legitimate
-        # (e.g., "computer science" contains "science")
-        return related_term in student_subject.lower()
+        # Subject matching now uses CAH codes, so this is always legitimate
+        return True
     
     def _load_career_interests_from_db(self):
         """Load career interests, keywords, and conflicts from database"""
@@ -1508,7 +1500,7 @@ class RecommendationEngine:
                     # Load all active career interests
                     cur.execute("""
                         SELECT interest_id, interest_name, display_name
-                        FROM career_interest
+                        FROM uni_recomm_career_interest
                         WHERE is_active = TRUE
                         ORDER BY display_order, interest_name
                     """)
@@ -1523,8 +1515,8 @@ class RecommendationEngine:
                     # Load keywords for each interest
                     cur.execute("""
                         SELECT cik.interest_id, ci.interest_name, cik.keyword, cik.priority
-                        FROM career_interest_keyword cik
-                        JOIN career_interest ci ON cik.interest_id = ci.interest_id
+                        FROM uni_recomm_career_interest_keyword cik
+                        JOIN uni_recomm_career_interest ci ON cik.interest_id = ci.interest_id
                         WHERE cik.is_active = TRUE AND ci.is_active = TRUE
                         ORDER BY ci.interest_name, cik.priority DESC, cik.keyword
                     """)
@@ -1545,9 +1537,9 @@ class RecommendationEngine:
                             ci1.interest_name as interest_name,
                             ci2.interest_name as conflicting_interest_name,
                             cic.conflict_strength
-                        FROM career_interest_conflict cic
-                        JOIN career_interest ci1 ON cic.interest_id = ci1.interest_id
-                        JOIN career_interest ci2 ON cic.conflicting_interest_id = ci2.interest_id
+                        FROM uni_recomm_career_interest_conflict cic
+                        JOIN uni_recomm_career_interest ci1 ON cic.interest_id = ci1.interest_id
+                        JOIN uni_recomm_career_interest ci2 ON cic.conflicting_interest_id = ci2.interest_id
                         WHERE ci1.is_active = TRUE AND ci2.is_active = TRUE
                         ORDER BY ci1.interest_name, cic.conflict_strength DESC
                     """)
@@ -1603,7 +1595,7 @@ class RecommendationEngine:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("""
                         SELECT setting_key, setting_value
-                        FROM recommendation_settings
+                        FROM uni_recomm_recommendation_settings
                     """)
                     
                     for row in cur.fetchall():
@@ -1654,7 +1646,7 @@ class RecommendationEngine:
                             COUNT(*) FILTER (WHERE feedback_type = 'negative') as negative_count,
                             MAX(feedback_at) as last_feedback_date,
                             COUNT(*) as total_feedback
-                        FROM recommendation_feedback
+                        FROM uni_recomm_recommendation_feedback
                         WHERE student_id = %s 
                           AND course_id = ANY(%s)
                           AND feedback_at >= CURRENT_DATE - INTERVAL '%s days'
@@ -1686,7 +1678,7 @@ class RecommendationEngine:
                                 COUNT(*) FILTER (WHERE rf.feedback_type = 'positive') as positive_count,
                                 COUNT(*) FILTER (WHERE rf.feedback_type = 'negative') as negative_count,
                                 COUNT(*) as total_feedback
-                            FROM recommendation_feedback rf
+                            FROM uni_recomm_recommendation_feedback rf
                             WHERE rf.course_id = ANY(%s)
                               AND rf.feedback_at >= CURRENT_DATE - INTERVAL '%s days'
                               AND rf.student_id != %s
@@ -1915,8 +1907,8 @@ class RecommendationEngine:
                     u.website_url,
                     c.employability_score as course_employability,
                     c.pubukprn, c.kiscourseid, c.kismode
-                FROM course c
-                JOIN university u ON c.university_id = u.university_id
+                FROM uni_recomm_course c
+                JOIN uni_recomm_university u ON c.university_id = u.university_id
                 LIMIT 1000
             """
             
@@ -1932,8 +1924,8 @@ class RecommendationEngine:
                         # Get entry requirements
                         cur.execute("""
                             SELECT s.subject_id, s.subject_name, cr.grade_req
-                            FROM course_requirement cr
-                            JOIN subject s ON cr.subject_id = s.subject_id
+                            FROM uni_recomm_course_requirement cr
+                            JOIN uni_recomm_subject s ON cr.subject_id = s.subject_id
                             WHERE cr.course_id = %s
                         """, (course_id,))
                         

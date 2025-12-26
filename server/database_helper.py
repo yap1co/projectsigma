@@ -44,8 +44,9 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
     cursor.execute("""
         SELECT 
             s.student_id, s.display_name, s.email, s.password_hash,
-            s.created_at, s.region, s.tuition_budget, s.preferred_exams
-        FROM student s
+            s.created_at, s.region, s.tuition_budget, s.preferred_exams,
+            s.preferences
+        FROM uni_recomm_student s
         WHERE s.student_id = %s
     """, (student_id,))
     
@@ -58,8 +59,8 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
     # Get student grades
     cursor.execute("""
         SELECT sg.subject_id, sg.predicted_grade, sub.subject_name
-        FROM student_grade sg
-        JOIN subject sub ON sg.subject_id = sub.subject_id
+        FROM uni_recomm_student_grade sg
+        JOIN uni_recomm_subject sub ON sg.subject_id = sub.subject_id
         WHERE sg.student_id = %s
     """, (student_id,))
     
@@ -74,11 +75,17 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
     student['aLevelSubjects'] = subjects
     student['predictedGrades'] = grades
     
-    # Build preferences dict
+    # Build preferences dict - merge stored preferences with legacy fields
+    stored_preferences = student.get('preferences') or {}
+    if not isinstance(stored_preferences, dict):
+        stored_preferences = {}
+    
+    # Merge stored preferences with legacy fields (for backward compatibility)
     student['preferences'] = {
-        'preferredRegion': student.get('region'),
-        'maxBudget': student.get('tuition_budget'),
-        'preferredExams': student.get('preferred_exams', [])
+        'preferredRegion': stored_preferences.get('preferredRegion') or student.get('region'),
+        'maxBudget': stored_preferences.get('maxBudget') or student.get('tuition_budget'),
+        'preferredExams': stored_preferences.get('preferredExams') or student.get('preferred_exams', []),
+        'careerInterests': stored_preferences.get('careerInterests', [])
     }
     
     # Add firstName and lastName from display_name
@@ -90,7 +97,7 @@ def get_student_by_id(cursor, student_id: str) -> Optional[Dict[str, Any]]:
 
 def get_student_by_email(cursor, email: str) -> Optional[Dict[str, Any]]:
     """Get student by email"""
-    cursor.execute("SELECT student_id FROM student WHERE email = %s", (email,))
+    cursor.execute("SELECT student_id FROM uni_recomm_student WHERE email = %s", (email,))
     row = cursor.fetchone()
     if not row:
         return None

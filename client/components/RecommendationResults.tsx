@@ -39,9 +39,18 @@ export default function RecommendationResults({ recommendations, onBack }: Recom
 
   const handleExport = async (format: 'csv' | 'pdf') => {
     try {
-      const response = await api.get(`/export/recommendations/${recommendations.studentId}?format=${format}`)
+      // For PDF, we need to request as blob. For CSV, we can use JSON response
+      const config = format === 'pdf' 
+        ? { responseType: 'blob' as const }
+        : { responseType: 'json' as const }
+      
+      const response = await api.get(
+        `/export/recommendations/${recommendations.studentId}?format=${format}`,
+        config
+      )
       
       if (format === 'csv') {
+        // CSV is returned as JSON with data field
         const blob = new Blob([response.data.data], { type: 'text/csv' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -49,11 +58,22 @@ export default function RecommendationResults({ recommendations, onBack }: Recom
         a.download = 'course-recommendations.csv'
         a.click()
         window.URL.revokeObjectURL(url)
+      } else if (format === 'pdf') {
+        // PDF is returned as binary blob
+        const blob = new Blob([response.data], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'course-recommendations.pdf'
+        a.click()
+        window.URL.revokeObjectURL(url)
       }
       
       toast.success(`Recommendations exported as ${format.toUpperCase()}`)
-    } catch (error) {
-      toast.error('Failed to export recommendations')
+    } catch (error: any) {
+      console.error('Export error:', error)
+      const errorMessage = error?.response?.data?.message || 'Failed to export recommendations'
+      toast.error(errorMessage)
     }
   }
 

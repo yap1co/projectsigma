@@ -6,7 +6,7 @@ This guide helps you import all Discover Uni CSV files into PostgreSQL with prop
 
 ## Prerequisites
 
-1. **PostgreSQL Database** - Running via Docker Compose or local installation
+1. **PostgreSQL Database** - Local installation (see [LOCAL_POSTGRES_SETUP.md](./LOCAL_POSTGRES_SETUP.md))
 2. **Database Schema** - Run the migration script first:
    ```bash
    psql -U postgres -d university_recommender -f server/database/migrations/002_discover_uni_data_schema.sql

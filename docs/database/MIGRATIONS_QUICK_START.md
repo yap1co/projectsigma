@@ -1,12 +1,17 @@
 # Quick Start: Apply Discover Uni DDL
 
-## 🚀 Fastest Method (Docker)
+## 🚀 Quick Setup
 
 ```bash
-# 1. Start PostgreSQL
-docker-compose up -d postgres
+# 1. Ensure PostgreSQL is installed and running
+# See LOCAL_POSTGRES_SETUP.md for installation
 
-# 2. Wait 5 seconds for PostgreSQL to initialize
+# 2. Configure environment variables in server/.env
+# POSTGRES_DB=university_recommender
+# POSTGRES_USER=postgres
+# POSTGRES_PASSWORD=your_password
+# POSTGRES_HOST=localhost
+# POSTGRES_PORT=5432
 
 # 3. Run migrations
 cd server/database
@@ -31,7 +36,7 @@ python init_db.py
 
 ```bash
 # Check tables were created
-docker-compose exec postgres psql -U postgres -d university_recommender -c "\dt"
+psql -U postgres -d university_recommender -c "\dt"
 
 # Should see tables like:
 # - institution
@@ -47,17 +52,17 @@ docker-compose exec postgres psql -U postgres -d university_recommender -c "\dt"
 ## ⚠️ Troubleshooting
 
 **"Connection refused"**
-→ Check Docker is running: `docker ps`
+→ Check PostgreSQL service is running: `Get-Service postgresql*` (Windows)
 
 **"Migration already applied"**
 → Normal! It won't run twice.
 
 **"Permission denied"**
-→ Run PowerShell as Administrator (Windows)
+→ Run PowerShell as Administrator (Windows) or check PostgreSQL user permissions
 
 ---
 
 ## 📚 Full Guide
 
-See `STEP_BY_STEP_GUIDE.md` for detailed instructions.
+See [MIGRATIONS_STEP_BY_STEP.md](./MIGRATIONS_STEP_BY_STEP.md) for detailed instructions.
 

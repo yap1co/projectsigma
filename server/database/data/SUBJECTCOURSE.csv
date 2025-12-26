@@ -1,0 +1,88 @@
+subject,HECoS_code,HECoS_label,CAH3_code,CAH3_label,CAH2_code,CAH2_label,CAH1_code,CAH1_label
+Creative Writing,100046,creative writing,CAH19-01-05,creative writing,CAH19-01,English studies,CAH19,language and area studies
+Creative Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts"
+Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts"
+Dance,100068,dance,CAH25-02-04,dance,CAH25-02,performing arts,CAH25,"design, and creative and performing arts"
+Drama,100069,drama,CAH25-02-03,drama,CAH25-02,performing arts,CAH25,"design, and creative and performing arts"
+Music,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts"
+Performing Arts,100071,performing arts,CAH25-02-01,performing arts (non-specific),CAH25-02,performing arts,CAH25,"design, and creative and performing arts"
+Business Studies,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management
+Leisure And Recreation,100083,event management,CAH17-01-06,"tourism, transport and travel",CAH17-01,business and management,CAH17,business and management
+Accounting,100105,accounting,CAH17-01-08,accounting,CAH17-01,business and management,CAH17,business and management
+Business And Finance,100107,finance,CAH17-01-07,finance,CAH17-01,business and management,CAH17,business and management
+Building Studies,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning"
+Electronics Endorsement,100163,electrical and electronic engineering,CAH10-01-08,electrical and electronic engineering,CAH10-01,engineering,CAH10,engineering and technology
+Engineering,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology
+Geometric/Mechanical Drawing,100190,mechanical engineering,CAH10-01-02,mechanical engineering,CAH10-01,engineering,CAH10,engineering and technology
+Physiology,100270,medical sciences,CAH01-01-01,medical sciences (non-specific),CAH01-01,medicine and dentistry,CAH01,medicine and dentistry
+Archaeology,100299,archaeology,CAH20-01-03,archaeology,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies"
+History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies"
+Humanities,100314,humanities,CAH23-01-03,humanities (non-specific),CAH23-01,combined and general studies,CAH23,combined and general studies
+English Language,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies
+French,100321,French language,CAH19-04-01,French studies,CAH19-04,languages and area studies,CAH19,language and area studies
+German,100323,German language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Italian,100326,Italian language,CAH19-04-03,Italian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Modern Studies,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Russian,100330,Russian languages,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Spanish,100332,Spanish language,CAH19-04-04,Iberian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Welsh,100333,Welsh language,CAH19-02-03,Welsh studies,CAH19-02,Celtic studies,CAH19,language and area studies
+Philosophy,100337,philosophy,CAH20-02-01,philosophy,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies"
+Biochemistry,100344,biochemistry,CAH03-01-08,"molecular biology, biophysics and biochemistry",CAH03-01,biosciences,CAH03,biological and sport sciences
+Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences
+Computer Science,100366,computer science,CAH11-01-01,computer science,CAH11-01,computing,CAH11,computing
+Information Technology,100372,information technology,CAH11-01-02,information technology,CAH11-01,computing,CAH11,computing
+Computer Programming,100376,computer and information security,CAH11-01-04,software engineering,CAH11-01,computing,CAH11,computing
+Environmental Science,100381,environmental sciences,CAH26-01-04,environmental sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies"
+Applied Science,100390,general science,CAH07-04-03,sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences
+Marine Science,100394,earth sciences,CAH26-01-06,earth sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies"
+Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences
+Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies"
+Chemistry,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences
+Physical Science,100424,physical sciences,CAH07-04-01,physical sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences
+Physics,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences
+Sports Science,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences
+Anthropology,100436,anthropology,CAH15-01-04,anthropology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences
+Communication Studies,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications"
+Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences
+Health And Social Care,100473,health studies,CAH15-04-03,health studies,CAH15-04,health and social care,CAH15,social sciences
+Law,100485,law,CAH16-01-01,law,CAH16-01,law,CAH16,law
+Politics,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences
+Psychology,100497,psychology,CAH04-01-01,psychology (non-specific),CAH04-01,psychology,CAH04,psychology
+Social Policy,100502,social policy,CAH15-01-03,social policy,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences
+Sociology,100505,sociology,CAH15-01-02,sociology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences
+Horticultural Science,100516,agricultural sciences,CAH06-01-02,agricultural sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies"
+Agriculture,100517,agriculture,CAH06-01-03,agriculture,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies"
+Navigation,100544,marine engineering,CAH10-03-04,maritime technology,CAH10-03,materials and technology,CAH10,engineering and technology
+Religious Studies,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies"
+Public And Social Admin,100866,health and safety management,CAH17-01-05,human resource management,CAH17-01,business and management,CAH17,business and management
+Information Studies,100869,bioinformatics,CAH11-01-03,information systems,CAH11-01,computing,CAH11,computing
+Craft,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts"
+Zoology,100937,animal physiology,CAH03-01-06,zoology,CAH03-01,biosciences,CAH03,biological and sport sciences
+Statistics,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences
+Gaelic,101120,Gaelic language,CAH19-02-02,Gaelic studies,CAH19-02,Celtic studies,CAH19,language and area studies
+Irish,101121,Irish language,CAH19-02-04,others in Celtic studies,CAH19-02,Celtic studies,CAH19,language and area studies
+Portuguese,101142,Portuguese language,CAH19-04-04,Iberian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Swedish,101148,Swedish language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Norwegian,101149,Norwegian language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Finnish Language,101150,Finnish language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Polish,101153,Polish language,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Czech,101155,Czech language,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Chinese Language And Literature,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Japanese,101169,Japanese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Hindi,101174,Hindi language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Urdu,101175,Urdu language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Bengali,101177,Bengali language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+India Studies,101180,Asian studies,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Arabic,101192,Arabic languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Persian,101193,Persian languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Moving Image Arts,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts"
+Modern Hebrew,101269,modern Hebrew language,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies
+General Studies,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies
+Extended Project,101279,advice and guidance (personal learning),CAH23-01-02,personal development,CAH23-01,combined and general studies,CAH23,combined and general studies
+World Development,101358,development in Africa,CAH15-01-05,development studies,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences
+Domestic Science,101388,cereal science,CAH06-01-07,food sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies"
+Biblical Hebrew,101415,Akkadian language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Latin,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies"
+Danish,101424,Danish language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Hungarian,101427,Hungarian language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies
+Turkish,101431,Turkish languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies

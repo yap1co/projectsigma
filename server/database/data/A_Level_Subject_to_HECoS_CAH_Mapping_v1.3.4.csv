@@ -1,0 +1,425 @@
+﻿SubjectID,A_Level_Subject,Subject_cleaned,HECoS_code,HECoS_label,CAH3_code,CAH3_label,CAH2_code,CAH2_label,CAH1_code,CAH1_label,HECoS_CAH_version,Mapping_method,Generated_on
+G13,'School Council' Geography,School Council Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+A21,Accounting,Accounting,100105,accounting,CAH17-01-08,accounting,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+X11,Accounting (Pearson Int),Accounting,100105,accounting,CAH17-01-08,accounting,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+A24,Accounting and Finance,Accounting and Finance,100105,accounting,CAH17-01-08,accounting,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+M31,Additional Mathematics,Additional Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+A81,Afrikaans,Afrikaans,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+A32,Agricultural Economics,Agricultural Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+A31,Agricultural Science,Agricultural Science,100517,agriculture,CAH06-01-03,agriculture,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+A33,Agriculture,Agriculture,100517,agriculture,CAH06-01-03,agriculture,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+A90,Aice Diploma,Aice Diploma,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+A51,Anatomy Physiology And Health,Anatomy Physiology And Health,100270,medical sciences,CAH01-01-01,medical sciences (non-specific),CAH01-01,medicine and dentistry,CAH01,medicine and dentistry,1.3.4,rule,26/12/2025
+H21,Ancient History,Ancient History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H23,Ancient History & Literature,Ancient History and Literature,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A30,Anthropology,Anthropology,100436,anthropology,CAH15-01-04,anthropology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+B57,App Bus Adv & Add AS,App Bus Adv and Add AS,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+A27,Applied Art and Design,Applied Art and Design,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+B47,Applied Business,Applied Business,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+G43,Applied Engineering Graphics,Applied Engineering Graphics,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+I18,Applied ICT,Applied ICT,100372,information technology,CAH11-01-02,information technology,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+M33,Applied Mathematics,Applied Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M38,Applied Maths. & Statistics,Applied Maths and Statistics,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M65,Applied Mechanics,Applied Mechanics,100190,mechanical engineering,CAH10-01-02,mechanical engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+S24,Applied Science,Applied Science,100390,general science,CAH07-04-03,sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+A80,Arabic,Arabic,101192,Arabic languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+A41,Archaeology,Archaeology,100299,archaeology,CAH20-01-03,archaeology,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A85,Armenian,Armenian,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+A11,Art,Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A64,Art & Design - 3D Studies,Art and Design - 3D Studies,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A69,Art & Design - Crit/Hist.Studies,Art and Design - Crit Hist Studies,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A66,Art & Design - Fashion/textile,Art and Design - Fashion textile,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A68,Art & Design - Film & Video,Art and Design - Film and Video,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A62,Art & Design - Graphics,Art and Design - Graphics,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A63,Art & Design - Photography,Art and Design - Photography,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A61,Art & Design - Textiles,Art and Design - Textiles,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A58,Art & Design: Combined Studies,Art and Design Combined Studies,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A56,Art & Design: Critical & Contextual Studies,Art and Design Critical and Contextual Studies,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A57,Art & Design: Photography Lens Based Media,Art and Design Photography Lens Based Media,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A16,Art With Art History,Art With Art History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A14,Art and Crafts,Art and Crafts,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A15,Art and Design,Art and Design,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+86C,Art and Design - Critical and Contextual Design,Art and Design - Critical and Contextual Design,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A20,Art and Design - Fine Art,Art and Design - Fine Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+B84,Bahasa,Bahasa,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+B80,Bemba,Bemba,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+B81,Bengali,Bengali,101177,Bengali language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H84,Biblical Hebrew,Biblical Hebrew,101415,Akkadian language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+B34,Biblical Studies,Biblical Studies,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+B23,Biochemistry,Biochemistry,100344,biochemistry,CAH03-01-08,"molecular biology, biophysics and biochemistry",CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+B24,Biological Sciences,Biological Sciences,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+B11,Biology,Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+X12,Biology (Pearson International),Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+10B,Biology B (Advancing Biology),Biology B Advancing Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+B16,Biology with Pract.,Biology with Pract,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+B21,Botany,Botany,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+B31,British Constitution,British Constitution,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+H12,British Econ. & Social History,British Econ and Social History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G32,British Government & Politics,British Government and Politics,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+B51,Building Construction,Building Construction,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning",1.3.4,rule,26/12/2025
+B53,Building Studies,Building Studies,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning",1.3.4,rule,26/12/2025
+B52,Built Environment,Built Environment,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning",1.3.4,rule,26/12/2025
+B82,Bulgarian,Bulgarian,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+B45,Business,Business,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B48,Business Administration,Business Administration,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B40,Business Economics,Business Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+B49,Business Environment,Business Environment,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+L14,Business Law,Business Law,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B50,Business Management,Business Management,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B42,Business Organisation,Business Organisation,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B41,Business Studies,Business Studies,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+X13,Business Studies (Pearsons International),Business Studies,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B44,Business and Finance,Business and Finance,100107,finance,CAH17-01-07,finance,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+C71,Ceramics,Ceramics,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+C11,Chemistry,Chemistry,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+X14,Chemistry (Pearsons International),Chemistry,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+C16,Chemistry A,Chemistry A,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+C13,Chemistry B (Salters),Chemistry B Salters,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+C15,Chemistry with Pract.,Chemistry with Pract,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+C14,Childcare,Childcare,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+C94,China Studies in English,China Studies in English,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C81,Chinese,Chinese,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C87,Chinese History,Chinese History,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C88,Chinese Language & Literature,Chinese Language and Literature,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+R12,Christian Theology,Christian Theology,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A83,Classical Arabic,Classical Arabic,101192,Arabic languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+A86,Classical Armenian,Classical Armenian,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+C82,Classical Chinese,Classical Chinese,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C34,Classical Civ & History,Classical Civ and History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+C31,Classical Civilisation,Classical Civilisation,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G96,Classical Greek,Classical Greek,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H82,Classical Hebrew,Classical Hebrew,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+P82,Classical Persian,Classical Persian,101193,Persian languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C33,Classical Studies,Classical Studies,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+C35,Classics Ancient History,Classics Ancient History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+C36,Classics Latin,Classics Latin,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,language,26/12/2025
+C52,Commerce,Commerce,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+C50,Commercial Studies,Commercial Studies,100866,health and safety management,CAH17-01-05,human resource management,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+C17,Communication & Culture,Communication and Culture,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+D24,Communication & Imp. Design,Communication and Imp Design,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+C65,Communication Skills,Communication Skills,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+C51,Communication Studies,Communication Studies,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+C61,Computations Endorsement,Computations Endorsement,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+C26,Computer Programming,Computer Programming,100376,computer and information security,CAH11-01-04,software engineering,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+C21,Computer Science,Computer Science,100366,computer science,CAH11-01-01,computer science,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+C22,Computer Studies,Computer Studies,100366,computer science,CAH11-01-01,computer science,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+C24,Computing,Computing,100366,computer science,CAH11-01-01,computer science,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+L12,Constitutional Law,Constitutional Law,100485,law,CAH16-01-01,law,CAH16-01,law,CAH16,law,1.3.4,rule,26/12/2025
+C53,Construction,Construction,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning",1.3.4,rule,26/12/2025
+C69,Control System,Control System,100163,electrical and electronic engineering,CAH10-01-08,electrical and electronic engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+C41,Craft,Craft,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C46,Craft - Embroidery,Craft - Embroidery,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C45,Craft - Printing,Craft - Printing,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C44,Craft And Design,Craft And Design,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C47,Craft Design & Technology,Craft Design and Technology,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D23,Craft and Technology Design,Craft and Technology Design,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C49,Creative Design,Creative Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+W21,Creative Writing,Creative Writing,100046,creative writing,CAH19-01-05,creative writing,CAH19-01,English studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+C39,Crit & Con Studies in Art,Crit and Con Studies in Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+C40,Critical Thinking,Critical Thinking,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+C91,Czech,Czech,101155,Czech language,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+63E,D&T: Design Engineering,DandT Design Engineering,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+63F,D&T: Fashion & Textiles,DandT Fashion and Textiles,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D41,Dance,Dance,100068,dance,CAH25-02-04,dance,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D81,Danish,Danish,101424,Danish language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+D62,Des & Tec. Products Graphics,Des and Tec Products Graphics,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D65,Des & Tec. Resistant Materials,Des and Tec Resistant Materials,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D21,Design,Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D25,Design & Tech. 3D Design,Design and Tech 3D Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D66,Design & Tech. Product Design,Design and Tech Product Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D26,Design & Tech. Textiles,Design and Tech Textiles,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D61,Design & Tech: Food Technology,Design and Tech Food Technology,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D22,Design And Technology,Design And Technology,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D63,Design TEC: Systems Tec,Design TEC Systems Tec,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D73,Design and Technology (Systems and Control),Design and Technology Systems and Control,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+14D,Digital Media and Design,Digital Media and Design,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+D67,Digital Technologies,Digital Technologies,100372,information technology,CAH11-01-02,information technology,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+D31,Domestic Science,Domestic Science,101388,cereal science,CAH06-01-07,food sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+D43,Drama,Drama,100069,drama,CAH25-02-03,drama,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D42,Drama and Theatre Arts,Drama and Theatre Arts,100069,drama,CAH25-02-03,drama,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D44,Drama and Theatre Studies,Drama and Theatre Studies,100069,drama,CAH25-02-03,drama,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D32,Dress,Dress,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+D82,Dutch,Dutch,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+H14,Economic & Social History,Economic and Social History,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+G12,Economic Geography,Economic Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+H13,Economic History,Economic History,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E26,Economic and Political Studies,Economic and Political Studies,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E25,Economic and Public Affairs,Economic and Public Affairs,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E21,Economics,Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+X15,Economics (Pearson International),Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E27,Economics and Business,Economics and Business,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E22,Economics and Business (Nuff),Economics and Business Nuff,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+E41,Electronic Systems,Electronic Systems,100163,electrical and electronic engineering,CAH10-01-08,electrical and electronic engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E43,Electronics,Electronics,100163,electrical and electronic engineering,CAH10-01-08,electrical and electronic engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E42,Electronics Endorsement,Electronics Endorsement,100163,electrical and electronic engineering,CAH10-01-08,electrical and electronic engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E34,Elements of Engineering Design,Elements of Engineering Design,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E61,Embroidery,Embroidery,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+E31,Engineering,Engineering,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E62,Engineering Design,Engineering Design,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+D16,Engineering Drawing,Engineering Drawing,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E33,Engineering Drawing and Design,Engineering Drawing and Design,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E32,Engineering Science,Engineering Science,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+E13,English,English,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E14,English Language,English Language,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E30,English Language & Linguistics,English Language and Linguistics,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E12,English Language & Literature,English Language and Literature,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E11,English Literature,English Literature,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E54,Environmental Management,Environmental Management,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+E51,Environmental Science,Environmental Science,100381,environmental sciences,CAH26-01-04,environmental sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+E52,Environmental Studies,Environmental Studies,100381,environmental sciences,CAH26-01-04,environmental sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+E07,Environmental Technology,Environmental Technology,100381,environmental sciences,CAH26-01-04,environmental sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+P18,Essentials of Modern Physics,Essentials of Modern Physics,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+E71,European Community,European Community,101415,Akkadian language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+H45,European History,European History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+E10,Extended Project,Extended Project,101279,advice and guidance (personal learning),CAH23-01-02,personal development,CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+H32,Fabric & Fashion,Fabric and Fashion,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+H34,Family & Society,Family and Society,100505,sociology,CAH15-01-02,sociology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+F11,Fashion & Textiles,Fashion and Textiles,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+F21,Film Studies,Film Studies,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A23,Fine Art,Fine Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+F84,Finnish Language,Finnish Language,101150,Finnish language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H33,Food & Nutrition,Food and Nutrition,101388,cereal science,CAH06-01-07,food sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+F31,Food preparation and cooking,Food preparation and cooking,101388,cereal science,CAH06-01-07,food sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+F81,French,French,100321,French language,CAH19-04-01,French studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+M35,Further Mathematics,Further Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+X16,Further Mathematics (Pearson International),Further Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M28,Further Maths (Add)(MEI),Further Maths,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+F20,Further Maths. Add.,Further Maths Add,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M27,Further Pure Maths & Mechanics,Further Pure Maths and Mechanics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+H54,GCE Health & Social Care,GCE Health and Social Care,100473,health studies,CAH15-04-03,health studies,CAH15-04,health and social care,CAH15,social sciences,1.3.4,rule,26/12/2025
+G82,Gaelic,Gaelic,101120,Gaelic language,CAH19-02-02,Gaelic studies,CAH19-02,Celtic studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+L13,Gen. Principles of English Law,Gen Principles of English Law,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C62,General & Communication,General and Communication,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+M72,General Music,General Music,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+G51,General Studies,General Studies,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+G11,Geography,Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+G21,Geology,Geology,100394,earth sciences,CAH26-01-06,earth sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+D14,Geometric/Building Drawing,Geometric Building Drawing,100147,building services engineering,CAH13-01-02,building,CAH13-01,"architecture, building and planning",CAH13,"architecture, building and planning",1.3.4,rule,26/12/2025
+D13,Geometric/Engineering Drawing,Geometric Engineering Drawing,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+D12,Geometric/Mechanical Drawing,Geometric Mechanical Drawing,100190,mechanical engineering,CAH10-01-02,mechanical engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+G81,German,German,100323,German language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+G17,Global Perspectives,Global Perspectives,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+G31,Government & Politics,Government and Politics,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+G33,Govt:Pol and Econ(European Un),Govt Pol and Econ European Un,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+G41,Graphic Communication,Graphic Communication,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+G45,Graphic Design,Graphic Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+G44,Graphics,Graphics,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+G91,Greek,Greek,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G94,Greek & Greek History,Greek and Greek History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G93,Greek Literature,Greek Literature,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G95,Greek Literature & History,Greek Literature and History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H15,Greek and Roman History,Greek and Roman History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+G85,Gujarati,Gujarati,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+H49,Hafaz Al-Quran,Hafaz Al-Quran,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+16H,Health and Life Sciences,Health and Life Sciences,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+H53,Health and Social Care,Health and Social Care,100473,health studies,CAH15-04-03,health studies,CAH15-04,health and social care,CAH15,social sciences,1.3.4,rule,26/12/2025
+H85,"Health and Social Care, and Childcare",Health and Social Care and Childcare,100473,health studies,CAH15-04-03,health studies,CAH15-04,health and social care,CAH15,social sciences,1.3.4,rule,26/12/2025
+H81,Hebrew,Hebrew,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+H91,Hindi,Hindi,101174,Hindi language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H93,Hinduism,Hinduism,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+H27,Hist. Europe,Hist Europe,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H48,Historical Studies,Historical Studies,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H11,History,History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+M76,History & App. Of Music,History and App Of Music,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A18,History & Appreciation of Art,History and Appreciation of Art,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H16,History & Arch. Roman Britain,History and Arch Roman Britain,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H18,History A,History A,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H19,History B,History B,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A17,History of Art,History of Art,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+H36,Home & Community Studies,Home and Community Studies,100505,sociology,CAH15-01-02,sociology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+H35,Home & Social Science,Home and Social Science,100505,sociology,CAH15-01-02,sociology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+H37,Home Econ.(Dress & Fabrics),Home Econ Dress and Fabrics,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+H31,Home Economics,Home Economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025
+H41,Horticultural Science,Horticultural Science,100516,agricultural sciences,CAH06-01-02,agricultural sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+H38,Hospitality and Catering,Hospitality and Catering,100083,event management,CAH17-01-06,"tourism, transport and travel",CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+B13,Human Biology,Human Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+G15,Human Geography,Human Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+B15,Human/Social Biology,Human Social Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+70H,Humanities,Humanities,100314,humanities,CAH23-01-03,humanities (non-specific),CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+H92,Hungarian,Hungarian,101427,Hungarian language,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+I80,India Studies,India Studies,101180,Asian studies,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+I11,Industrial Studies,Industrial Studies,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+I20,Info. and Comm. Technology,Info and Comm Technology,100372,information technology,CAH11-01-02,information technology,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+I24,Information Studies,Information Studies,100869,bioinformatics,CAH11-01-03,information systems,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+I25,Information Systems,Information Systems,100869,bioinformatics,CAH11-01-03,information systems,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+I22,Information Tech & Business,Information Tech and Business,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+I21,Information Technology,Information Technology,100372,information technology,CAH11-01-02,information technology,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+I26,International Affairs,International Affairs,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+I81,Irish,Irish,101121,Irish language,CAH19-02-04,others in Celtic studies,CAH19-02,Celtic studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+I83,Islam,Islam,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+I82,Italian,Italian,100326,Italian language,CAH19-04-03,Italian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H22,Jact Ancient History,Jact Ancient History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+C32,Jact Classical Civilisation,Jact Classical Civilisation,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+J81,Japanese,Japanese,101169,Japanese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+12J,Journalism and Media,Journalism and Media,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+K82,Knowledge and Inquiry,Knowledge and Inquiry,101279,advice and guidance (personal learning),CAH23-01-02,personal development,CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+L81,Latin,Latin,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,language,26/12/2025
+L82,Latin with Roman History,Latin with Roman History,101420,Latin language,CAH20-01-05,classics,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,language,26/12/2025
+L11,Law,Law,100485,law,CAH16-01-01,law,CAH16-01,law,CAH16,law,1.3.4,rule,26/12/2025
+X20,Law (Pearson International),Law,100485,law,CAH16-01-01,law,CAH16-01,law,CAH16,law,1.3.4,rule,26/12/2025
+L50,Leisure and Recreation,Leisure and Recreation,100083,event management,CAH17-01-06,"tourism, transport and travel",CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+E20,Literature in English (Principal Subject),Literature in English Principal Subject,100318,English language,CAH19-01-02,English language,CAH19-01,English studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+L21,Logic,Logic,100337,philosophy,CAH20-02-01,philosophy,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+M34,MEI Applied Mathematics,MEI Applied Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M37,MEI Further Mathematics,MEI Further Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M12,MEI Mathematics,MEI Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M25,MEI Pure Mathematics,MEI Pure Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M81,Malay,Malay,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+M82,Maltese,Maltese,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+M92,Management,Management,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+M91,Management Information Studies,Management Information Studies,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+M93,Management Studies,Management Studies,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+C85,Mandarin Chinese,Mandarin Chinese,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+M83,Marathi,Marathi,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+S15,Marine Science,Marine Science,100394,earth sciences,CAH26-01-06,earth sciences,CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+M11,Mathematics,Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M18,Mathematics & Statistics & Computing,Mathematics and Statistics and Computing,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M41,Mathematics (I),Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M42,Mathematics (II),Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M44,Mathematics (IV),Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+X17,Mathematics (Pearson International),Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M47,Mathematics (Statistics),Mathematics Statistics,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M39,Maths with Applications,Maths with Applications,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M46,Maths. (Mechanics with Stats),Maths Mechanics with Stats,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M30,Mechanical Mathematics,Mechanical Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M66,Mechanics,Mechanics,100190,mechanical engineering,CAH10-01-02,mechanical engineering,CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+M70,Media Comm. and Production,Media Comm and Production,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+M50,Media Studies,Media Studies,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+M53,Media/Communications,Media Communications,100444,media and communication studies,CAH24-01-05,media studies,CAH24-01,"media, journalism and communications",CAH24,"media, journalism and communications",1.3.4,rule,26/12/2025
+H46,Mediaeval History,Mediaeval History,100302,history,CAH20-01-01,history,CAH20-01,history and archaeology,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+M61,Metalwork,Metalwork,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A84,Modern Arabic,Modern Arabic,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C83,Modern Chinese,Modern Chinese,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+G92,Modern Greek,Modern Greek,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H83,Modern Hebrew,Modern Hebrew,101269,modern Hebrew language,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H47,Modern History,Modern History,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C84,Modern Standard Chinese,Modern Standard Chinese,101165,Chinese languages,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+M51,Modern Studies,Modern Studies,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+18M,Moving Image Arts,Moving Image Arts,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+M71,Music,Music,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+M78,Music Technology,Music Technology,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+M75,Musical Appreciation,Musical Appreciation,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+N11,Navigation,Navigation,100544,marine engineering,CAH10-03-04,maritime technology,CAH10-03,materials and technology,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+N82,Ndebele,Ndebele,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+N86,Nepal Studies,Nepal Studies,101180,Asian studies,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+N81,Norwegian,Norwegian,101149,Norwegian language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+B12,Nuffield Biology,Nuffield Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+C12,Nuffield Chemistry,Nuffield Chemistry,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+N32,Nuffield Further Mathematics,Nuffield Further Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+N31,Nuffield Mathematics,Nuffield Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+P22,Nuffield Physical Science,Nuffield Physical Science,100424,physical sciences,CAH07-04-01,physical sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+P12,Nuffield Physics,Nuffield Physics,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+N21,Nutrition. Sci.,Nutrition Sci,101388,cereal science,CAH06-01-07,food sciences,CAH06-01,"agriculture, food and related studies",CAH06,"agriculture, food and related studies",1.3.4,rule,26/12/2025
+P72,P.E. (Sports Studies),P E Sports Studies,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+A12,Painting,Painting,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+P83,Panjabi,Panjabi,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+P63,Performance Studies,Performance Studies,100071,performing arts,CAH25-02-01,performing arts (non-specific),CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+P62,Performing Arts,Performing Arts,100071,performing arts,CAH25-02-01,performing arts (non-specific),CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+P81,Persian,Persian,101193,Persian languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+P17,Pharmaceutical Chemistry,Pharmaceutical Chemistry,100417,chemistry,CAH07-02-01,chemistry,CAH07-02,chemistry,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P42,Philosophy,Philosophy,100337,philosophy,CAH20-02-01,philosophy,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+P61,Photography,Photography,101214,cinematics,CAH25-01-04,cinematics and photography,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+P71,Physical Education,Physical Education,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+G14,Physical Geography,Physical Geography,100409,geography,CAH26-01-01,geography (non-specific),CAH26-01,"geography, earth and environmental studies",CAH26,"geography, earth and environmental studies",1.3.4,rule,26/12/2025
+P21,Physical Science,Physical Science,100424,physical sciences,CAH07-04-01,physical sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+P11,Physics,Physics,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+X18,Physics (Pearson International),Physics,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P23,Physics A,Physics A,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P25,Physics And Engineering,Physics And Engineering,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P20,Physics B (Advancing Physics),Physics B Advancing Physics,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P13,Physics and Mathematics,Physics and Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+P19,Physics with Pract(Singapore),Physics with Pract Singapore,100425,physics,CAH07-01-01,physics,CAH07-01,physics and astronomy,CAH07,physical sciences,1.3.4,rule,26/12/2025
+P43,Physiology,Physiology,100270,medical sciences,CAH01-01-01,medical sciences (non-specific),CAH01-01,medicine and dentistry,CAH01,medicine and dentistry,1.3.4,rule,26/12/2025
+P84,Polish,Polish,101153,Polish language,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+H17,Political History,Political History,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+P30,Political Science,Political Science,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+P31,Political Studies,Political Studies,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+P34,Politics,Politics,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+P85,Portuguese,Portuguese,101142,Portuguese language,CAH19-04-04,Iberian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+C42,Pottery,Pottery,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+M73,Practical Music,Practical Music,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+A22,Principles of Accounts,Principles of Accounts,100105,accounting,CAH17-01-08,accounting,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+P59,Print Making,Print Making,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+24P,Professional Business Services,Professional Business Services,100079,business studies,CAH17-01-02,business studies,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+P16,Project Work,Project Work,101279,advice and guidance (personal learning),CAH23-01-02,personal development,CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+P15,Proteomics,Proteomics,100344,biochemistry,CAH03-01-08,"molecular biology, biophysics and biochemistry",CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+P41,Psychology,Psychology,100497,psychology,CAH04-01-01,psychology (non-specific),CAH04-01,psychology,CAH04,psychology,1.3.4,rule,26/12/2025
+P52,Public Affairs,Public Affairs,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+P51,Public and Social Admin,Public and Social Admin,100866,health and safety management,CAH17-01-05,human resource management,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+M22,Pure & Applied Mathematics,Pure and Applied Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M21,Pure Mathematics,Pure Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+X19,Pure Mathematics (Pearson International),Pure Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M20,Pure Maths with Further Maths,Pure Maths with Further Maths,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M26,Pure Maths with Mechanics,Pure Maths with Mechanics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M23,Pure Maths. & Statistics,Pure Maths and Statistics,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M24,Pure Maths. with Computations,Pure Maths with Computations,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+R13,Religious Knowledge,Religious Knowledge,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+R11,Religious Studies,Religious Studies,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+R15,"Religious, Moral PHIL Studies",Religious Moral PHIL Studies,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+R82,Rumanian,Rumanian,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+R81,Russian,Russian,100330,Russian languages,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+M36,SMP Further Mathematics,SMP Further Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+M13,SMP Mathematics,SMP Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+S86,Sanskrit,Sanskrit,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+S14,Science,Science,100390,general science,CAH07-04-03,sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+S13,Science Studies,Science Studies,100390,general science,CAH07-04-03,sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+S12,Science in Society,Science in Society,100390,general science,CAH07-04-03,sciences (non-specific),CAH07-04,"general, applied and forensic sciences",CAH07,physical sciences,1.3.4,rule,26/12/2025
+S51,Scripture,Scripture,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+A13,Sculpture,Sculpture,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+S41,Secretarial Studies,Secretarial Studies,100866,health and safety management,CAH17-01-05,human resource management,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+S82,Serbo-Croat,Serbo-Croat,101155,Czech language,CAH19-04-05,Slavic studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,rule,26/12/2025
+S89,Shona,Shona,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+S42,Shorthand,Shorthand,100866,health and safety management,CAH17-01-05,human resource management,CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+M62,Silver Metalwork,Silver Metalwork,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+S84,Sinhalese,Sinhalese,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+E53,Social & Environmental Biology,Social and Environmental Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+B14,Social Biology,Social Biology,100346,biology,CAH03-01-02,biology (non-specific),CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+S19,Social Care,Social Care,100473,health studies,CAH15-04-03,health studies,CAH15-04,health and social care,CAH15,social sciences,1.3.4,rule,26/12/2025
+S79,Social Policy,Social Policy,100502,social policy,CAH15-01-03,social policy,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+S78,Social Science: Citizenship,Social Science Citizenship,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+S11,Sociology,Sociology,100505,sociology,CAH15-01-02,sociology,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+26C,Software Development,Software Development,100376,computer and information security,CAH11-01-04,software engineering,CAH11-01,computing,CAH11,computing,1.3.4,rule,26/12/2025
+S81,Spanish,Spanish,100332,Spanish language,CAH19-04-04,Iberian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+38S,Spanish Literature,Spanish Literature,100332,Spanish language,CAH19-04-04,Iberian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+S59,Sport and Active Leisure,Sport and Active Leisure,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+P73,Sports Science,Sports Science,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+P74,Sports Studies,Sports Studies,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+P76,Sports and Physical Education,Sports and Physical Education,100433,sport and exercise sciences,CAH03-02-01,sport and exercise sciences,CAH03-02,sport and exercise sciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+S21,Statistics,Statistics,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+S22,Statistics Endorsement,Statistics Endorsement,101030,applied statistics,CAH09-01-03,statistics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+A19,Study of Visual Art,Study of Visual Art,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+S31,Surveying,Surveying,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+S87,Swahili,Swahili,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+S88,Swedish,Swedish,101148,Swedish language,CAH19-04-02,German and Scandinavian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+S96,Syariah,Syariah,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+T80,Tafsir Al-Quran,Tafsir Al-Quran,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+T81,Tamil,Tamil,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+T13,Tech. Design & Graphic Comm.,Tech Design and Graphic Comm,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D11,Technical Drawing,Technical Drawing,100059,fine art,CAH25-01-02,art,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+G42,Technical Graphics,Technical Graphics,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+D15,Technical/Engineering Drawing,Technical Engineering Drawing,100184,general or integrated engineering,CAH10-01-01,engineering (non-specific),CAH10-01,engineering,CAH10,engineering and technology,1.3.4,rule,26/12/2025
+T11,Technology,Technology,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+T12,Technology and Design,Technology and Design,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+T83,Telugu,Telugu,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+T21,Textiles and Dress,Textiles and Dress,100048,design,CAH25-01-03,design studies,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+T31,Theatre Studies,Theatre Studies,100069,drama,CAH25-02-03,drama,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+R14,Theology,Theology,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+M74,Theoretical Music,Theoretical Music,100070,music,CAH25-02-02,music,CAH25-02,performing arts,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+T16,Thinking Skills,Thinking Skills,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,rule,26/12/2025
+T41,Travel and Tourism,Travel and Tourism,100083,event management,CAH17-01-06,"tourism, transport and travel",CAH17-01,business and management,CAH17,business and management,1.3.4,rule,26/12/2025
+T82,Turkish,Turkish,101431,Turkish languages,CAH19-04-07,African and modern Middle Eastern studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+U84,Ulum Al-Quran,Ulum Al-Quran,100794,theology and religious studies,CAH20-02-02,theology and religious studies,CAH20-02,philosophy and religious studies,CAH20,"historical, philosophical and religious studies",1.3.4,rule,26/12/2025
+U01,Unknown Subject,Unknown Subject,101273,combined studies,CAH23-01-01,"combined, general or negotiated studies",CAH23-01,combined and general studies,CAH23,combined and general studies,1.3.4,fallback,26/12/2025
+U82,Urdu,Urdu,101175,Urdu language,CAH19-04-06,Asian studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+M14,Use of Mathematics,Use of Mathematics,100403,mathematics,CAH09-01-01,mathematics,CAH09-01,mathematical sciences,CAH09,mathematical sciences,1.3.4,rule,26/12/2025
+U83,Usuliddin,Usuliddin,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+W81,Welsh,Welsh,100333,Welsh language,CAH19-02-03,Welsh studies,CAH19-02,Celtic studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+W82,Welsh (as a first language),Welsh as a first language,100333,Welsh language,CAH19-02-03,Welsh studies,CAH19-02,Celtic studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+W83,Welsh (as a second language),Welsh as a second language,100333,Welsh language,CAH19-02-03,Welsh studies,CAH19-02,Celtic studies,CAH19,language and area studies,1.3.4,language,26/12/2025
+W11,Woodwork,Woodwork,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+W12,Woodwork (Fine Craft & Design),Woodwork Fine Craft and Design,100895,crafts,CAH25-01-05,others in creative arts and design,CAH25-01,creative arts and design,CAH25,"design, and creative and performing arts",1.3.4,rule,26/12/2025
+W14,World Affairs,World Affairs,100491,politics,CAH15-03-01,politics,CAH15-03,politics,CAH15,social sciences,1.3.4,rule,26/12/2025
+W13,World Development,World Development,101358,development in Africa,CAH15-01-05,development studies,CAH15-01,"sociology, social policy and anthropology",CAH15,social sciences,1.3.4,rule,26/12/2025
+Z11,Zoology,Zoology,100937,animal physiology,CAH03-01-06,zoology,CAH03-01,biosciences,CAH03,biological and sport sciences,1.3.4,rule,26/12/2025
+Z81,Zulu,Zulu,100329,modern languages,CAH19-04-09,others in language and area studies,CAH19-04,languages and area studies,CAH19,language and area studies,1.3.4,language_fallback,26/12/2025
+B46,business studies and economics,business studies and economics,100450,economics,CAH15-02-01,economics,CAH15-02,economics,CAH15,social sciences,1.3.4,rule,26/12/2025

@@ -227,7 +227,7 @@ This document outlines the comprehensive test strategy for the University Course
 - **Test Data**: Mock/sample data
 
 ### CI Environment
-- **Database**: Docker PostgreSQL
+- **Database**: PostgreSQL (local or test database)
 - **API**: Flask test client
 - **Test Data**: Automated seed data
 

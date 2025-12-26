@@ -151,9 +151,9 @@ psql -d university_recommender -c "\di"  # List indexes
 psql -d university_recommender -c "\d student"  # Describe table
 ```
 
-## Docker Setup
+## Local PostgreSQL Setup
 
-If using Docker Compose, the database will be initialized automatically. See `docker-compose.yml` for configuration.
+See [docs/database/LOCAL_POSTGRES_SETUP.md](../../docs/database/LOCAL_POSTGRES_SETUP.md) for detailed installation and setup instructions.
 
 ## Troubleshooting
 

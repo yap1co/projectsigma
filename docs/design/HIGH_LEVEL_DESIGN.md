@@ -820,7 +820,7 @@ flowchart TD
 - **Data Processing**: Pandas and NumPy for recommendation algorithms
 
 #### Infrastructure
-- **Containerization**: Docker and Docker Compose
+- **Database**: PostgreSQL (local installation)
 - **Database Admin**: pgAdmin or DBeaver for PostgreSQL management
 - **Development**: Hot reloading and development tools
 
@@ -850,7 +850,7 @@ The following table compares the three database options considered for this proj
 | **Scalability** | Excellent (Horizontal scaling) | Good (Vertical scaling) | Limited (Single file) |
 | **Concurrent Users** | Excellent | Excellent | Limited (Single writer) |
 | **Installation** | Requires server setup | Requires server setup | No installation (File-based) |
-| **Setup Complexity** | Medium (Docker recommended) | Medium (Docker recommended) | Very Low (No setup) |
+| **Setup Complexity** | Medium (Local installation) | Medium (Local installation) | Very Low (No setup) |
 | **Data Relationships** | Manual (References) | Native (Foreign keys) | Native (Foreign keys) |
 | **Query Language** | MongoDB Query Language | SQL (Industry standard) | SQL (Industry standard) |
 | **School Understanding** | May be unfamiliar | Well understood | Well understood |
@@ -861,7 +861,7 @@ The following table compares the three database options considered for this proj
 | **Backup** | Database-level | Database-level | File copy |
 | **Production Ready** | Yes | Yes | Limited (Best for small apps) |
 | **Python Integration** | PyMongo (Easy) | psycopg2/SQLAlchemy (Standard) | sqlite3 (Built-in) |
-| **Docker Support** | Excellent | Excellent | Not needed |
+| **Production Ready** | Yes | Yes | Limited |
 | **Best For** | Document-heavy apps, rapid prototyping | Complex relationships, enterprise apps | Small apps, development, testing |
 
 **Decision: PostgreSQL Selected**
@@ -1010,7 +1010,7 @@ WHERE u.location = 'London';
 
 #### 2.3.3 Infrastructure Choices
 
-**Docker and Docker Compose**
+**PostgreSQL Installation**
 - **Environment Consistency**: Ensures the application works the same on any computer
 - **Easy Setup**: One command to start the entire application stack
 - **Learning Value**: Introduces containerization concepts important in modern development
@@ -1052,7 +1052,7 @@ WHERE u.location = 'London';
 - **Backend Development**: 40% of total time (my strongest area)
 - **Frontend Development**: 35% of total time (new but essential)
 - **Database Design**: 15% of total time (SQL schema design and relationships)
-- **Testing and Deployment**: 10% of total time (using Docker simplifies this)
+- **Testing and Deployment**: 10% of total time
 
 **Learning Resources Used**
 - **Online Tutorials**: YouTube, freeCodeCamp, and official documentation
@@ -1085,18 +1085,18 @@ The tables below document minimum and recommended hardware footprints for studen
 
 #### 2.4.1 Local Development (Windows or macOS)
 
-- **CPU**: 4 physical cores (Intel i5/i7 8th gen, Ryzen 5, or Apple M-series). Eight logical cores improve responsiveness when Docker, PostgreSQL, backend, and Next.js dev server run together.
+- **CPU**: 4 physical cores (Intel i5/i7 8th gen, Ryzen 5, or Apple M-series). Eight logical cores improve responsiveness when PostgreSQL, backend, and Next.js dev server run together.
 - **Memory**: 16 GB RAM recommended. 8 GB is acceptable if services are started individually and background containers are stopped when not required.
 - **Storage**: 25 GB free SSD space (≈5 GB repository + node_modules/venv, ≈15 GB Docker images/volumes, plus headroom for exports and logs).
 - **GPU**: Not required; the recommendation engine uses CPU-based pandas/scikit-learn pipelines.
 - **OS Notes**:
-  - *Windows 10/11*: Enable WSL2 and Docker Desktop or install Python 3.11 and Node 18 natively; keep virtualization support (Hyper-V) turned on.
-  - *macOS 13+*: Use Homebrew for Python/Node; Apple silicon can run native arm64 Docker images or emulated x86 containers if needed.
+  - *Windows 10/11*: Install Python 3.11 and Node 18 natively; install PostgreSQL locally.
+  - *macOS 13+*: Use Homebrew for Python/Node/PostgreSQL; Apple silicon fully supported.
 - **Peripherals**: 1080p display or larger so dashboards and analytics views fit comfortably; optional second monitor for debugging.
 
 #### 2.4.2 Cloud Deployment (Example: AWS)
 
-- **Container Orchestration**: ECS on Fargate, EKS, or Docker on EC2. Existing `docker-compose.yml` separates PostgreSQL, Flask API, Next.js frontend, and admin tooling.
+- **Deployment**: AWS ECS, EC2, or similar cloud platform. PostgreSQL can be deployed as RDS or on EC2 instances.
 - **Staging / Low Traffic**:
   - Backend: `t3.medium` (2 vCPU, 4 GB) EC2 or Fargate 0.5 vCPU/1 GB task for the Flask API.
   - Frontend: `t3.small` (2 vCPU burst, 2 GB) container behind an Application Load Balancer, or deploy static Next.js build to S3 + CloudFront.
@@ -2204,7 +2204,7 @@ VALUES (
 - **Bundle Optimization**: Minimized JavaScript bundles
 
 ### 10.3 Scalability
-- **Horizontal Scaling**: Docker container scaling
+- **Horizontal Scaling**: Multiple server instances with load balancing
 - **Load Balancing**: Multiple server instances
 - **Database Sharding**: Large dataset distribution
 - **CDN Integration**: Global content delivery
@@ -2226,14 +2226,14 @@ VALUES (
 ## 12. Deployment Architecture
 
 ### 12.1 Development Environment
-- **Local Development**: Docker Compose for local setup
+- **Local Development**: Local PostgreSQL installation for development
 - **Hot Reloading**: Automatic code reloading
 - **Database**: Local PostgreSQL instance
 - **Debugging**: Comprehensive logging and error tracking
 
 ### 12.2 Production Environment
-- **Containerization**: Docker containers for deployment
-- **Orchestration**: Docker Compose for service management
+- **Deployment**: Cloud platforms (AWS, Azure, GCP) or VPS hosting
+- **Database**: PostgreSQL on cloud RDS or dedicated database server
 - **Database**: Production PostgreSQL instance
 - **Monitoring**: Health checks and performance monitoring
 

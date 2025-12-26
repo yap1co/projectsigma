@@ -383,7 +383,7 @@ CREATE DATABASE university_recommender;
 - ✅ Learn how PostgreSQL works internally
 - ✅ Better understanding of database administration
 - ✅ Can customize settings for learning
-- ✅ No Docker overhead
+- ✅ Direct local installation
 - ✅ Direct access to PostgreSQL files and logs
 
 ## Useful Resources

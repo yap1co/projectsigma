@@ -6,26 +6,18 @@ This guide will walk you through applying the Discover Uni database schema (`002
 
 Before starting, ensure you have:
 
-- [ ] **Docker Desktop** installed and running (recommended)
-  - OR **PostgreSQL 12+** installed locally
+- [ ] **PostgreSQL 12+** installed locally (see [LOCAL_POSTGRES_SETUP.md](./LOCAL_POSTGRES_SETUP.md))
 - [ ] **Python 3.11+** installed
 - [ ] **psycopg2-binary** Python package installed
 - [ ] Access to the project directory
 
 ---
 
-## Method 1: Using Docker (Recommended)
+## Setup Steps
 
-This is the easiest method and matches your project's Docker setup.
+### Step 1: Install PostgreSQL Locally
 
-### Step 1: Verify Docker is Running
-
-```bash
-# Check Docker status
-docker ps
-
-# If Docker is not running, start Docker Desktop application
-```
+See [LOCAL_POSTGRES_SETUP.md](./LOCAL_POSTGRES_SETUP.md) for detailed installation instructions for Windows.
 
 ### Step 2: Navigate to Project Root
 
@@ -33,37 +25,33 @@ docker ps
 cd D:\Downloads\Programming\projectSigma\projectsigma
 ```
 
-### Step 3: Start PostgreSQL Container
+### Step 3: Verify PostgreSQL is Running
 
 ```bash
-# Start PostgreSQL service
-docker-compose up -d postgres
+# Check PostgreSQL service status (Windows PowerShell)
+Get-Service postgresql*
 
-# Wait a few seconds for PostgreSQL to initialize
-# Check if it's running
-docker-compose ps
+# Verify connection
+psql -U postgres -c "SELECT version();"
 ```
 
-**Expected Output:**
-```
-NAME                              STATUS
-university-recommender-postgres   Up (healthy)
-```
-
-### Step 4: Verify PostgreSQL is Ready
-
-```bash
-# Check PostgreSQL health
-docker-compose exec postgres pg_isready -U postgres
-
-# Expected output: postgres:5432 - accepting connections
-```
-
-### Step 5: Install Python Dependencies (if not already installed)
+### Step 4: Install Python Dependencies
 
 ```bash
 # Install psycopg2-binary for database connection
 pip install psycopg2-binary
+```
+
+### Step 5: Configure Environment Variables
+
+Create `.env` file in `server/` directory:
+
+```env
+POSTGRES_DB=university_recommender
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password_here
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 ```
 
 ### Step 6: Run Database Initialization Script
@@ -81,7 +69,7 @@ python init_db.py
 ============================================================
 PostgreSQL Database Initialization
 ============================================================
-✓ Database 'university_recommender' already exists
+✓ Database 'university_recommender' created successfully
   → Running migration: 001_initial_schema.sql
   ✓ Migration 001_initial_schema applied successfully
   → Running migration: 002_discover_uni_data_schema.sql
@@ -96,8 +84,8 @@ PostgreSQL Database Initialization
 ### Step 7: Verify Schema Creation
 
 ```bash
-# Connect to PostgreSQL container
-docker-compose exec postgres psql -U postgres -d university_recommender
+# Connect to PostgreSQL
+psql -U postgres -d university_recommender
 
 # Once connected, run these commands:
 \dt                    # List all tables
@@ -140,7 +128,7 @@ docker-compose exec postgres psql -U postgres -d university_recommender
 
 ## Method 2: Using Local PostgreSQL Installation (Recommended for Learning)
 
-If you prefer to use a local PostgreSQL installation instead of Docker. **This is recommended for A-level coursework as it gives you full control and understanding of how PostgreSQL works.**
+This guide uses local PostgreSQL installation. **This is recommended for A-level coursework as it gives you full control and understanding of how PostgreSQL works.**
 
 **📚 See `LOCAL_POSTGRES_SETUP.md` for complete local installation guide.**
 
@@ -239,39 +227,27 @@ psql -h localhost -U postgres -d university_recommender
 
 If you prefer to run SQL commands manually.
 
-### Step 1: Start PostgreSQL (Docker or Local)
+### Step 1: Start PostgreSQL Service
 
-**Docker:**
-```bash
-docker-compose up -d postgres
-```
-
-**Local:** Ensure PostgreSQL service is running
+**Windows (PowerShell):** Ensure PostgreSQL service is running
 
 ### Step 2: Create Database (if it doesn't exist)
 
-**Docker:**
-```bash
-docker-compose exec postgres psql -U postgres -c "CREATE DATABASE university_recommender;"
-```
-
-**Local:**
+**Create Database:**
 ```bash
 createdb -U postgres university_recommender
 ```
 
-### Step 3: Run Migration Files in Order
+### Step 3: Run Migration Files Using init_db.py (Recommended)
 
-**Docker:**
+Use the initialization script which handles migrations automatically:
+
 ```bash
-# Run first migration
-docker-compose exec postgres psql -U postgres -d university_recommender -f /docker-entrypoint-initdb.d/001_initial_schema.sql
-
-# Run second migration (Discover Uni schema)
-docker-compose exec postgres psql -U postgres -d university_recommender -f /docker-entrypoint-initdb.d/002_discover_uni_data_schema.sql
+cd server/database
+python init_db.py
 ```
 
-**Local:**
+**Or manually run migrations:**
 ```bash
 # Navigate to migrations directory
 cd server/database/migrations
@@ -296,8 +272,7 @@ After applying the schema, verify everything is correct:
 ### 1. Check All Tables Exist
 
 ```bash
-# Docker
-docker-compose exec postgres psql -U postgres -d university_recommender -c "\dt"
+psql -U postgres -d university_recommender -c "\dt"
 
 # Local
 psql -h localhost -U postgres -d university_recommender -c "\dt"
@@ -306,8 +281,7 @@ psql -h localhost -U postgres -d university_recommender -c "\dt"
 ### 2. Check Table Structure
 
 ```bash
-# Docker
-docker-compose exec postgres psql -U postgres -d university_recommender -c "\d kiscourse"
+psql -U postgres -d university_recommender -c "\d kiscourse"
 
 # Local
 psql -h localhost -U postgres -d university_recommender -c "\d kiscourse"
@@ -316,8 +290,7 @@ psql -h localhost -U postgres -d university_recommender -c "\d kiscourse"
 ### 3. Check Foreign Keys
 
 ```bash
-# Docker
-docker-compose exec postgres psql -U postgres -d university_recommender -c "
+psql -U postgres -d university_recommender -c "
 SELECT 
     tc.table_name, 
     kcu.column_name, 
@@ -340,8 +313,7 @@ psql -h localhost -U postgres -d university_recommender -c "SELECT ..."
 ### 4. Check Indexes
 
 ```bash
-# Docker
-docker-compose exec postgres psql -U postgres -d university_recommender -c "\di"
+psql -U postgres -d university_recommender -c "\di"
 
 # Local
 psql -h localhost -U postgres -d university_recommender -c "\di"
@@ -350,8 +322,7 @@ psql -h localhost -U postgres -d university_recommender -c "\di"
 ### 5. Count Tables
 
 ```bash
-# Docker
-docker-compose exec postgres psql -U postgres -d university_recommender -c "
+psql -U postgres -d university_recommender -c "
 SELECT COUNT(*) as table_count 
 FROM information_schema.tables 
 WHERE table_schema = 'public';
@@ -378,7 +349,7 @@ WHERE table_schema = 'public';
 ### Issue: "Connection refused" or "Cannot connect"
 
 **Solutions:**
-- **Docker:** Ensure container is running: `docker-compose ps`
+- Ensure PostgreSQL service is running: `Get-Service postgresql*` (Windows)
 - **Local:** Check PostgreSQL service is running
 - Verify connection credentials (host, port, user, password)
 - Check firewall settings
@@ -449,12 +420,12 @@ If you prefer a graphical interface:
 
 ### Step 1: Access pgAdmin
 
-1. Start pgAdmin container (if using Docker):
-   ```bash
-   docker-compose up -d pgadmin
-   ```
+1. Start pgAdmin (installed with PostgreSQL):
+   - Windows: Launch from Start Menu
+   - macOS: Launch from Applications
+   - Linux: Run `pgadmin4` command
 
-2. Open browser: http://localhost:8081
+2. Open browser: pgAdmin will open automatically, or go to http://localhost:5050
 
 3. Login:
    - Email: `admin@admin.com`
@@ -466,7 +437,7 @@ If you prefer a graphical interface:
 2. General tab:
    - Name: `University Recommender`
 3. Connection tab:
-   - Host: `postgres` (Docker) or `localhost` (Local)
+   - Host: `localhost`
    - Port: `5432`
    - Database: `university_recommender`
    - Username: `postgres`
@@ -484,9 +455,12 @@ If you prefer a graphical interface:
 
 ## Summary
 
-✅ **Quick Start (Docker):**
+✅ **Quick Start:**
 ```bash
-docker-compose up -d postgres
+# Ensure PostgreSQL service is running
+# Then run init script
+cd server/database
+python init_db.py
 cd server/database
 python init_db.py
 ```

@@ -1,16 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
-import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 from datetime import datetime, timedelta
 import json
+import io
+import csv
 from dotenv import load_dotenv
 from recommendation_engine import RecommendationEngine
-from models.student import Student
-from models.course import Course
 from database_helper import get_db_connection, generate_id, get_student_by_id, get_student_by_email
 from validators import (
     validate_student_registration, validate_preferences,
@@ -45,10 +44,53 @@ def root():
             'profile': '/api/student/profile',
             'recommendations': '/api/recommendations',
             'courses': '/api/courses',
-            'universities': '/api/universities'
+            'universities': '/api/universities',
+            'a-level-subjects': '/api/a-level-subjects'
         },
         'documentation': 'See README.md for API documentation'
     })
+
+@app.route('/api/a-level-subjects', methods=['GET'])
+def get_a_level_subjects():
+    """Get all A-Level subjects from the database"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT 
+                        a_level_subject,
+                        subject_id,
+                        cah3_code,
+                        cah3_label,
+                        cah2_code,
+                        cah2_label,
+                        cah1_code,
+                        cah1_label
+                    FROM uni_recomm_subject_course_mapping
+                    ORDER BY a_level_subject ASC
+                """)
+                subjects = cur.fetchall()
+                
+                # Convert to list of dictionaries
+                subjects_list = []
+                for subject in subjects:
+                    subjects_list.append({
+                        'name': subject['a_level_subject'],
+                        'subjectId': subject['subject_id'],
+                        'cah3Code': subject['cah3_code'],
+                        'cah3Label': subject['cah3_label'],
+                        'cah2Code': subject['cah2_code'],
+                        'cah2Label': subject['cah2_label'],
+                        'cah1Code': subject['cah1_code'],
+                        'cah1Label': subject['cah1_label']
+                    })
+                
+                return jsonify({
+                    'subjects': subjects_list,
+                    'count': len(subjects_list)
+                })
+    except Exception as e:
+        return jsonify({'message': f'Failed to fetch A-Level subjects: {str(e)}'}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -93,11 +135,19 @@ def register():
                 # Get preferences
                 preferences = data.get('preferences', {})
                 
+                # Build preferences JSONB object
+                preferences_json = {
+                    'preferredRegion': preferences.get('preferredRegion'),
+                    'maxBudget': preferences.get('maxBudget'),
+                    'preferredExams': preferences.get('preferredExams', []),
+                    'careerInterests': preferences.get('careerInterests', [])
+                }
+                
                 # Insert student
                 cur.execute("""
-                    INSERT INTO student (student_id, display_name, email, password_hash, 
-                                      region, tuition_budget, preferred_exams, created_at)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
+                    INSERT INTO uni_recomm_student (student_id, display_name, email, password_hash, 
+                                      region, tuition_budget, preferred_exams, preferences, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
                     RETURNING student_id
                 """, (
                     student_id,
@@ -106,7 +156,8 @@ def register():
                     password_hash,
                     preferences.get('preferredRegion'),
                     preferences.get('maxBudget'),
-                    preferences.get('preferredExams', [])
+                    preferences.get('preferredExams', []),
+                    json.dumps(preferences_json)
                 ))
                 
                 student_id = cur.fetchone()['student_id']
@@ -118,16 +169,16 @@ def register():
                 for subject_id in a_level_subjects:
                     if subject_id in predicted_grades:
                         # Check if subject exists, if not create it
-                        cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
+                        cur.execute("SELECT subject_id FROM uni_recomm_subject WHERE subject_id = %s", (subject_id,))
                         if not cur.fetchone():
                             cur.execute("""
-                                INSERT INTO subject (subject_id, subject_name)
+                                INSERT INTO uni_recomm_subject (subject_id, subject_name)
                                 VALUES (%s, %s)
                                 ON CONFLICT (subject_id) DO NOTHING
                             """, (subject_id, subject_id))
                         
                         cur.execute("""
-                            INSERT INTO student_grade (student_id, subject_id, predicted_grade)
+                            INSERT INTO uni_recomm_student_grade (student_id, subject_id, predicted_grade)
                             VALUES (%s, %s, %s)
                             ON CONFLICT (student_id, subject_id) 
                             DO UPDATE SET predicted_grade = EXCLUDED.predicted_grade
@@ -238,36 +289,50 @@ def update_profile():
                 # Update preferences
                 if 'preferences' in data:
                     prefs = data['preferences']
+                    
+                    # Build preferences JSONB object
+                    preferences_json = {
+                        'preferredRegion': prefs.get('preferredRegion'),
+                        'maxBudget': prefs.get('maxBudget'),
+                        'preferredExams': prefs.get('preferredExams', []),
+                        'careerInterests': prefs.get('careerInterests', [])
+                    }
+                    
+                    # Update both individual columns (for backward compatibility) and JSONB preferences
                     cur.execute("""
-                        UPDATE student
-                        SET region = %s, tuition_budget = %s, preferred_exams = %s
+                        UPDATE uni_recomm_student
+                        SET region = %s, 
+                            tuition_budget = %s, 
+                            preferred_exams = %s,
+                            preferences = %s
                         WHERE student_id = %s
                     """, (
                         prefs.get('preferredRegion'),
                         prefs.get('maxBudget'),
                         prefs.get('preferredExams', []),
+                        json.dumps(preferences_json),
                         student_id
                     ))
                 
                 # Update student grades
                 if 'aLevelSubjects' in data and 'predictedGrades' in data:
                     # Delete existing grades
-                    cur.execute("DELETE FROM student_grade WHERE student_id = %s", (student_id,))
+                    cur.execute("DELETE FROM uni_recomm_student_grade WHERE student_id = %s", (student_id,))
                     
                     # Insert new grades
                     for subject_id in data['aLevelSubjects']:
                         if subject_id in data['predictedGrades']:
                             # Ensure subject exists
-                            cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
+                            cur.execute("SELECT subject_id FROM uni_recomm_subject WHERE subject_id = %s", (subject_id,))
                             if not cur.fetchone():
                                 cur.execute("""
-                                    INSERT INTO subject (subject_id, subject_name)
+                                    INSERT INTO uni_recomm_subject (subject_id, subject_name)
                                     VALUES (%s, %s)
                                     ON CONFLICT (subject_id) DO NOTHING
                                 """, (subject_id, subject_id))
                             
                             cur.execute("""
-                                INSERT INTO student_grade (student_id, subject_id, predicted_grade)
+                                INSERT INTO uni_recomm_student_grade (student_id, subject_id, predicted_grade)
                                 VALUES (%s, %s, %s)
                             """, (student_id, subject_id, data['predictedGrades'][subject_id]))
                 
@@ -312,7 +377,7 @@ def change_password():
                 # Update password
                 new_password_hash = generate_password_hash(data['newPassword'])
                 cur.execute("""
-                    UPDATE student
+                    UPDATE uni_recomm_student
                     SET password_hash = %s
                     WHERE student_id = %s
                 """, (new_password_hash, student_id))
@@ -354,7 +419,7 @@ def get_recommendations():
                 # Save recommendations to database
                 run_id = generate_id('RUN')
                 cur.execute("""
-                    INSERT INTO recommendation_run (run_id, student_id, run_at, weights, prefs_snapshot)
+                    INSERT INTO uni_recomm_recommendation_run (run_id, student_id, run_at, weights, prefs_snapshot)
                     VALUES (%s, %s, CURRENT_DATE, %s, %s)
                     RETURNING run_id
                 """, (
@@ -366,7 +431,7 @@ def get_recommendations():
                 
                 result_id = generate_id('RES')
                 cur.execute("""
-                    INSERT INTO recommendation_result (result_id, run_id, items)
+                    INSERT INTO uni_recomm_recommendation_result (result_id, run_id, items)
                     VALUES (%s, %s, %s)
                 """, (result_id, run_id, json.dumps(recommendations)))
                 
@@ -404,8 +469,8 @@ def get_advanced_recommendations():
                         s.tuition_budget,
                         sg.subject_id,
                         sg.predicted_grade
-                    FROM student s
-                    LEFT JOIN student_grade sg ON s.student_id = sg.student_id
+                    FROM uni_recomm_student s
+                    LEFT JOIN uni_recomm_student_grade sg ON s.student_id = sg.student_id
                     WHERE s.student_id = %s
                 ),
                 course_subject_matches AS (
@@ -418,8 +483,8 @@ def get_advanced_recommendations():
                             THEN cr.subject_id 
                         END) as matched_subjects_count,
                         COUNT(DISTINCT cr.subject_id) as total_required_subjects
-                    FROM course c
-                    LEFT JOIN course_requirement cr ON c.course_id = cr.course_id
+                    FROM uni_recomm_course c
+                    LEFT JOIN uni_recomm_course_requirement cr ON c.course_id = cr.course_id
                     GROUP BY c.course_id, c.name
                 ),
                 course_grade_matches AS (
@@ -431,8 +496,8 @@ def get_advanced_recommendations():
                             ELSE 0.0 
                         END) as grade_match_ratio,
                         COUNT(DISTINCT cr.subject_id) as graded_requirements_count
-                    FROM course c
-                    JOIN course_requirement cr ON c.course_id = cr.course_id
+                    FROM uni_recomm_course c
+                    JOIN uni_recomm_course_requirement cr ON c.course_id = cr.course_id
                     LEFT JOIN student_profile sg ON cr.subject_id = sg.subject_id
                     WHERE sg.student_id IS NOT NULL
                     GROUP BY c.course_id
@@ -457,8 +522,8 @@ def get_advanced_recommendations():
                         CASE WHEN u.rank_overall IS NOT NULL AND u.rank_overall > 0
                              THEN 1.0 / (1.0 + u.rank_overall::float / 100.0)
                              ELSE 0.5 END as ranking_score
-                    FROM course c
-                    JOIN university u ON c.university_id = u.university_id
+                    FROM uni_recomm_course c
+                    JOIN uni_recomm_university u ON c.university_id = u.university_id
                     LEFT JOIN course_subject_matches csm ON c.course_id = csm.course_id
                     LEFT JOIN course_grade_matches cgm ON c.course_id = cgm.course_id
                     CROSS JOIN (SELECT preferred_region, tuition_budget FROM student_profile LIMIT 1) sp
@@ -562,8 +627,8 @@ def get_courses():
                 u.university_id, u.name as university_name, u.region,
                 u.rank_overall, u.employability_score as uni_employability,
                 c.employability_score as course_employability
-            FROM course c
-            JOIN university u ON c.university_id = u.university_id
+            FROM uni_recomm_course c
+            JOIN uni_recomm_university u ON c.university_id = u.university_id
             WHERE 1=1
         """
         params = []
@@ -572,8 +637,8 @@ def get_courses():
             query += """
                 AND c.course_id IN (
                     SELECT DISTINCT cr.course_id 
-                    FROM course_requirement cr
-                    JOIN subject s ON cr.subject_id = s.subject_id
+                    FROM uni_recomm_course_requirement cr
+                    JOIN uni_recomm_subject s ON cr.subject_id = s.subject_id
                     WHERE s.subject_name ILIKE %s OR s.subject_id = %s
                 )
             """
@@ -602,8 +667,8 @@ def get_courses():
                     # Get entry requirements
                     cur.execute("""
                         SELECT s.subject_id, s.subject_name, cr.grade_req
-                        FROM course_requirement cr
-                        JOIN subject s ON cr.subject_id = s.subject_id
+                        FROM uni_recomm_course_requirement cr
+                        JOIN uni_recomm_subject s ON cr.subject_id = s.subject_id
                         WHERE cr.course_id = %s
                     """, (course_id,))
                     
@@ -654,7 +719,7 @@ def get_universities():
                 cur.execute("""
                     SELECT university_id, name, region, rank_overall, 
                            employability_score, website_url
-                    FROM university
+                    FROM uni_recomm_university
                     ORDER BY rank_overall NULLS LAST
                 """)
                 
@@ -699,14 +764,14 @@ def submit_feedback():
         # Validate course exists
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SELECT course_id FROM course WHERE course_id = %s", (course_id,))
+                cur.execute("SELECT course_id FROM uni_recomm_course WHERE course_id = %s", (course_id,))
                 if not cur.fetchone():
                     return jsonify({'message': 'Course not found'}), 404
                 
                 # Insert feedback
                 feedback_id = generate_id('FB')
                 cur.execute("""
-                    INSERT INTO recommendation_feedback 
+                    INSERT INTO uni_recomm_recommendation_feedback 
                         (feedback_id, student_id, course_id, feedback_type, match_score, search_criteria, notes)
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """, (
@@ -745,7 +810,7 @@ def get_course_feedback(course_id):
                         feedback_at,
                         match_score,
                         notes
-                    FROM recommendation_feedback
+                    FROM uni_recomm_recommendation_feedback
                     WHERE student_id = %s AND course_id = %s
                     ORDER BY feedback_at DESC
                     LIMIT 50
@@ -779,7 +844,7 @@ def get_recommendation_settings():
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
                     SELECT setting_key, setting_value, description
-                    FROM recommendation_settings
+                    FROM uni_recomm_recommendation_settings
                     ORDER BY setting_key
                 """)
                 
@@ -831,7 +896,7 @@ def update_recommendation_setting(setting_key):
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 # Update setting
                 cur.execute("""
-                    UPDATE recommendation_settings
+                    UPDATE uni_recomm_recommendation_settings
                     SET setting_value = %s,
                         updated_at = CURRENT_TIMESTAMP,
                         updated_by = %s
@@ -870,7 +935,7 @@ def add_course():
                     # Create university if needed
                     university_id = generate_id('UNI')
                     cur.execute("""
-                        INSERT INTO university (university_id, name, region, rank_overall, employability_score)
+                        INSERT INTO uni_recomm_university (university_id, name, region, rank_overall, employability_score)
                         VALUES (%s, %s, %s, %s, %s)
                         ON CONFLICT (university_id) DO NOTHING
                     """, (
@@ -884,7 +949,7 @@ def add_course():
                 # Create course
                 course_id = generate_id('CRS')
                 cur.execute("""
-                    INSERT INTO course (course_id, university_id, name, annual_fee, 
+                    INSERT INTO uni_recomm_course (course_id, university_id, name, annual_fee, 
                                       employability_score, typical_offer_text)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING course_id
@@ -904,10 +969,10 @@ def add_course():
                 
                 for subject_id in subjects:
                     # Ensure subject exists
-                    cur.execute("SELECT subject_id FROM subject WHERE subject_id = %s", (subject_id,))
+                    cur.execute("SELECT subject_id FROM uni_recomm_subject WHERE subject_id = %s", (subject_id,))
                     if not cur.fetchone():
                         cur.execute("""
-                            INSERT INTO subject (subject_id, subject_name)
+                            INSERT INTO uni_recomm_subject (subject_id, subject_name)
                             VALUES (%s, %s)
                             ON CONFLICT (subject_id) DO NOTHING
                         """, (subject_id, subject_id))
@@ -916,7 +981,7 @@ def add_course():
                     req_id = generate_id('REQ')
                     grade_req = grades.get(subject_id, 'C')
                     cur.execute("""
-                        INSERT INTO course_requirement (req_id, course_id, subject_id, grade_req)
+                        INSERT INTO uni_recomm_course_requirement (req_id, course_id, subject_id, grade_req)
                         VALUES (%s, %s, %s, %s)
                     """, (req_id, course_id, subject_id, grade_req))
                 
@@ -936,15 +1001,23 @@ def add_course():
 def export_recommendations(student_id):
     """Export recommendations as PDF or CSV"""
     try:
+        # Verify the student can only export their own recommendations
+        logged_in_student_id = get_jwt_identity()
+        if logged_in_student_id != student_id:
+            return jsonify({'message': 'Unauthorized: You can only export your own recommendations'}), 403
+        
         format_type = request.args.get('format', 'csv')
+        
+        if format_type not in ['csv', 'pdf']:
+            return jsonify({'message': 'Invalid format. Use "csv" or "pdf"'}), 400
         
         with get_db_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 # Get latest recommendations
                 cur.execute("""
                     SELECT rr.items, rr.run_id
-                    FROM recommendation_result rr
-                    JOIN recommendation_run rrun ON rr.run_id = rrun.run_id
+                    FROM uni_recomm_recommendation_result rr
+                    JOIN uni_recomm_recommendation_run rrun ON rr.run_id = rrun.run_id
                     WHERE rrun.student_id = %s
                     ORDER BY rrun.run_at DESC
                     LIMIT 1
@@ -954,13 +1027,24 @@ def export_recommendations(student_id):
                 if not row:
                     return jsonify({'message': 'No recommendations found'}), 404
                 
-                recommendations = json.loads(row['items'])
+                # Parse JSON items
+                items_data = row['items']
+                if isinstance(items_data, str):
+                    recommendations = json.loads(items_data)
+                elif isinstance(items_data, dict):
+                    # If it's already a dict, it might be a JSONB object
+                    recommendations = items_data if isinstance(items_data, list) else []
+                else:
+                    recommendations = items_data if isinstance(items_data, list) else []
+                
+                if not isinstance(recommendations, list):
+                    return jsonify({'message': 'Invalid recommendations data format'}), 500
+                
+                if len(recommendations) == 0:
+                    return jsonify({'message': 'No recommendations to export'}), 404
         
         if format_type == 'csv':
             # Generate CSV
-            import csv
-            import io
-            
             output = io.StringIO()
             writer = csv.writer(output)
             
@@ -969,14 +1053,36 @@ def export_recommendations(student_id):
             
             # Write data
             for i, rec in enumerate(recommendations, 1):
+                if not isinstance(rec, dict):
+                    continue
+                    
                 course = rec.get('course', {})
+                if not isinstance(course, dict):
+                    course = {}
+                
+                university = course.get('university', {})
+                if not isinstance(university, dict):
+                    university = {}
+                
+                fees = course.get('fees', {})
+                if not isinstance(fees, dict):
+                    fees = {}
+                
+                entry_req = course.get('entryRequirements', {})
+                if not isinstance(entry_req, dict):
+                    entry_req = {}
+                
+                grades = entry_req.get('grades', {})
+                if not isinstance(grades, dict):
+                    grades = {}
+                
                 writer.writerow([
                     i,
-                    course.get('name', ''),
-                    course.get('university', {}).get('name', ''),
+                    course.get('name', 'N/A'),
+                    university.get('name', 'N/A'),
                     rec.get('matchScore', 0),
-                    course.get('fees', {}).get('uk', 0),
-                    str(course.get('entryRequirements', {}).get('grades', {}))
+                    fees.get('uk', 0),
+                    str(grades) if grades else 'N/A'
                 ])
             
             return jsonify({
@@ -987,14 +1093,12 @@ def export_recommendations(student_id):
         elif format_type == 'pdf':
             # Generate PDF using reportlab
             try:
-                from reportlab.lib.pagesizes import letter, A4
+                from reportlab.lib.pagesizes import A4
                 from reportlab.lib import colors
                 from reportlab.lib.units import inch
-                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
                 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.lib.enums import TA_CENTER, TA_LEFT
-                import io
-                from datetime import datetime
                 
                 buffer = io.BytesIO()
                 doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -1028,15 +1132,40 @@ def export_recommendations(student_id):
                 table_data = [['Rank', 'Course', 'University', 'Match Score', 'Fees (£)']]
                 
                 for i, rec in enumerate(recommendations[:30], 1):  # Top 30 for PDF
+                    if not isinstance(rec, dict):
+                        continue
+                    
                     course = rec.get('course', {})
+                    if not isinstance(course, dict):
+                        course = {}
+                    
                     match_score = rec.get('matchScore', 0)
+                    course_name = course.get('name', 'N/A')
+                    if not isinstance(course_name, str):
+                        course_name = 'N/A'
+                    
+                    university = course.get('university', {})
+                    if not isinstance(university, dict):
+                        university = {}
+                    
+                    university_name = university.get('name', 'N/A')
+                    if not isinstance(university_name, str):
+                        university_name = 'N/A'
+                    
+                    fees = course.get('fees', {})
+                    if not isinstance(fees, dict):
+                        fees = {}
+                    
+                    fee_amount = fees.get('uk', 0)
+                    if not isinstance(fee_amount, (int, float)):
+                        fee_amount = 0
                     
                     table_data.append([
                         str(i),
-                        course.get('name', 'N/A')[:40],  # Truncate long names
-                        course.get('university', {}).get('name', 'N/A')[:30],
+                        course_name[:40],  # Truncate long names
+                        university_name[:30],
                         f"{match_score:.2f}",
-                        f"£{course.get('fees', {}).get('uk', 0):,}"
+                        f"£{fee_amount:,}"
                     ])
                 
                 # Create table
@@ -1072,12 +1201,15 @@ def export_recommendations(student_id):
                 doc.build(elements)
                 buffer.seek(0)
                 
-                from flask import Response
-                return Response(
+                response = Response(
                     buffer.getvalue(),
                     mimetype='application/pdf',
-                    headers={'Content-Disposition': 'attachment; filename=course-recommendations.pdf'}
+                    headers={
+                        'Content-Disposition': 'attachment; filename=course-recommendations.pdf',
+                        'Content-Type': 'application/pdf'
+                    }
                 )
+                return response
             except ImportError:
                 return jsonify({'message': 'PDF export requires reportlab library. Install with: pip install reportlab'}), 501
             except Exception as e:
@@ -1086,6 +1218,10 @@ def export_recommendations(student_id):
         return jsonify({'message': 'Invalid format'}), 400
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Export error: {str(e)}")
+        print(f"Traceback: {error_details}")
         return jsonify({'message': f'Export failed: {str(e)}'}), 500
 
 if __name__ == '__main__':

@@ -41,7 +41,12 @@ def read_sql_file(file_path):
 
 
 def create_database():
-    """Create database if it doesn't exist"""
+    """
+    Create database if it doesn't exist.
+    
+    Connects to the default 'postgres' database to check for and create
+    the target database. Uses parameterized queries for security.
+    """
     try:
         # Connect to default postgres database
         conn = psycopg2.connect(
@@ -54,7 +59,7 @@ def create_database():
         conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
         
-        # Check if database exists
+        # Check if database exists (defensive programming - use parameterized query)
         cursor.execute(
             "SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s",
             (DB_NAME,)
@@ -62,6 +67,7 @@ def create_database():
         exists = cursor.fetchone()
         
         if not exists:
+            # Database name is from environment variable, safe to use in DDL
             cursor.execute(f'CREATE DATABASE {DB_NAME}')
             print(f"✓ Database '{DB_NAME}' created successfully")
         else:
@@ -69,20 +75,28 @@ def create_database():
         
         cursor.close()
         conn.close()
+    except psycopg2.Error as e:
+        print(f"✗ Database error: {e}")
+        raise
     except Exception as e:
-        print(f"✗ Error creating database: {e}")
+        print(f"✗ Unexpected error creating database: {e}")
         raise
 
 
 def run_migrations():
-    """Run migration files"""
+    """
+    Run migration files in order.
+    
+    Migrations are tracked in schema_migrations table to ensure idempotency.
+    Each migration is run in a transaction and rolled back on error.
+    """
     migrations_dir = Path(__file__).parent / 'migrations'
     
     if not migrations_dir.exists():
         print(f"✗ Migrations directory not found: {migrations_dir}")
         return
     
-    # Get all SQL files sorted by name
+    # Get all SQL files sorted by name (ensures correct order)
     migration_files = sorted(migrations_dir.glob('*.sql'))
     
     if not migration_files:
@@ -101,7 +115,7 @@ def run_migrations():
         conn.autocommit = False
         cursor = conn.cursor()
         
-        # Create migration tracking table
+        # Create migration tracking table (idempotent)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS schema_migrations (
                 version VARCHAR(255) PRIMARY KEY,
@@ -112,7 +126,7 @@ def run_migrations():
         for migration_file in migration_files:
             version = migration_file.stem
             
-            # Check if migration already applied
+            # Check if migration already applied (idempotency)
             cursor.execute(
                 "SELECT version FROM schema_migrations WHERE version = %s",
                 (version,)
@@ -132,6 +146,10 @@ def run_migrations():
                 )
                 conn.commit()
                 print(f"  ✓ Migration {version} applied successfully")
+            except psycopg2.Error as e:
+                conn.rollback()
+                print(f"  ✗ Database error applying migration {version}: {e}")
+                raise
             except Exception as e:
                 conn.rollback()
                 print(f"  ✗ Error applying migration {version}: {e}")
@@ -141,8 +159,11 @@ def run_migrations():
         conn.close()
         print("✓ All migrations completed successfully")
         
+    except psycopg2.Error as e:
+        print(f"✗ Database error running migrations: {e}")
+        raise
     except Exception as e:
-        print(f"✗ Error running migrations: {e}")
+        print(f"✗ Unexpected error running migrations: {e}")
         raise
 
 

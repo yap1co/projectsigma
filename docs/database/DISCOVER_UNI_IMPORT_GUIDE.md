@@ -124,8 +124,8 @@ The import must follow this order to respect foreign key constraints:
 
 ### Prerequisites
 
-1. PostgreSQL database running (via Docker Compose or local installation)
-2. Database schema created (run `002_discover_uni_data_schema.sql` migration)
+1. PostgreSQL database installed locally and running (see [LOCAL_POSTGRES_SETUP.md](./LOCAL_POSTGRES_SETUP.md))
+2. Database schema created (run `init_db.py` to apply migrations)
 3. Python 3.8+ with required packages:
    ```bash
    pip install psycopg2-binary
@@ -149,23 +149,25 @@ python server/database/import_discover_uni_csv.py --skip-core
 
 ### Environment Variables
 
-Set these environment variables if your database configuration differs:
+Set these environment variables in `server/.env` file:
 
-```bash
-export POSTGRES_DB=university_recommender
-export POSTGRES_USER=postgres
-export POSTGRES_PASSWORD=postgres
-export POSTGRES_HOST=localhost
-export POSTGRES_PORT=5432
+```env
+POSTGRES_DB=university_recommender
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 ```
 
-### Using Docker Compose
-
-If using Docker Compose:
+Or set them in your shell session:
 
 ```bash
-# Start PostgreSQL
-docker-compose up -d postgres
+# Windows PowerShell
+$env:POSTGRES_DB = "university_recommender"
+$env:POSTGRES_USER = "postgres"
+$env:POSTGRES_PASSWORD = "your_password"
+$env:POSTGRES_HOST = "localhost"
+$env:POSTGRES_PORT = "5432"
 
 # Wait for database to be ready, then run import
 python server/database/import_discover_uni_csv.py

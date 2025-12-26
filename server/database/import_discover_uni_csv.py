@@ -458,9 +458,9 @@ def import_course_related_entities(cursor, data_dir: Path):
             execute_batch(
                 cursor,
                 """
-                INSERT INTO ucascourseid (pubukprn, ukprn, kiscourseid, kismode, locid, ucascourseid)
+                INSERT INTO hesa_ucascourseid (pubukprn, ukprn, kiscourseid, kismode, locid, ucascourseid)
                 VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING
+                ON CONFLICT (pubukprn, kiscourseid, kismode, locid, ucascourseid) DO NOTHING
                 """,
                 data,
                 page_size=1000

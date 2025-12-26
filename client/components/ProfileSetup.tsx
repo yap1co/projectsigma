@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useForm } from 'react-hook-form'
+import { useQuery } from 'react-query'
 import api from '@/lib/api'
 import toast from 'react-hot-toast'
 
@@ -23,14 +24,16 @@ interface FormData {
   }
 }
 
-const A_LEVEL_SUBJECTS = [
-  'Mathematics', 'Further Mathematics', 'Physics', 'Chemistry', 'Biology',
-  'English Literature', 'English Language', 'History', 'Geography', 'Economics',
-  'Business Studies', 'Psychology', 'Sociology', 'Politics', 'Philosophy',
-  'Art', 'Design Technology', 'Computer Science', 'French', 'Spanish',
-  'German', 'Italian', 'Latin', 'Classical Civilisation', 'Religious Studies',
-  'Music', 'Drama', 'Physical Education', 'Media Studies', 'Film Studies'
-]
+interface ALevelSubject {
+  name: string
+  subjectId: string
+  cah3Code?: string
+  cah3Label?: string
+  cah2Code?: string
+  cah2Label?: string
+  cah1Code?: string
+  cah1Label?: string
+}
 
 const REGIONS = [
   'London', 'South East', 'South West', 'Midlands', 'North West',
@@ -54,6 +57,21 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
   const { user, updateUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1)
+  
+  // Fetch A-Level subjects from API
+  const { data: subjectsData, isLoading: subjectsLoading } = useQuery<{ subjects: ALevelSubject[], count: number }>(
+    'a-level-subjects',
+    async () => {
+      const response = await api.get('/a-level-subjects')
+      return response.data
+    },
+    {
+      staleTime: 1000 * 60 * 60, // Cache for 1 hour
+      cacheTime: 1000 * 60 * 60 * 24, // Keep in cache for 24 hours
+    }
+  )
+  
+  const A_LEVEL_SUBJECTS = subjectsData?.subjects || []
 
   const { register, handleSubmit, watch, setValue, formState: { errors }, reset } = useForm<FormData>({
     defaultValues: {
@@ -220,26 +238,37 @@ export default function ProfileSetup({ onComplete, isComplete }: ProfileSetupPro
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 What A-level subjects are you taking?
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {A_LEVEL_SUBJECTS.map((subject) => (
-                  <label
-                    key={subject}
-                    className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                      watchedSubjects?.includes(subject)
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={watchedSubjects?.includes(subject) || false}
-                      onChange={() => handleSubjectToggle(subject)}
-                    />
-                    <span className="text-sm font-medium">{subject}</span>
-                  </label>
-                ))}
-              </div>
+              {subjectsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                  <span className="ml-3 text-gray-600">Loading subjects...</span>
+                </div>
+              ) : A_LEVEL_SUBJECTS.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No subjects available. Please try again later.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {A_LEVEL_SUBJECTS.map((subject) => (
+                    <label
+                      key={subject.subjectId}
+                      className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                        watchedSubjects?.includes(subject.name)
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={watchedSubjects?.includes(subject.name) || false}
+                        onChange={() => handleSubjectToggle(subject.name)}
+                      />
+                      <span className="text-sm font-medium">{subject.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
               {errors.aLevelSubjects && (
                 <p className="mt-2 text-sm text-red-600">Please select at least one subject</p>
               )}

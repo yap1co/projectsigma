@@ -2,7 +2,7 @@
 Scoring components for recommendation engine
 Demonstrates OOP composition pattern
 """
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional, Tuple
 from abc import ABC, abstractmethod
 
 
@@ -18,28 +18,17 @@ class Scorer(ABC):
 class SubjectMatchScorer(Scorer):
     """Scorer for subject matching (composition component) - Enhanced to consider all student subjects"""
     
-    def __init__(self):
-        # Subject mapping for related fields
-        self.subject_mappings = {
-            'english language': ['english', 'literature', 'language', 'writing', 'linguistics'],
-            'english literature': ['english', 'literature', 'language', 'writing', 'humanities'],
-            'philosophy': ['philosophy', 'ethics', 'theology', 'religious studies', 'politics', 'humanities'],
-            'mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'further mathematics': ['mathematics', 'maths', 'math', 'statistics', 'computing', 'computer science'],
-            'physics': ['physics', 'engineering', 'mathematics', 'computing', 'computer science'],
-            'chemistry': ['chemistry', 'biology', 'medicine', 'pharmacy'],
-            'biology': ['biology', 'medicine', 'pharmacy', 'chemistry', 'biochemistry'],
-            'history': ['history', 'politics', 'archaeology', 'humanities'],
-            'geography': ['geography', 'environmental', 'geology', 'urban planning'],
-            'economics': ['economics', 'business', 'finance', 'accounting', 'politics'],
-            'business studies': ['business', 'economics', 'finance', 'accounting', 'management'],
-            'psychology': ['psychology', 'sociology', 'neuroscience', 'criminology'],
-            'sociology': ['sociology', 'psychology', 'politics', 'criminology', 'social work'],
-            'politics': ['politics', 'international relations', 'history', 'philosophy', 'economics'],
-            'art': ['art', 'design', 'fine art', 'creative', 'visual arts'],
-            'design technology': ['design', 'engineering', 'technology', 'product design'],
-            'computer science': ['computer science', 'computing', 'software', 'it', 'mathematics', 'physics']
-        }
+    def __init__(self, subject_mappings=None):
+        # Load from database or use provided mappings
+        if subject_mappings is not None:
+            self.subject_mappings = subject_mappings
+        else:
+            # Fallback to empty dict - subject matching now uses CAH codes
+            self.subject_mappings = {}
+        
+        # Generic terms removed - subject matching now uses CAH codes from subject_course_mapping
+        self.generic_terms = set()
+        self.legitimate_generic_matches = {}
     
     def calculate_score(self, course: Dict[str, Any], student_data: Dict[str, Any]) -> float:
         """Calculate subject match score - considers ALL student subjects, not just required ones"""
@@ -84,22 +73,8 @@ class SubjectMatchScorer(Scorer):
                         matched = True
                         break
             
-            # Check 2: Subject mappings for related fields (only legitimate relationships)
-            if not matched and stud_subj in self.subject_mappings:
-                for related_term in self.subject_mappings[stud_subj]:
-                    # Only match if the related term appears as a whole word or significant phrase
-                    if len(related_term) > 3:  # Only match terms longer than 3 characters
-                        # Check if it's a whole word in the course name
-                        if related_term in course_name_words or related_term in course_name:
-                            # Generic check to prevent false positives
-                            # Note: This scorer doesn't have access to the full engine's generic matching
-                            # So we use a simplified version - in practice, this should use the same _is_legitimate_match
-                            # For now, we check if the generic term is part of the subject name
-                            generic_terms = {'science', 'studies', 'business', 'management', 'technology', 'design', 'art'}
-                            if related_term not in generic_terms or related_term in stud_subj.lower():
-                                matching_student_subjects.add(stud_subj)
-                                matched = True
-                                break
+            # Check 2: Subject mappings removed - now using CAH codes for matching
+            # Subject matching is done via CAH codes from subject_course_mapping table
         
         # Combine matches
         all_matching_subjects = matching_required | matching_student_subjects
@@ -154,10 +129,14 @@ class SubjectMatchScorer(Scorer):
 class GradeMatchScorer(Scorer):
     """Scorer for grade matching (composition component)"""
     
-    def __init__(self):
-        self.grade_values = {
-            'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0
-        }
+    def __init__(self, grade_values=None):
+        if grade_values is not None:
+            self.grade_values = grade_values
+        else:
+            # Fallback to defaults
+            self.grade_values = {
+                'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0
+            }
     
     def calculate_score(self, course: Dict[str, Any], student_data: Dict[str, Any]) -> float:
         """Calculate grade match score"""
@@ -202,17 +181,12 @@ class GradeMatchScorer(Scorer):
 class PreferenceMatchScorer(Scorer):
     """Scorer for preference matching (composition component)"""
     
-    def __init__(self):
-        self.regions = {
-            'London': ['London'],
-            'South East': ['Oxford', 'Cambridge', 'Brighton', 'Canterbury', 'Reading'],
-            'South West': ['Bristol', 'Bath', 'Exeter', 'Plymouth'],
-            'Midlands': ['Birmingham', 'Coventry', 'Leicester', 'Nottingham'],
-            'North West': ['Manchester', 'Liverpool', 'Lancaster'],
-            'North East': ['Newcastle', 'Durham', 'York'],
-            'Scotland': ['Edinburgh', 'Glasgow', 'St Andrews', 'Aberdeen'],
-            'Wales': ['Cardiff', 'Swansea', 'Bangor']
-        }
+    def __init__(self, regions=None):
+        if regions is not None:
+            self.regions = regions  # Now a list, not a dict
+        else:
+            # Fallback to defaults (list of region names)
+            self.regions = ['London', 'South East', 'South West', 'Midlands', 'North West', 'North East', 'Scotland', 'Wales']
     
     def calculate_score(self, course: Dict[str, Any], student_data: Dict[str, Any]) -> float:
         """Calculate preference match score"""
@@ -242,13 +216,17 @@ class PreferenceMatchScorer(Scorer):
         return min(max(score / max(factors, 1), 0), 1)
     
     def _get_course_region(self, course: Dict[str, Any]) -> str:
-        """Determine the region of a course's university"""
-        university_name = course.get('university', {}).get('name', '').lower()
+        """Determine the region of a course's university - get directly from university data"""
+        # Get region directly from university data (from HESA)
+        region = course.get('university', {}).get('region')
+        if region:
+            return region
         
-        for region, cities in self.regions.items():
-            for city in cities:
-                if city.lower() in university_name:
-                    return region
+        # Fallback: try to match from university name
+        university_name = course.get('university', {}).get('name', '').lower()
+        for region in self.regions:
+            if region.lower() in university_name:
+                return region
         
         return 'Unknown'
 
@@ -286,15 +264,220 @@ class RankingScorer(Scorer):
 class EmployabilityScorer(Scorer):
     """Scorer for employability (composition component)"""
     
+    def __init__(self):
+        """Initialize the employability scorer with grade values for best subject detection"""
+        # Grade values for determining best subject
+        self.grade_values = {
+            'A*': 8, 'A': 7, 'B': 6, 'C': 5, 'D': 4, 'E': 3, 'U': 0
+        }
+        # Cache for salary quartiles by CAH code to avoid repeated queries
+        self._salary_quartiles_cache: Dict[str, Tuple[float, float, float]] = {}
+    
+    def _get_best_subject_cah3_code(self, student_data: Dict[str, Any]) -> Optional[str]:
+        """
+        Get the CAH3 code for the student's subject with the highest grade.
+        
+        Returns:
+            CAH3 code (e.g., 'CAH09-01-01') or None if not found
+        """
+        predicted_grades = student_data.get('predictedGrades', {})
+        if not predicted_grades:
+            return None
+        
+        # Find subject with highest grade
+        highest_grade_value = -1
+        best_subject = None
+        
+        for subject, grade in predicted_grades.items():
+            grade_value = self.grade_values.get(grade, 0)
+            if grade_value > highest_grade_value:
+                highest_grade_value = grade_value
+                best_subject = subject
+        
+        if not best_subject:
+            return None
+        
+        # Map subject to CAH3 code via database
+        try:
+            from database_helper import get_db_connection
+            
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Query subject_course_mapping to get CAH3 code for this subject
+                    cur.execute("""
+                        SELECT DISTINCT cah3_code
+                        FROM uni_recomm_subject_course_mapping
+                        WHERE a_level_subject = %s
+                        LIMIT 1
+                    """, (best_subject,))
+                    
+                    row = cur.fetchone()
+                    if row:
+                        return row[0]
+        except Exception as e:
+            # Log error but don't fail - fall back to default normalization
+            print(f"Warning: Could not get CAH3 code for subject '{best_subject}': {e}")
+        
+        return None
+    
+    def _get_salary_quartiles_for_cah3(self, cah3_code: str) -> Optional[Tuple[float, float, float]]:
+        """
+        Get salary quartiles (lower, median, upper) for a given CAH3 code from HESA data.
+        
+        Tries to match on CAH3 code first, then falls back to CAH2 and CAH1 codes if needed.
+        
+        Args:
+            cah3_code: CAH3 code (e.g., 'CAH09-01-01')
+            
+        Returns:
+            Tuple of (lower_quartile, median, upper_quartile) or None if not found
+        """
+        if not cah3_code:
+            return None
+        
+        # Check cache first
+        if cah3_code in self._salary_quartiles_cache:
+            return self._salary_quartiles_cache[cah3_code]
+        
+        try:
+            from database_helper import get_db_connection
+            
+            # Extract CAH2 and CAH1 codes from CAH3 code for fallback matching
+            # CAH3 format: CAH09-01-01 -> CAH2: CAH09-01, CAH1: CAH09
+            cah2_code = None
+            cah1_code = None
+            if '-' in cah3_code:
+                parts = cah3_code.split('-')
+                if len(parts) >= 2:
+                    cah2_code = f"{parts[0]}-{parts[1]}"
+                if len(parts) >= 1:
+                    cah1_code = parts[0]
+            
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Try CAH3 code first, then CAH2, then CAH1
+                    for code_to_try in [cah3_code, cah2_code, cah1_code]:
+                        if not code_to_try:
+                            continue
+                        
+                        # Query HESA salary data aggregated by CAH code
+                        # Use gosalsbj field which links to CAH code
+                        # Each row already has quartiles, so we aggregate them (median of quartiles)
+                        cur.execute("""
+                            SELECT 
+                                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY goinstlq) AS lower_quartile,
+                                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY goinstmed) AS median,
+                                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY goinstuq) AS upper_quartile
+                            FROM hesa_gosalary
+                            WHERE gosalsbj = %s
+                              AND goinstmed IS NOT NULL
+                              AND goinstlq IS NOT NULL
+                              AND goinstuq IS NOT NULL
+                        """, (code_to_try,))
+                        
+                        row = cur.fetchone()
+                        if row and row[0] is not None and row[1] is not None and row[2] is not None:
+                            quartiles = (float(row[0]), float(row[1]), float(row[2]))
+                            # Cache the result with the original CAH3 code as key
+                            self._salary_quartiles_cache[cah3_code] = quartiles
+                            return quartiles
+        except Exception as e:
+            # Log error but don't fail - fall back to default normalization
+            print(f"Warning: Could not get salary quartiles for CAH3 '{cah3_code}': {e}")
+        
+        return None
+    
+    def _normalize_salary_score(self, salary: float, lower_q: Optional[float], 
+                                median: Optional[float], upper_q: Optional[float]) -> float:
+        """
+        Normalize salary to 0-1 scale using actual quartiles from HESA data.
+        
+        Args:
+            salary: The salary to normalize
+            lower_q: Lower quartile (25th percentile) for the subject area
+            median: Median (50th percentile) for the subject area
+            upper_q: Upper quartile (75th percentile) for the subject area
+            
+        Returns:
+            Normalized score between 0.0 and 1.0
+        """
+        if not salary or salary <= 0:
+            return 0.5  # Neutral score if no salary data
+        
+        # If we have quartiles, use them for normalization
+        if lower_q and median and upper_q and lower_q < upper_q:
+            # Normalize based on quartiles:
+            # - Below lower quartile: 0.0 to 0.25
+            # - Between lower and median: 0.25 to 0.5
+            # - Between median and upper: 0.5 to 0.75
+            # - Above upper quartile: 0.75 to 1.0
+            
+            if salary < lower_q:
+                # Below lower quartile - linear scale from 0 to 0.25
+                ratio = salary / lower_q if lower_q > 0 else 0
+                return min(0.25, ratio * 0.25)
+            elif salary < median:
+                # Between lower quartile and median - linear scale from 0.25 to 0.5
+                range_size = median - lower_q
+                if range_size > 0:
+                    ratio = (salary - lower_q) / range_size
+                    return 0.25 + (ratio * 0.25)
+                return 0.5
+            elif salary < upper_q:
+                # Between median and upper quartile - linear scale from 0.5 to 0.75
+                range_size = upper_q - median
+                if range_size > 0:
+                    ratio = (salary - median) / range_size
+                    return 0.5 + (ratio * 0.25)
+                return 0.75
+            else:
+                # Above upper quartile - linear scale from 0.75 to 1.0
+                # Use upper quartile as base, extend to 1.5x upper quartile for max score
+                max_salary = upper_q * 1.5
+                if max_salary > upper_q:
+                    range_size = max_salary - upper_q
+                    if range_size > 0:
+                        ratio = min(1.0, (salary - upper_q) / range_size)
+                        return 0.75 + (ratio * 0.25)
+                return 1.0
+        
+        # Fallback: Use default normalization if quartiles not available
+        # This maintains backward compatibility
+        return min(1.0, max(0.0, (salary - 20000) / 40000)) if salary else 0.5
+    
     def calculate_score(self, course: Dict[str, Any], student_data: Dict[str, Any]) -> float:
-        """Calculate employability score"""
+        """
+        Calculate employability score using dynamic salary quartiles based on student's best subject.
+        
+        The salary normalization uses actual HESA data quartiles for the student's highest-grade
+        subject's CAH code, rather than hardcoded ranges.
+        """
         employability = course.get('employability', {})
         
         if not employability:
             return 0.5
         
+        # Get employment rate (0-100%)
         employment_rate = employability.get('employmentRate', 50)
-        avg_salary = employability.get('averageSalary', 30000)
-        salary_score = min(1.0, (avg_salary - 20000) / 40000) if avg_salary else 0.5
         
+        # Get average salary from course data
+        avg_salary = employability.get('averageSalary', 30000)
+        
+        # Get CAH3 code for student's best subject
+        cah3_code = self._get_best_subject_cah3_code(student_data)
+        
+        # Get salary quartiles for that CAH3 code
+        salary_quartiles = None
+        if cah3_code:
+            salary_quartiles = self._get_salary_quartiles_for_cah3(cah3_code)
+        
+        # Normalize salary using actual quartiles (or fallback to default)
+        if salary_quartiles:
+            lower_q, median, upper_q = salary_quartiles
+            salary_score = self._normalize_salary_score(avg_salary, lower_q, median, upper_q)
+        else:
+            # Fallback to default normalization if quartiles not available
+            salary_score = min(1.0, (avg_salary - 20000) / 40000) if avg_salary else 0.5
+        
+        # Combine employment rate and salary (70% employment, 30% salary)
         return (employment_rate / 100) * 0.7 + salary_score * 0.3
