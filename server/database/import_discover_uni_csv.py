@@ -175,9 +175,9 @@ def import_core_entities(cursor, data_dir: Path):
         for row in rows:
             pubukprn = normalize_value(row.get('PUBUKPRN'))
             kiscourseid = normalize_value(row.get('KISCOURSEID'))
-            kismode = normalize_value(row.get('KISMODE'))
+            kismode = normalize_int(row.get('KISMODE'))
             
-            if pubukprn and kiscourseid and kismode:
+            if pubukprn and kiscourseid and kismode is not None:
                 # HECOS can be in 5 columns - pandas renames duplicates to HECOS, HECOS.1, HECOS.2, etc.
                 # Use the first non-null HECOS value from any of the 5 columns
                 hecos_value = None
@@ -255,7 +255,7 @@ def import_core_entities(cursor, data_dir: Path):
             pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
             ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
             kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
-            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            kismode = int(row.get('KISMODE', 0)) if row.get('KISMODE', '').strip() else None
             locid = row.get('LOCID', '').strip() if row.get('LOCID') else None
             ucascourseid = row.get('UCASCOURSEID', '').strip() if row.get('UCASCOURSEID') else None
             
@@ -284,7 +284,7 @@ def import_core_entities(cursor, data_dir: Path):
             pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
             ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
             kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
-            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            kismode = int(row.get('KISMODE', 0)) if row.get('KISMODE', '').strip() else None
             sbj = row.get('SBJ', '').strip() if row.get('SBJ') else None
             
             if pubukprn and sbj:
@@ -318,8 +318,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
-                str(int(row.get('KISMODE'))) if row.get('KISMODE', '').strip().isdigit() else normalize_value(row.get('KISMODE')),
+                normalize_int(row.get('KISMODE')),
                 normalize_value(row.get('ENTUNAVAILREASON')),
                 normalize_int(row.get('ENTPOP')),
                 normalize_value(row.get('ENTAGG')),
@@ -387,9 +386,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
             ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
             kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
-            kismode_raw = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
-            # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
-            kismode = str(int(kismode_raw)) if kismode_raw and kismode_raw.isdigit() else kismode_raw
+            kismode = int(row.get('KISMODE', 0)) if row.get('KISMODE', '').strip() else None
             
             if pubukprn and kiscourseid:
                 data.append((
@@ -446,8 +443,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
-                str(int(row.get('KISMODE'))) if row.get('KISMODE', '').strip().isdigit() else normalize_value(row.get('KISMODE')),
+                normalize_int(row.get('KISMODE')),
                 normalize_value(row.get('EMPUNAVAILREASON')),
                 normalize_int(row.get('EMPPOP')),
                 normalize_value(row.get('EMPAGG')),
@@ -507,7 +503,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
+                normalize_int(row.get('KISMODE')),
                 normalize_value(row.get('COMSBJ')),
                 normalize_value(row.get('JOB')),
                 normalize_int(row.get('PERC')),
@@ -515,9 +511,9 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_int(row.get('HS'))
             )
             for row in rows
-            if (normalize_value(row.get('PUBUKPRN')) and 
-                normalize_value(row.get('KISCOURSEID')) and 
-                normalize_value(row.get('KISMODE')) and
+            if (normalize_value(row.get('PUBUKPRN')) and
+                normalize_value(row.get('KISCOURSEID')) and
+                normalize_int(row.get('KISMODE')) is not None and
                 normalize_value(row.get('JOB')))
         ]
         if data:
@@ -544,7 +540,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
+                normalize_int(row.get('KISMODE')),
                 normalize_value(row.get('GOSALUNAVAILREASON')),
                 normalize_int(row.get('GOSALPOP')),
                 normalize_int(row.get('GOSALRESPONSE')),
@@ -567,7 +563,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             for row in rows
             if (normalize_value(row.get('PUBUKPRN')) and 
                 normalize_value(row.get('KISCOURSEID')) and 
-                normalize_value(row.get('KISMODE')))
+                normalize_int(row.get('KISMODE')) is not None)
         ]
         if data:
             execute_batch(
@@ -597,7 +593,7 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
+                normalize_int(row.get('KISMODE')),
                 normalize_value(row.get('LEO3UNAVAILREASON')),
                 normalize_int(row.get('LEO3POP')),
                 normalize_value(row.get('LEO3AGG')),
@@ -627,7 +623,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             for row in rows
             if (normalize_value(row.get('PUBUKPRN')) and 
                 normalize_value(row.get('KISCOURSEID')) and 
-                normalize_value(row.get('KISMODE')))
+                normalize_int(row.get('KISMODE')) is not None)
         ]
         if data:
             execute_batch(

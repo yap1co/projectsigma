@@ -94,7 +94,7 @@ def map_hesa_to_main_tables():
             WHERE kc.pubukprn IS NOT NULL 
               AND kc.kiscourseid IS NOT NULL
               AND kc.title IS NOT NULL
-              AND kc.kismode IN ('1', '2')  -- Full-time (1) and part-time (2)
+              AND kc.kismode IN (1, 2)  -- Full-time (1) and part-time (2)
         """)
         
         courses_data = cur.fetchall()
@@ -112,7 +112,7 @@ def map_hesa_to_main_tables():
             uni_id = uni_result['university_id']
             course_id = generate_id('COURSE_')
             course_name = kc['title']
-            ucas_code = kc.get('ucascourseid') or kc.get('ucasprogid')
+            ucascourseid = kc.get('ucascourseid') or kc.get('ucasprogid')
             
             # Get employability score from hesa_employment data if available
             # Calculate based on work/(work+study+unemp) ratio, scaled to 0-100
@@ -159,17 +159,9 @@ def map_hesa_to_main_tables():
                             typical_tariff = val
                             break
             
-            # Handle UCAS code duplicates by making it NULL if it would conflict
-            # or by appending a suffix
-            if ucas_code:
-                cur.execute("SELECT course_id FROM course WHERE ucas_code = %s LIMIT 1", (ucas_code,))
-                if cur.fetchone():
-                    # UCAS code already exists, set to NULL to avoid conflict
-                    ucas_code = None
-            
             cur.execute("""
                 INSERT INTO course (
-                    course_id, university_id, name, ucas_code, ucasprogid,
+                    course_id, university_id, name, ucascourseid, ucasprogid,
                     hecos, length, annual_fee, employability_score, course_url,
                     typical_offer_text, typical_offer_tariff,
                     pubukprn, kiscourseid, kismode
@@ -177,6 +169,7 @@ def map_hesa_to_main_tables():
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                 SET name = EXCLUDED.name,
+                    ucascourseid = EXCLUDED.ucascourseid,
                     ucasprogid = EXCLUDED.ucasprogid,
                     hecos = EXCLUDED.hecos,
                     length = EXCLUDED.length,
@@ -184,7 +177,7 @@ def map_hesa_to_main_tables():
                     course_url = EXCLUDED.course_url,
                     typical_offer_tariff = EXCLUDED.typical_offer_tariff
             """, (
-                course_id, uni_id, course_name, ucas_code,
+                course_id, uni_id, course_name, ucascourseid,
                 kc.get('ucasprogid'),  # UCAS Programme ID
                 kc.get('hecos'),  # First HECOS subject code
                 kc.get('length'),  # Course length (from NUMSTAGE)

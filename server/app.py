@@ -772,7 +772,7 @@ def get_courses():
         # Build SQL query
         query = """
             SELECT 
-                c.course_id, c.name, c.annual_fee, c.ucas_code,
+                c.course_id, c.name, c.annual_fee, c.ucascourseid,
                 c.typical_offer_text, c.typical_offer_tariff,
                 u.university_id, u.name as university_name, u.region,
                 u.rank_overall, u.employability_score as uni_employability,

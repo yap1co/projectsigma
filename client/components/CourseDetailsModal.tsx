@@ -146,10 +146,10 @@ export default function CourseDetailsModal({ course, isOpen, onClose }: CourseDe
                         <p className="text-sm text-gray-500">Annual Fee</p>
                         <p className="text-gray-900">£{course.course?.fees?.uk?.toLocaleString() || course.course?.annual_fee?.toLocaleString() || 'N/A'}</p>
                       </div>
-                      {course.course?.ucas_code && (
+                      {course.course?.ucascourseid && (
                         <div>
                           <p className="text-sm text-gray-500">UCAS Code</p>
-                          <p className="text-gray-900">{course.course.ucas_code}</p>
+                          <p className="text-gray-900">{course.course.ucascourseid}</p>
                         </div>
                       )}
                       {course.course?.employability?.employmentRate && (

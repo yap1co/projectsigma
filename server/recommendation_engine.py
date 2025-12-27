@@ -428,7 +428,7 @@ class RecommendationEngine:
                     # Get the course with highest employability_score from this university
                     cur.execute("""
                         SELECT 
-                            c.course_id, c.name, c.annual_fee, c.ucas_code,
+                            c.course_id, c.name, c.annual_fee, c.ucascourseid,
                             c.employability_score, c.typical_offer_text,
                             c.course_url,
                             u.university_id, u.name as university_name, u.region,
@@ -1547,7 +1547,7 @@ class RecommendationEngine:
             
             query = """
                 SELECT 
-                    c.course_id, c.name, c.annual_fee, c.ucas_code,
+                    c.course_id, c.name, c.annual_fee, c.ucascourseid,
                     c.typical_offer_text, c.typical_offer_tariff,
                     c.course_url,
                     u.university_id, u.name as university_name, u.region,

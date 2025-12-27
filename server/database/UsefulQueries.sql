@@ -5,11 +5,29 @@ and s.cah_code = sr.cah_code
 and u.name ilike '%university of bristol%'
 and c.name ilike '%math%'
 
-select u.name, u.region,u.website_url, c.name,c.ucas_code,c.ucadprogid,c.course_url,c.hecos,c.annual_fee, c.employability_score,c.typical_offer_tariff, c.kiscourseid, c.kismode 
+select u.name, u.region,u.website_url, c.name,c.length,c.ucas_code,c.ucasprogid,c.course_url,c.hecos,c.annual_fee, c.employability_score,c.typical_offer_tariff, c.kiscourseid, c.kismode 
 from university u, course c
 where u.university_id = c.university_id 
 and u.name ilike '%university of bristol%'
 and c.name ilike '%engineering mathematics%'
+
+select u.name, u.region,u.website_url, c.name,c.length,c.ucas_code,c.ucasprogid,c.course_url,c.hecos,c.annual_fee, c.employability_score,c.typical_offer_tariff, c.kiscourseid, c.kismode 
+from university u, course c
+where u.university_id = c.university_id 
+and u.name ilike '%leeds%'
+and c.name ilike '%Mechatronics and Robotics Engineering%'
+
+
+select * from hesa_employment e,hesa_gosalary g, hesa_leo3 l, hesa_entry ee
+where
+e.kiscourseid = g.kiscourseid and 
+g.kiscourseid = l.kiscourseid and 
+l.kiscourseid = ee.kiscourseid and 
+e.kiscourseid = '4EMAT006UU-202425';
+
+sekect
+select * from hesa_gosalary  where kiscourseid = '4EMAT006UU-202425'
+select * from hesa_leo3  where kiscourseid = '4EMAT006UU-202425'
 
 
 select * from course where name ilike '%engineering mathematics%'
@@ -18,6 +36,9 @@ select * from course where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-2024
 
 
 select * from hesa_kiscourse where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-202425','4EMAT006UU-202425')
+
+select kiscourseid, ucascourseid from hesa_ucascourseid where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-202425','4EMAT006UU-202425')
+select kiscourseid, ucas_code from course where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-202425','4EMAT006UU-202425')
 
 select * from hesa_entry
 -- HESA IMPORT TABLES
