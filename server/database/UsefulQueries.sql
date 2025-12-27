@@ -1,3 +1,25 @@
+select u.pubukprn,u.name, c.*, sr.*, s.* from university u, course c, course_subject_requirement sr, subject s
+where u.university_id = c.university_id 
+and c.course_id = sr.course_id 
+and s.cah_code = sr.cah_code
+and u.name ilike '%university of bristol%'
+and c.name ilike '%math%'
+
+select u.name, u.region,u.website_url, c.name,c.ucas_code,c.ucadprogid,c.course_url,c.hecos,c.annual_fee, c.employability_score,c.typical_offer_tariff, c.kiscourseid, c.kismode 
+from university u, course c
+where u.university_id = c.university_id 
+and u.name ilike '%university of bristol%'
+and c.name ilike '%engineering mathematics%'
+
+
+select * from course where name ilike '%engineering mathematics%'
+
+select * from course where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-202425','4EMAT006UU-202425')
+
+
+select * from hesa_kiscourse where kiscourseid  in ('4EMAT013UU-202425','4EMAT002UU-202425','4EMAT006UU-202425')
+
+select * from hesa_entry
 -- HESA IMPORT TABLES
 SELECT 'HESA_INSTITUTION' as table_name, COUNT(*) as count FROM hesa_institution
 UNION ALL
@@ -30,7 +52,7 @@ SELECT 'Course', COUNT(*) FROM course
 UNION ALL
 SELECT 'Subject', COUNT(*) FROM subject
 UNION ALL
-SELECT 'Course Requirement', COUNT(*) FROM course_requirement
+SELECT 'Course Requirement', COUNT(*) FROM course_subject_requirement
 UNION ALL
 SELECT 'Career Interest', COUNT(*) FROM career_interest
 UNION ALL

@@ -29,18 +29,42 @@ def get_db_connection():
     return get_db_connection_helper()
 
 def normalize_value(value: str) -> Optional[str]:
-    """Normalize CSV values - handle empty strings, whitespace"""
+    """Normalize CSV values - handle empty strings, whitespace, and numeric codes"""
     if value is None:
         return None
+    
+    # Handle pandas NaN/None values
+    import pandas as pd
+    if pd.isna(value):
+        return None
+    
+    # If it's a float that represents an integer (e.g., 101028.0 for HECOS codes),
+    # convert to int first to remove the decimal point
+    if isinstance(value, float) and value == int(value):
+        value = int(value)
+    
     value = str(value).strip()
     return value if value else None
 
 def normalize_int(value: str) -> Optional[int]:
-    """Convert string to integer, handling empty strings"""
-    if not value or value.strip() == '':
+    """Convert string/float to integer, handling empty strings and pandas floats"""
+    if value is None:
         return None
+    
+    # Handle pandas NaN
+    import pandas as pd
+    if pd.isna(value):
+        return None
+    
     try:
-        return int(value.strip())
+        # If it's already a float, convert directly
+        if isinstance(value, float):
+            return int(value)
+        # Otherwise strip and convert
+        value = str(value).strip()
+        if not value:
+            return None
+        return int(float(value))  # Use float as intermediate to handle "101028.0" strings
     except (ValueError, AttributeError):
         return None
 
@@ -135,9 +159,17 @@ def import_core_entities(cursor, data_dir: Path):
             )
             logger.info(f"  Imported {len(data)} Institution records (kept most recent of {duplicates} duplicate PUBUKPRNs)")
     
-    # 2. KISCOURSE
+    # 2. KISCOURSE - Use pandas to handle duplicate HECOS column names
     logger.info("\n[2/2] Importing KISCOURSE.csv...")
-    rows = read_csv_file(data_dir / 'KISCOURSE.csv')
+    import pandas as pd
+    csv_path = data_dir / 'KISCOURSE.csv'
+    if csv_path.exists():
+        df = pd.read_csv(csv_path, encoding='utf-8', low_memory=False)
+        rows = df.to_dict('records')
+    else:
+        logger.warning(f"File not found: {csv_path}")
+        rows = []
+    
     if rows:
         data = []
         for row in rows:
@@ -146,23 +178,14 @@ def import_core_entities(cursor, data_dir: Path):
             kismode = normalize_value(row.get('KISMODE'))
             
             if pubukprn and kiscourseid and kismode:
-                # HECOS can be in multiple columns, find the first non-empty one
+                # HECOS can be in 5 columns - pandas renames duplicates to HECOS, HECOS.1, HECOS.2, etc.
+                # Use the first non-null HECOS value from any of the 5 columns
                 hecos_value = None
-                hecos_columns = ['HECOS', 'HECOS.1', 'HECOS.2', 'HECOS.3', 'HECOS.4']  # pandas creates .1, .2 etc for duplicate names
+                hecos_columns = ['HECOS', 'HECOS.1', 'HECOS.2', 'HECOS.3', 'HECOS.4']
                 for hecos_col in hecos_columns:
                     if hecos_col in row:
-                        hecos_val = normalize_value(row.get(hecos_col))
-                        if hecos_val:  # If not None and not empty string
-                            hecos_value = hecos_val
-                            break
-                
-                # If pandas didn't rename them, try accessing by index using the keys list
-                if not hecos_value:
-                    keys_list = list(row.keys())
-                    hecos_indices = [i for i, key in enumerate(keys_list) if key == 'HECOS']
-                    for idx in hecos_indices:
-                        hecos_val = normalize_value(row[keys_list[idx]])
-                        if hecos_val:
+                        hecos_val = normalize_int(row.get(hecos_col))
+                        if hecos_val is not None:  # Explicitly check for None (not just falsy)
                             hecos_value = hecos_val
                             break
                 
@@ -171,8 +194,8 @@ def import_core_entities(cursor, data_dir: Path):
                     normalize_value(row.get('UKPRN')),
                     kiscourseid,
                     normalize_value(row.get('TITLE')),
-                    normalize_value(row.get('TITLEW')),
                     kismode,
+                    normalize_value(row.get('UCASPROGID')),   # ucasprogid
                     normalize_value(row.get('NUMSTAGE')),     # length
                     normalize_value(row.get('KISLEVEL')),     # levelcode
                     normalize_value(row.get('KISAIMCODE')),   # locid
@@ -183,11 +206,8 @@ def import_core_entities(cursor, data_dir: Path):
                     normalize_value(row.get('FOUNDATION')),   # foundationyear
                     hecos_value,                              # hecos (first non-empty from multiple columns)
                     normalize_value(row.get('CRSEURL')),      # coursepageurl
-                    normalize_value(row.get('CRSEURLW')),     # coursepageurlw
                     normalize_value(row.get('SUPPORTURL')),
-                    normalize_value(row.get('SUPPORTURLW')),
-                    normalize_value(row.get('EMPLOYURL')),    # employabilityurl
-                    normalize_value(row.get('EMPLOYURLW'))    # employabilityurlw
+                    normalize_value(row.get('EMPLOYURL'))     # employabilityurl
                 ))
         
         if data:
@@ -204,15 +224,16 @@ def import_core_entities(cursor, data_dir: Path):
                         cursor,
                         """
                         INSERT INTO hesa_kiscourse (
-                            pubukprn, ukprn, kiscourseid, title, titlew, kismode, length,
+                            pubukprn, ukprn, kiscourseid, title, kismode, ucasprogid, length,
                             levelcode, locid, distance, honours, sandwich, yearabroad, 
-                            foundationyear, hecos, coursepageurl, coursepageurlw,
-                            supporturl, supporturlw, employabilityurl, employabilityurlw
+                            foundationyear, hecos, coursepageurl,
+                            supporturl, employabilityurl
                         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                                 %s, %s, %s, %s, %s, %s)
+                                 %s, %s, %s)
                         ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                         SET title = EXCLUDED.title,
-                            hecos = EXCLUDED.hecos
+                            hecos = EXCLUDED.hecos,
+                            ucasprogid = EXCLUDED.ucasprogid
                         """,
                         batch,
                         page_size=100  # Reduced page size
@@ -298,7 +319,6 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
                 normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('ENTRYLEVEL')),
                 normalize_value(row.get('ENTUNAVAILREASON')),
                 normalize_int(row.get('ENTPOP')),
                 normalize_value(row.get('ENTAGG')),
@@ -306,12 +326,11 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('ENTYEAR1')),
                 normalize_value(row.get('ENTYEAR2')),
                 normalize_value(row.get('ENTSBJ')),
-                normalize_int(row.get('ALEVEL')),
                 normalize_int(row.get('ACCESS')),
-                normalize_int(row.get('ALEVELTCE')),
+                normalize_int(row.get('ALEVEL')),
                 normalize_int(row.get('BACC')),
                 normalize_int(row.get('DEGREE')),
-                normalize_int(row.get('FOUNDATION')),
+                normalize_int(row.get('FOUNDTN')),
                 normalize_int(row.get('NOQUALS')),
                 normalize_int(row.get('OTHER')),
                 normalize_int(row.get('OTHERHE'))
@@ -322,23 +341,40 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('KISMODE')))
         ]
         if data:
-            execute_batch(
-                cursor,
-                """
-                INSERT INTO hesa_entry (pubukprn, ukprn, kiscourseid, kismode, entrylevel,
-                                 entunavailreason, entpop, entagg, entaggyear, entyear1,
-                                 entyear2, entsbj, alevel, access, aleveltce, bacc,
-                                 degree, foundation, noquals, "other", otherhe)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                       %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
-                SET entpop = EXCLUDED.entpop,
-                    alevel = EXCLUDED.alevel
-                """,
-                data,
-                page_size=1000
-            )
-            logger.info(f"  Imported {len(data)} Entry records")
+            # Process in smaller batches to isolate errors
+            batch_size = 100
+            total_batches = (len(data) + batch_size - 1) // batch_size
+            imported_count = 0
+            
+            for i in range(0, len(data), batch_size):
+                batch = data[i:i + batch_size]
+                batch_num = (i // batch_size) + 1
+                try:
+                    execute_batch(
+                        cursor,
+                        'INSERT INTO hesa_entry (pubukprn, ukprn, kiscourseid, kismode, entunavailreason, entpop, entagg, entaggyear, entyear1, entyear2, entsbj, access, alevel, bacc, degree, foundtn, noquals, "other", otherhe) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE SET entpop = EXCLUDED.entpop, alevel = EXCLUDED.alevel',
+                        batch,
+                        page_size=50
+                    )
+                    imported_count += len(batch)
+                    if batch_num % 50 == 0:
+                        logger.info(f"  → Entry batch {batch_num}/{total_batches}")
+                except Exception as e:
+                    logger.error(f"  → Error in entry batch {batch_num}: {e}")
+                    # Try individual records in this batch
+                    for j, record in enumerate(batch):
+                        try:
+                            cursor.execute(
+                                'INSERT INTO hesa_entry (pubukprn, ukprn, kiscourseid, kismode, entunavailreason, entpop, entagg, entaggyear, entyear1, entyear2, entsbj, access, alevel, bacc, degree, foundtn, noquals, "other", otherhe) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE SET entpop = EXCLUDED.entpop, alevel = EXCLUDED.alevel',
+                                record
+                            )
+                            imported_count += 1
+                        except Exception as record_error:
+                            logger.error(f"    → Skipping bad record {j}: {record_error}")
+                            logger.error(f"    → Record data: {record}")
+                            continue
+                            
+            logger.info(f"  Imported {imported_count} Entry records")
     
     # 2. TARIFF (tariff point distributions)
     # 2. TARIFF - Special handling for UTF-16 encoding
@@ -458,7 +494,7 @@ def import_outcome_tables(cursor, data_dir: Path):
             
             logger.info(f"  Imported {len(data)} Employment records")
     
-    # 4. JOBLIST
+    # 4. JOBLIST - Simple import matching CSV structure
     logger.info("\n[4/6] Importing JOBLIST.csv...")
     rows = read_csv_file(data_dir / 'JOBLIST.csv')
     if rows:
@@ -468,47 +504,27 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
                 normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('JOBUNAVAILREASON')),
-                normalize_int(row.get('JOBPOP')),
-                normalize_int(row.get('JOBRESPONSE')),
-                normalize_int(row.get('JOBSAMPLE')),
-                normalize_int(row.get('JOBRESP_RATE')),
-                normalize_value(row.get('JOBAGG')),
-                normalize_value(row.get('JOBAGGYEAR')),
-                normalize_value(row.get('JOBYEAR1')),
-                normalize_value(row.get('JOBYEAR2')),
-                normalize_value(row.get('JOBSBJ')),
-                normalize_int(row.get('EDUC')),
-                normalize_int(row.get('HEALTH')),
-                normalize_int(row.get('CAREHOME')),
-                normalize_int(row.get('HEALTHSOC')),
-                normalize_int(row.get('RETAIL')),
-                normalize_int(row.get('MAN')),
-                normalize_int(row.get('INFO')),
-                normalize_int(row.get('FIN')),
-                normalize_int(row.get('PRO')),
-                normalize_int(row.get('ADMIN')),
-                normalize_int(row.get('OTHER')),
-                normalize_int(row.get('UNKWN'))
+                normalize_value(row.get('COMSBJ')),
+                normalize_value(row.get('JOB')),
+                normalize_int(row.get('PERC')),
+                normalize_int(row.get('ORDER')),
+                normalize_int(row.get('HS'))
             )
             for row in rows
             if (normalize_value(row.get('PUBUKPRN')) and 
                 normalize_value(row.get('KISCOURSEID')) and 
-                normalize_value(row.get('KISMODE')))
+                normalize_value(row.get('KISMODE')) and
+                normalize_value(row.get('JOB')))
         ]
         if data:
             execute_batch(
                 cursor,
                 """
                 INSERT INTO hesa_joblist (pubukprn, ukprn, kiscourseid, kismode,
-                                    jobunavailreason, jobpop, jobresponse, jobsample,
-                                    jobresp_rate, jobagg, jobaggyear, jobyear1,
-                                    jobyear2, jobsbj, educ, health, carehome, healthsoc,
-                                    retail, man, info, fin, pro, admin, "other", unkwn)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                       %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
-                SET jobpop = EXCLUDED.jobpop
+                                   comsbj, job, perc, "order", hs)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (pubukprn, kiscourseid, kismode, job) DO UPDATE
+                SET perc = EXCLUDED.perc
                 """,
                 data,
                 page_size=1000
@@ -525,24 +541,24 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
                 normalize_value(row.get('KISMODE')),
-                normalize_value(row.get('GOSUNAVAILREASON')),
-                normalize_int(row.get('GOSPOP')),
-                normalize_int(row.get('GOSRESPONSE')),
-                normalize_int(row.get('GOSSAMPLE')),
-                normalize_int(row.get('GOSRESP_RATE')),
+                normalize_value(row.get('GOSALUNAVAILREASON')),
+                normalize_int(row.get('GOSALPOP')),
+                normalize_int(row.get('GOSALRESPONSE')),
+                normalize_int(row.get('GOSALSAMPLE')),
+                normalize_int(row.get('GOSALRESP_RATE')),
                 normalize_value(row.get('GOSALAGG')),
-                normalize_value(row.get('GOSAGGYEAR')),
-                normalize_value(row.get('GOSYEAR1')),
-                normalize_value(row.get('GOSYEAR2')),
-                normalize_value(row.get('GOSSBJ')),
-                normalize_int(row.get('LDLWR')),
-                normalize_int(row.get('LDMED')),
-                normalize_int(row.get('LDUPR')),
-                normalize_int(row.get('LDPOP')),
-                normalize_int(row.get('INSTLWR')),
-                normalize_int(row.get('INSTMED')),
-                normalize_int(row.get('INSTUPR')),
-                normalize_int(row.get('INSTPOP'))
+                normalize_value(row.get('GOSALAGGYEAR')),
+                normalize_value(row.get('GOSALYEAR1')),
+                normalize_value(row.get('GOSALYEAR2')),
+                normalize_value(row.get('GOSALSBJ')),
+                normalize_int(row.get('GOINSTLQ')),
+                normalize_int(row.get('GOINSTMED')),
+                normalize_int(row.get('GOINSTUQ')),
+                normalize_int(row.get('GOPROV_PC_UK')),
+                normalize_int(row.get('GOPROV_PC_E')),
+                normalize_int(row.get('GOPROV_PC_NI')),
+                normalize_int(row.get('GOPROV_PC_S')),
+                normalize_int(row.get('GOPROV_PC_W'))
             )
             for row in rows
             if (normalize_value(row.get('PUBUKPRN')) and 
@@ -554,14 +570,14 @@ def import_outcome_tables(cursor, data_dir: Path):
                 cursor,
                 """
                 INSERT INTO hesa_gosalary (pubukprn, ukprn, kiscourseid, kismode,
-                                    gosunavailreason, gospop, gosresponse, gossample,
-                                    gosresp_rate, gosalagg, gosaggyear, gosyear1,
-                                    gosyear2, gossbj, ldlwr, ldmed, ldupr, ldpop,
-                                    instlwr, instmed, instupr, instpop)
+                                    gosalunavailreason, gosalpop, gosalresponse, gosalsample,
+                                    gosalresp_rate, gosalagg, gosalaggyear, gosalyear1,
+                                    gosalyear2, gosalsbj, goinstlq, goinstmed, goinstuq,
+                                    goprov_pc_uk, goprov_pc_e, goprov_pc_ni, goprov_pc_s, goprov_pc_w)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                        %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
-                SET gospop = EXCLUDED.gospop
+                SET gosalpop = EXCLUDED.gosalpop
                 """,
                 data,
                 page_size=1000
@@ -582,18 +598,27 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_int(row.get('LEO3POP')),
                 normalize_value(row.get('LEO3AGG')),
                 normalize_value(row.get('LEO3AGGYEAR')),
-                normalize_value(row.get('LEO3YEAR1')),
-                normalize_value(row.get('LEO3YEAR2')),
                 normalize_value(row.get('LEO3SBJ')),
                 normalize_int(row.get('LEO3INSTLQ')),
                 normalize_int(row.get('LEO3INSTMED')),
                 normalize_int(row.get('LEO3INSTUQ')),
-                normalize_int(row.get('LEO3INSTPOP')),
-                normalize_int(row.get('LEO3SECLQ')),
-                normalize_int(row.get('LEO3SECMED')),
-                normalize_int(row.get('LEO3SECUQ')),
-                normalize_int(row.get('LEO3SECPOP')),
-                normalize_value(row.get('LEO3SECTOR'))
+                normalize_int(row.get('LEO3PROV_PC_UK')),
+                normalize_int(row.get('LEO3PROV_PC_E')),
+                normalize_int(row.get('LEO3PROV_PC_NW')),
+                normalize_int(row.get('LEO3PROV_PC_NE')),
+                normalize_int(row.get('LEO3PROV_PC_EM')),
+                normalize_int(row.get('LEO3PROV_PC_WM')),
+                normalize_int(row.get('LEO3PROV_PC_EE')),
+                normalize_int(row.get('LEO3PROV_PC_SE')),
+                normalize_int(row.get('LEO3PROV_PC_SW')),
+                normalize_int(row.get('LEO3PROV_PC_YH')),
+                normalize_int(row.get('LEO3PROV_PC_LN')),
+                normalize_int(row.get('LEO3PROV_PC_NI')),
+                normalize_int(row.get('LEO3PROV_PC_S')),
+                normalize_int(row.get('LEO3PROV_PC_ED')),
+                normalize_int(row.get('LEO3PROV_PC_GL')),
+                normalize_int(row.get('LEO3PROV_PC_W')),
+                normalize_int(row.get('LEO3PROV_PC_CF'))
             )
             for row in rows
             if (normalize_value(row.get('PUBUKPRN')) and 
@@ -606,11 +631,15 @@ def import_outcome_tables(cursor, data_dir: Path):
                 """
                 INSERT INTO hesa_leo3 (pubukprn, ukprn, kiscourseid, kismode,
                                 leo3unavailreason, leo3pop, leo3agg, leo3aggyear,
-                                leo3year1, leo3year2, leo3sbj, leo3instlq, leo3instmed,
-                                leo3instuq, leo3instpop, leo3seclq, leo3secmed,
-                                leo3secuq, leo3secpop, leo3sector)
+                                leo3sbj, leo3instlq, leo3instmed, leo3instuq,
+                                leo3prov_pc_uk, leo3prov_pc_e, leo3prov_pc_nw,
+                                leo3prov_pc_ne, leo3prov_pc_em, leo3prov_pc_wm,
+                                leo3prov_pc_ee, leo3prov_pc_se, leo3prov_pc_sw,
+                                leo3prov_pc_yh, leo3prov_pc_ln, leo3prov_pc_ni,
+                                leo3prov_pc_s, leo3prov_pc_ed, leo3prov_pc_gl,
+                                leo3prov_pc_w, leo3prov_pc_cf)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                       %s, %s, %s, %s, %s)
+                       %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
                 SET leo3pop = EXCLUDED.leo3pop
                 """,

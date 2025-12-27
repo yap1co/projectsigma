@@ -81,9 +81,10 @@ def map_hesa_to_main_tables():
                 kc.kiscourseid,
                 kc.kismode,
                 kc.title,
-                NULL as ucasprogid,
+                kc.ucasprogid,
                 kc.hecos,
-                kc.length as numstage,
+                kc.length,
+                kc.coursepageurl,
                 uc.ucascourseid
             FROM hesa_kiscourse kc
             LEFT JOIN hesa_ucascourseid uc ON 
@@ -93,7 +94,7 @@ def map_hesa_to_main_tables():
             WHERE kc.pubukprn IS NOT NULL 
               AND kc.kiscourseid IS NOT NULL
               AND kc.title IS NOT NULL
-              AND kc.kismode IN ('01', '02')  -- Full-time (01) and part-time (02)
+              AND kc.kismode IN ('1', '2')  -- Full-time (1) and part-time (2)
         """)
         
         courses_data = cur.fetchall()
@@ -168,18 +169,21 @@ def map_hesa_to_main_tables():
             
             cur.execute("""
                 INSERT INTO course (
-                    course_id, university_id, name, ucas_code, 
-                    annual_fee, employability_score, course_url,
+                    course_id, university_id, name, ucas_code, ucasprogid,
+                    hecos, length, annual_fee, employability_score, course_url,
                     typical_offer_text, typical_offer_tariff,
                     pubukprn, kiscourseid, kismode
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (pubukprn, kiscourseid, kismode) DO NOTHING
             """, (
                 course_id, uni_id, course_name, ucas_code,
+                kc.get('ucasprogid'),  # UCAS Programme ID
+                kc.get('hecos'),  # First HECOS subject code
+                kc.get('length'),  # Course length (from NUMSTAGE)
                 9250,  # Default UK fee
                 employability,
-                kc.get('crseurl'),  # Course URL from KIS data
+                kc.get('coursepageurl'),  # Course URL from CRSEURL
                 None,  # typical_offer_text (not available in HESA)
                 typical_tariff,
                 pubukprn,  # Store HESA identifiers for linking back
