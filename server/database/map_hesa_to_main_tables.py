@@ -175,7 +175,14 @@ def map_hesa_to_main_tables():
                     pubukprn, kiscourseid, kismode
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (pubukprn, kiscourseid, kismode) DO NOTHING
+                ON CONFLICT (pubukprn, kiscourseid, kismode) DO UPDATE
+                SET name = EXCLUDED.name,
+                    ucasprogid = EXCLUDED.ucasprogid,
+                    hecos = EXCLUDED.hecos,
+                    length = EXCLUDED.length,
+                    employability_score = EXCLUDED.employability_score,
+                    course_url = EXCLUDED.course_url,
+                    typical_offer_tariff = EXCLUDED.typical_offer_tariff
             """, (
                 course_id, uni_id, course_name, ucas_code,
                 kc.get('ucasprogid'),  # UCAS Programme ID

@@ -318,7 +318,8 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
+                # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
+                str(int(row.get('KISMODE'))) if row.get('KISMODE', '').strip().isdigit() else normalize_value(row.get('KISMODE')),
                 normalize_value(row.get('ENTUNAVAILREASON')),
                 normalize_int(row.get('ENTPOP')),
                 normalize_value(row.get('ENTAGG')),
@@ -386,7 +387,9 @@ def import_outcome_tables(cursor, data_dir: Path):
             pubukprn = row.get('PUBUKPRN', '').strip() if row.get('PUBUKPRN') else None
             ukprn = row.get('UKPRN', '').strip() if row.get('UKPRN') else None
             kiscourseid = row.get('KISCOURSEID', '').strip() if row.get('KISCOURSEID') else None
-            kismode = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            kismode_raw = row.get('KISMODE', '').strip() if row.get('KISMODE') else None
+            # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
+            kismode = str(int(kismode_raw)) if kismode_raw and kismode_raw.isdigit() else kismode_raw
             
             if pubukprn and kiscourseid:
                 data.append((
@@ -443,7 +446,8 @@ def import_outcome_tables(cursor, data_dir: Path):
                 normalize_value(row.get('PUBUKPRN')),
                 normalize_value(row.get('UKPRN')),
                 normalize_value(row.get('KISCOURSEID')),
-                normalize_value(row.get('KISMODE')),
+                # Normalize KISMODE: strip leading zeros (01 -> 1, 02 -> 2)
+                str(int(row.get('KISMODE'))) if row.get('KISMODE', '').strip().isdigit() else normalize_value(row.get('KISMODE')),
                 normalize_value(row.get('EMPUNAVAILREASON')),
                 normalize_int(row.get('EMPPOP')),
                 normalize_value(row.get('EMPAGG')),
